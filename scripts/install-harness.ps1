@@ -38,7 +38,7 @@ function Resolve-TargetPath([string]$PathValue) {
 function Get-SourceMode {
     if ($PSScriptRoot) {
         $candidate = Split-Path -Parent $PSScriptRoot
-        if ((Test-Path (Join-Path $candidate "AGENTS.md")) -and (Test-Path (Join-Path $candidate "docs/HARNESS.md"))) {
+        if ((Test-Path (Join-Path $candidate "AGENTS.md")) -and (Test-Path (Join-Path $candidate "harness-docs/HARNESS.md"))) {
             return @{ Mode = "local"; Root = $candidate }
         }
     }
@@ -139,10 +139,10 @@ function Get-AgentShimBlock {
 This repo uses Harness. Before work, read:
 
 - `README.md`
-- `docs/HARNESS.md`
-- `docs/FEATURE_INTAKE.md`
-- `docs/ARCHITECTURE.md`
-- `docs/CONTEXT_RULES.md`
+- `harness-docs/HARNESS.md`
+- `harness-docs/FEATURE_INTAKE.md`
+- `harness-docs/ARCHITECTURE.md`
+- `harness-docs/CONTEXT_RULES.md`
 - `scripts/bin/harness-cli query matrix` on macOS/Linux, or `.\scripts\bin\harness-cli.exe query matrix` on Windows
 
 Use the Rust Harness CLI at `scripts/bin/harness-cli` on macOS/Linux or
@@ -292,14 +292,14 @@ if (!$DryRun -and !(Test-Path $script:TargetDir)) {
     New-Item -ItemType Directory -Force -Path $script:TargetDir | Out-Null
 }
 
-$conflicts = @("AGENTS.md", "docs", "scripts") | Where-Object { Test-Path (Join-Path $script:TargetDir $_) }
+$conflicts = @("AGENTS.md", "harness-docs", "scripts") | Where-Object { Test-Path (Join-Path $script:TargetDir $_) }
 if ($conflicts.Count -gt 0) {
     if ($Merge) {
         $script:ConflictAction = "merge"
         Write-Step "Continuing with merge. Existing files will be skipped."
     } elseif ($Override) {
         $script:ConflictAction = "override"
-        foreach ($protected in @("AGENTS.md", "docs", "scripts")) {
+        foreach ($protected in @("AGENTS.md", "harness-docs", "scripts")) {
             $path = Join-Path $script:TargetDir $protected
             if (!(Test-Path $path)) { continue }
             if ($DryRun) {
@@ -319,7 +319,7 @@ if ($conflicts.Count -gt 0) {
             "^(m|merge)$" { $script:ConflictAction = "merge"; Write-Step "Continuing with merge. Existing files will be skipped." }
             "^(o|override)$" {
                 $script:ConflictAction = "override"
-                foreach ($protected in @("AGENTS.md", "docs", "scripts")) {
+                foreach ($protected in @("AGENTS.md", "harness-docs", "scripts")) {
                     $path = Join-Path $script:TargetDir $protected
                     if (Test-Path $path) {
                         New-Item -ItemType Directory -Force -Path $script:BackupDir | Out-Null
@@ -343,39 +343,39 @@ Write-Step "Target project: $script:TargetDir"
 $files = @(
     "AGENTS.md",
     "README.md",
-    "docs/ARCHITECTURE.md",
-    "docs/CONTEXT_RULES.md",
-    "docs/FEATURE_INTAKE.md",
-    "docs/GLOSSARY.md",
-    "docs/HARNESS.md",
-    "docs/HARNESS_AUDIT.md",
-    "docs/HARNESS_BACKLOG.md",
-    "docs/HARNESS_COMPONENTS.md",
-    "docs/HARNESS_MATURITY.md",
-    "docs/IMPROVEMENT_PROTOCOL.md",
-    "docs/README.md",
-    "docs/TEST_MATRIX.md",
-    "docs/TOOL_REGISTRY.md",
-    "docs/TRACE_SPEC.md",
-    "docs/decisions/0001-harness-first-development.md",
-    "docs/decisions/0002-post-spec-product-lifecycle.md",
-    "docs/decisions/0003-generic-spec-intake-harness.md",
-    "docs/decisions/0004-sqlite-durable-layer.md",
-    "docs/decisions/0005-prebuilt-rust-harness-cli.md",
-    "docs/decisions/0006-phase-4-benchmark-triage.md",
-    "docs/decisions/0007-improvement-proposal-rules.md",
-    "docs/decisions/README.md",
-    "docs/product/README.md",
-    "docs/stories/README.md",
-    "docs/stories/backlog.md",
-    "docs/templates/decision.md",
-    "docs/templates/spec-intake.md",
-    "docs/templates/story.md",
-    "docs/templates/validation-report.md",
-    "docs/templates/high-risk-story/design.md",
-    "docs/templates/high-risk-story/execplan.md",
-    "docs/templates/high-risk-story/overview.md",
-    "docs/templates/high-risk-story/validation.md",
+    "harness-docs/ARCHITECTURE.md",
+    "harness-docs/CONTEXT_RULES.md",
+    "harness-docs/FEATURE_INTAKE.md",
+    "harness-docs/GLOSSARY.md",
+    "harness-docs/HARNESS.md",
+    "harness-docs/HARNESS_AUDIT.md",
+    "harness-docs/HARNESS_BACKLOG.md",
+    "harness-docs/HARNESS_COMPONENTS.md",
+    "harness-docs/HARNESS_MATURITY.md",
+    "harness-docs/IMPROVEMENT_PROTOCOL.md",
+    "harness-docs/README.md",
+    "harness-docs/TEST_MATRIX.md",
+    "harness-docs/TOOL_REGISTRY.md",
+    "harness-docs/TRACE_SPEC.md",
+    "harness-docs/decisions/0001-harness-first-development.md",
+    "harness-docs/decisions/0002-post-spec-product-lifecycle.md",
+    "harness-docs/decisions/0003-generic-spec-intake-harness.md",
+    "harness-docs/decisions/0004-sqlite-durable-layer.md",
+    "harness-docs/decisions/0005-prebuilt-rust-harness-cli.md",
+    "harness-docs/decisions/0006-phase-4-benchmark-triage.md",
+    "harness-docs/decisions/0007-improvement-proposal-rules.md",
+    "harness-docs/decisions/README.md",
+    "harness-docs/product/README.md",
+    "harness-docs/stories/README.md",
+    "harness-docs/stories/backlog.md",
+    "harness-docs/templates/decision.md",
+    "harness-docs/templates/spec-intake.md",
+    "harness-docs/templates/story.md",
+    "harness-docs/templates/validation-report.md",
+    "harness-docs/templates/high-risk-story/design.md",
+    "harness-docs/templates/high-risk-story/execplan.md",
+    "harness-docs/templates/high-risk-story/overview.md",
+    "harness-docs/templates/high-risk-story/validation.md",
     "scripts/README.md",
     "scripts/schema/001-init.sql",
     "scripts/schema/002-story-verify.sql",

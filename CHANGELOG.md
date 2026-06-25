@@ -21,8 +21,8 @@
   - `crates/harness-cli/src/domain.rs`
   - `crates/harness-cli/src/infrastructure.rs`
   - `crates/harness-cli/src/interface.rs`
-  - `docs/TOOL_REGISTRY.md`
-  - `docs/stories/US-027-inbound-tool-registry.md`
+  - `harness-docs/TOOL_REGISTRY.md`
+  - `harness-docs/stories/US-027-inbound-tool-registry.md`
   - `scripts/install-harness.sh`
   - `scripts/schema/005-tool-extensions.sql`
 
@@ -37,22 +37,22 @@
   - `crates/harness-cli/src/domain.rs`
   - `crates/harness-cli/src/infrastructure.rs`
   - `crates/harness-cli/src/interface.rs`
-  - `docs/FEATURE_INTAKE.md`
-  - `docs/GLOSSARY.md`
-  - `docs/HARNESS.md`
-  - `docs/HARNESS_AUDIT.md`
-  - `docs/HARNESS_COMPONENTS.md`
-  - `docs/HARNESS_MATURITY.md`
-  - `docs/IMPROVEMENT_PROTOCOL.md`
-  - `docs/TOOL_REGISTRY.md`
-  - `docs/decisions/0007-improvement-proposal-rules.md`
-  - `docs/stories/US-019-machine-readable-tool-registry.md`
-  - `docs/stories/US-020-batch-story-verification.md`
-  - `docs/stories/US-021-intervention-recording-schema.md`
-  - `docs/stories/US-022-context-rule-measurement.md`
-  - `docs/stories/US-023-drift-detection-entropy-score.md`
-  - `docs/stories/US-024-improvement-proposal-pipeline.md`
-  - `docs/stories/epics/E03-phase-5-evolution-infrastructure/phase-5-progress.md`
+  - `harness-docs/FEATURE_INTAKE.md`
+  - `harness-docs/GLOSSARY.md`
+  - `harness-docs/HARNESS.md`
+  - `harness-docs/HARNESS_AUDIT.md`
+  - `harness-docs/HARNESS_COMPONENTS.md`
+  - `harness-docs/HARNESS_MATURITY.md`
+  - `harness-docs/IMPROVEMENT_PROTOCOL.md`
+  - `harness-docs/TOOL_REGISTRY.md`
+  - `harness-docs/decisions/0007-improvement-proposal-rules.md`
+  - `harness-docs/stories/US-019-machine-readable-tool-registry.md`
+  - `harness-docs/stories/US-020-batch-story-verification.md`
+  - `harness-docs/stories/US-021-intervention-recording-schema.md`
+  - `harness-docs/stories/US-022-context-rule-measurement.md`
+  - `harness-docs/stories/US-023-drift-detection-entropy-score.md`
+  - `harness-docs/stories/US-024-improvement-proposal-pipeline.md`
+  - `harness-docs/stories/epics/E03-phase-5-evolution-infrastructure/phase-5-progress.md`
   - `scripts/install-harness.sh`
   - `scripts/schema/003-tool-registry.sql`
   - `scripts/schema/004-intervention.sql`

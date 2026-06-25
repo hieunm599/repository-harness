@@ -38,13 +38,13 @@ Một repository bắt đầu có một harness khi nó giúp một agent trả 
 Trong repo này, các câu trả lời đó nằm ở:
 
 - `AGENTS.md` — shim cho agent ổn định chứa các ghi chú dự án cục bộ và các liên kết tài liệu Harness.
-- `docs/HARNESS.md` — mô hình cộng tác giữa con người và agent.
-- `docs/FEATURE_INTAKE.md` — phân loại công việc theo mức độ rủi ro nhỏ (tiny), bình thường (normal) và rủi ro cao (high-risk).
-- `docs/ARCHITECTURE.md` — khám phá kiến trúc và các quy tắc ranh giới (boundary rules).
-- `docs/TEST_MATRIX.md` — bảng điều khiển mối liên hệ giữa hành vi và bằng chứng xác thực (behavior-to-proof).
-- `docs/stories/` — các story packet và danh sách backlog.
-- `docs/decisions/` — các quyết định lâu dài (durable decisions) và sự đánh đổi (tradeoffs).
-- `docs/templates/` — các template có thể tái sử dụng cho đặc tả (spec), story, quyết định kỹ thuật (decision) và xác thực (validation).
+- `harness-docs/HARNESS.md` — mô hình cộng tác giữa con người và agent.
+- `harness-docs/FEATURE_INTAKE.md` — phân loại công việc theo mức độ rủi ro nhỏ (tiny), bình thường (normal) và rủi ro cao (high-risk).
+- `harness-docs/ARCHITECTURE.md` — khám phá kiến trúc và các quy tắc ranh giới (boundary rules).
+- `harness-docs/TEST_MATRIX.md` — bảng điều khiển mối liên hệ giữa hành vi và bằng chứng xác thực (behavior-to-proof).
+- `harness-docs/stories/` — các story packet và danh sách backlog.
+- `harness-docs/decisions/` — các quyết định lâu dài (durable decisions) và sự đánh đổi (tradeoffs).
+- `harness-docs/templates/` — các template có thể tái sử dụng cho đặc tả (spec), story, quyết định kỹ thuật (decision) và xác thực (validation).
 
 OpenAI mô tả sự chuyển dịch này như một thế giới ưu tiên agent (agent-first world), nơi con người điều hướng và agent thực thi:
 
@@ -64,13 +64,13 @@ Trên Windows PowerShell, chạy:
 & ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.ps1"))) -Yes
 ```
 
-Nếu mục tiêu đã có `AGENTS.md`, `docs/` hoặc `scripts/`, hãy chọn một trong hai cách:
+Nếu mục tiêu đã có `AGENTS.md`, `harness-docs/` hoặc `scripts/`, hãy chọn một trong hai cách:
 
 ```bash
 # Cập nhật một repo Harness hiện có mà không di chuyển các file hiện tại
 curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --merge --yes
 
-# Sao lưu và ghi đè AGENTS.md, docs/, và scripts/
+# Sao lưu và ghi đè AGENTS.md, harness-docs/, và scripts/
 curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --override --yes
 ```
 
@@ -78,11 +78,11 @@ curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/sc
 # Cập nhật một repo Harness hiện có mà không di chuyển các file hiện tại
 & ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.ps1"))) -Merge -Yes
 
-# Sao lưu và ghi đè AGENTS.md, docs/, và scripts/
+# Sao lưu và ghi đè AGENTS.md, harness-docs/, và scripts/
 & ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.ps1"))) -Override -Yes
 ```
 
-Sử dụng tùy chọn `--merge` khi một dự án đã có Harness và bạn muốn thêm các file Harness mới mà không đưa các đường dẫn `AGENTS.md`, `docs/` hoặc `scripts/` hiện tại vào thư mục sao lưu (backup). Các file hiện tại sẽ được giữ nguyên; chỉ các file Harness còn thiếu mới được tạo.
+Sử dụng tùy chọn `--merge` khi một dự án đã có Harness và bạn muốn thêm các file Harness mới mà không đưa các đường dẫn `AGENTS.md`, `harness-docs/` hoặc `scripts/` hiện tại vào thư mục sao lưu (backup). Các file hiện tại sẽ được giữ nguyên; chỉ các file Harness còn thiếu mới được tạo.
 
 Đối với các bản cài đặt Harness cũ hơn mà file `AGENTS.md` vẫn chứa hướng dẫn vận hành đầy đủ, hãy chuyển đổi nó thành một shim nhỏ ổn định:
 
@@ -92,7 +92,7 @@ curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/sc
 
 Quá trình làm mới sẽ sao lưu file hiện tại. Nếu phát hiện hướng dẫn cũ do Harness tạo ra, nó sẽ thay thế bằng shim. Nếu file được tùy biến (custom), nó sẽ thêm hoặc cập nhật khối Harness được đánh dấu thay vì ghi đè các hướng dẫn cục bộ của dự án.
 
-Nếu dự án được chạy bằng Claude Code, hãy thêm `--claude`. Claude Code không bao giờ tự động tải `AGENTS.md`, vì vậy nếu không có cờ này, harness được cài đặt sẽ vô hình đối với các phiên làm việc (session) mới. Cờ này cài đặt (hoặc làm mới) file `CLAUDE.md` có khối Harness được đánh dấu nhằm `@`-import `AGENTS.md` và `docs/FEATURE_INTAKE.md` vào ngữ cảnh (context) của mỗi session. File `CLAUDE.md` hiện tại sẽ được thêm khối này sau khi sao lưu; việc cài đặt thông thường không có cờ này sẽ không bao giờ chạm vào `CLAUDE.md`:
+Nếu dự án được chạy bằng Claude Code, hãy thêm `--claude`. Claude Code không bao giờ tự động tải `AGENTS.md`, vì vậy nếu không có cờ này, harness được cài đặt sẽ vô hình đối với các phiên làm việc (session) mới. Cờ này cài đặt (hoặc làm mới) file `CLAUDE.md` có khối Harness được đánh dấu nhằm `@`-import `AGENTS.md` và `harness-docs/FEATURE_INTAKE.md` vào ngữ cảnh (context) của mỗi session. File `CLAUDE.md` hiện tại sẽ được thêm khối này sau khi sao lưu; việc cài đặt thông thường không có cờ này sẽ không bao giờ chạm vào `CLAUDE.md`:
 
 ```bash
 curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --claude --yes
@@ -120,7 +120,7 @@ Các pull request đã merge được ghi nhận vào `CHANGELOG.md` bởi workf
 
 Cách nhanh nhất để hiểu harness là kiểm tra bản demo nhỏ sau:
 
-- `docs/demo/README.md`: chỉ ra cách một ý tưởng sản phẩm đơn giản trở thành tài liệu sản phẩm, các story, kỳ vọng xác thực và quyết định kỹ thuật trước khi quá trình triển khai (implementation) bắt đầu.
+- `harness-docs/demo/README.md`: chỉ ra cách một ý tưởng sản phẩm đơn giản trở thành tài liệu sản phẩm, các story, kỳ vọng xác thực và quyết định kỹ thuật trước khi quá trình triển khai (implementation) bắt đầu.
 
 Một luồng công việc điển hình sẽ như thế này:
 
@@ -153,7 +153,7 @@ scripts/bin/harness-cli tool check
 scripts/bin/harness-cli query tools --capability deploy-verification --status present
 ```
 
-Các loại công cụ (`cli`, `binary`, `mcp`, `skill`, `http`) giúp nó có tính độc lập với agent (agent-generic): mỗi môi trường chạy của agent sẽ sử dụng những gì nó có thể điều phối. Xem `docs/TOOL_REGISTRY.md` để biết mô hình đầy đủ, các nấc hạ cấp tự động (degrade ladder) và cách kết nối một công cụ vào một bước luồng công việc.
+Các loại công cụ (`cli`, `binary`, `mcp`, `skill`, `http`) giúp nó có tính độc lập với agent (agent-generic): mỗi môi trường chạy của agent sẽ sử dụng những gì nó có thể điều phối. Xem `harness-docs/TOOL_REGISTRY.md` để biết mô hình đầy đủ, các nấc hạ cấp tự động (degrade ladder) và cách kết nối một công cụ vào một bước luồng công việc.
 
 ## Trạng thái Hiện tại (Current State)
 
@@ -167,10 +167,10 @@ Hiện tại chưa có đặc tả sản phẩm (product contract) nào được
 
 Khi người dùng cung cấp một tài liệu spec dự án, hãy thêm hoặc tham chiếu nó như là spec đầu vào cho đợt xây dựng đầu tiên, sau đó rút trích các tài liệu sống (living artifacts) nhỏ hơn từ đó:
 
-- `docs/product/`: các file đặc tả sản phẩm hiện tại, được tạo từ spec đầu vào.
-- `docs/stories/`: các story packet và backlog được tạo từ các công việc được chọn.
-- `docs/TEST_MATRIX.md`: bảng điều khiển liên kết giữa hành vi và bằng chứng xác thực (behavior-to-proof).
-- `docs/decisions/`: các quyết định kỹ thuật lâu dài và sự đánh đổi.
+- `harness-docs/product/`: các file đặc tả sản phẩm hiện tại, được tạo từ spec đầu vào.
+- `harness-docs/stories/`: các story packet và backlog được tạo từ các công việc được chọn.
+- `harness-docs/TEST_MATRIX.md`: bảng điều khiển liên kết giữa hành vi và bằng chứng xác thực (behavior-to-proof).
+- `harness-docs/decisions/`: các quyết định kỹ thuật lâu dài và sự đánh đổi.
 
 Không giữ spec riêng biệt của dự án hoặc bảng phân rã sản phẩm trong harness này cho đến khi có một dự án thực tế cung cấp.
 
@@ -180,7 +180,7 @@ Không giữ spec riêng biệt của dự án hoặc bảng phân rã sản ph�
 project/
   AGENTS.md
   README.md
-  docs/
+  harness-docs/
     HARNESS.md
     FEATURE_INTAKE.md
     ARCHITECTURE.md

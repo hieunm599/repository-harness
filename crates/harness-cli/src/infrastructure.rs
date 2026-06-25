@@ -209,7 +209,7 @@ impl SqliteHarnessRepository {
     }
 
     fn import_matrix(&self, connection: &Connection) -> Result<usize> {
-        let matrix_path = self.repo_root.join("docs/TEST_MATRIX.md");
+        let matrix_path = self.repo_root.join("harness-docs/TEST_MATRIX.md");
         if !matrix_path.exists() {
             return Err(HarnessInfraError::MissingBrownfieldPath(
                 matrix_path.display().to_string(),
@@ -272,7 +272,7 @@ impl SqliteHarnessRepository {
                     unit_proof, integration_proof, e2e_proof, platform_proof,
                     evidence, notes
                  ) VALUES (?1, ?2, 'high_risk', ?3, ?4, ?5, ?6, ?7, ?8, ?9,
-                    'Imported from docs/TEST_MATRIX.md by harness import brownfield.'
+                    'Imported from harness-docs/TEST_MATRIX.md by harness import brownfield.'
                  )
                  ON CONFLICT(id) DO UPDATE SET
                     title=excluded.title,
@@ -303,7 +303,7 @@ impl SqliteHarnessRepository {
     }
 
     fn import_decisions(&self, connection: &Connection) -> Result<usize> {
-        let decisions_dir = self.repo_root.join("docs/decisions");
+        let decisions_dir = self.repo_root.join("harness-docs/decisions");
         if !decisions_dir.is_dir() {
             return Err(HarnessInfraError::MissingBrownfieldPath(
                 decisions_dir.display().to_string(),
@@ -345,7 +345,7 @@ impl SqliteHarnessRepository {
             let status =
                 normalize_decision_status(&markdown_section_first_value(&content, "Status"));
             let doc_path = format!(
-                "docs/decisions/{}",
+                "harness-docs/decisions/{}",
                 path.file_name()
                     .and_then(|value| value.to_str())
                     .unwrap_or_default()
@@ -354,7 +354,7 @@ impl SqliteHarnessRepository {
             connection.execute(
                 "INSERT INTO decision (id, title, status, doc_path, notes)
                  VALUES (?1, ?2, ?3, ?4,
-                    'Imported from docs/decisions by harness import brownfield.'
+                    'Imported from harness-docs/decisions by harness import brownfield.'
                  )
                  ON CONFLICT(id) DO UPDATE SET
                     title=excluded.title,
@@ -370,7 +370,7 @@ impl SqliteHarnessRepository {
     }
 
     fn import_backlog(&self, connection: &Connection) -> Result<usize> {
-        let backlog_path = self.repo_root.join("docs/HARNESS_BACKLOG.md");
+        let backlog_path = self.repo_root.join("harness-docs/HARNESS_BACKLOG.md");
         if !backlog_path.exists() {
             return Ok(0);
         }
@@ -401,7 +401,7 @@ impl SqliteHarnessRepository {
                     risk, status, notes
                  )
                  SELECT ?1, ?2, ?3, ?4, ?5, ?6,
-                    'Imported from docs/HARNESS_BACKLOG.md by harness import brownfield.'
+                    'Imported from harness-docs/HARNESS_BACKLOG.md by harness import brownfield.'
                  WHERE NOT EXISTS (
                     SELECT 1 FROM backlog WHERE title=?1
                  );",
@@ -2765,19 +2765,19 @@ mod tests {
     fn import_brownfield_seeds_markdown_state_idempotently() {
         let temp_dir = tempfile::tempdir().unwrap();
         let repo_root = temp_dir.path().join("repo");
-        fs::create_dir_all(repo_root.join("docs/decisions")).unwrap();
+        fs::create_dir_all(repo_root.join("harness-docs/decisions")).unwrap();
         fs::write(
-            repo_root.join("docs/TEST_MATRIX.md"),
+            repo_root.join("harness-docs/TEST_MATRIX.md"),
             r#"# Test Matrix
 
 | Story | Contract | Unit | Integration | E2E | Platform | Status | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| US-010 | docs/product/tasks.md | yes | pending | no | mac smoke | implemented | cargo test |
+| US-010 | harness-docs/product/tasks.md | yes | pending | no | mac smoke | implemented | cargo test |
 "#,
         )
         .unwrap();
         fs::write(
-            repo_root.join("docs/decisions/0007-test-decision.md"),
+            repo_root.join("harness-docs/decisions/0007-test-decision.md"),
             r#"# Test Decision
 
 ## Status
@@ -2787,7 +2787,7 @@ Accepted
         )
         .unwrap();
         fs::write(
-            repo_root.join("docs/HARNESS_BACKLOG.md"),
+            repo_root.join("harness-docs/HARNESS_BACKLOG.md"),
             r#"# Harness Backlog
 
 ## Items
@@ -2870,7 +2870,7 @@ implemented
 
         let matrix = repository.query_matrix().unwrap();
         assert_eq!(matrix[0].id, "US-010");
-        assert_eq!(matrix[0].title, "docs/product/tasks.md");
+        assert_eq!(matrix[0].title, "harness-docs/product/tasks.md");
         assert_eq!(matrix[0].status, "implemented");
         assert_eq!(matrix[0].unit, 1);
         assert_eq!(matrix[0].integration, 0);

@@ -62,11 +62,11 @@ scripts/bin/harness-cli query stats
 scripts/bin/harness-cli query sql ...
 ```
 
-Lệnh `scripts/bin/harness-cli import brownfield` gieo mầm (seed) hoặc làm mới cơ sở dữ liệu bền vững từ các tài liệu Markdown Harness v0 hiện có trong `docs/TEST_MATRIX.md`, `docs/decisions/` và `docs/HARNESS_BACKLOG.md`. Điều này giúp các kho lưu trữ đã cài đặt Harness tiếp tục sử dụng Rust CLI mà không làm mất các tài liệu vận hành đã có.
+Lệnh `scripts/bin/harness-cli import brownfield` gieo mầm (seed) hoặc làm mới cơ sở dữ liệu bền vững từ các tài liệu Markdown Harness v0 hiện có trong `harness-docs/TEST_MATRIX.md`, `harness-docs/decisions/` và `harness-docs/HARNESS_BACKLOG.md`. Điều này giúp các kho lưu trữ đã cài đặt Harness tiếp tục sử dụng Rust CLI mà không làm mất các tài liệu vận hành đã có.
 
 ## Trình cài đặt (Installer)
 
-Trình cài đặt thượng nguồn áp dụng các file vận hành và cấu trúc thư mục Harness v0 cho một thư mục dự án mục tiêu. Nó mặc định là thư mục hiện tại, chấp nhận một đường dẫn đích và hỏi người dùng tương tác xem có muốn thực hiện `1. Merge`, `2. Override` hoặc `3. Stop` khi thư mục đích đã chứa `AGENTS.md`, `docs/` hoặc `scripts/`.
+Trình cài đặt thượng nguồn áp dụng các file vận hành và cấu trúc thư mục Harness v0 cho một thư mục dự án mục tiêu. Nó mặc định là thư mục hiện tại, chấp nhận một đường dẫn đích và hỏi người dùng tương tác xem có muốn thực hiện `1. Merge`, `2. Override` hoặc `3. Stop` khi thư mục đích đã chứa `AGENTS.md`, `harness-docs/` hoặc `scripts/`.
 
 Các bản cài đặt không tương tác (non-interactive) sẽ dừng lại ở các đường dẫn được bảo vệ đó trừ khi tùy chọn `--merge` hoặc `--override` được cung cấp. Sử dụng `--merge` như một đường dẫn cập nhật an toàn cho các kho lưu trữ đã có Harness: nó giữ nguyên các file hiện tại và chỉ tạo các file Harness còn thiếu. Thêm `--refresh-agent-shim` khi bản cài đặt cũ có tài liệu hướng dẫn Harness đầy đủ trong file `AGENTS.md` và cần chuyển sang shim nhỏ ổn định. Chỉ sử dụng `--override` khi việc thay thế bề mặt Harness được bảo vệ là có chủ ý.
 

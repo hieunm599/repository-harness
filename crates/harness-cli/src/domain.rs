@@ -216,7 +216,7 @@ pub fn validate_tool_kind(value: &str) -> Result<String, ToolValidationError> {
 /// a closed list: the registry is the base for arbitrary future extensions, so
 /// new capabilities must not require a code change. Normalizing to kebab-case
 /// keeps step lookups (`query tools --capability X`) reliable despite the
-/// freedom. A recommended starter vocabulary lives in docs/TOOL_REGISTRY.md.
+/// freedom. A recommended starter vocabulary lives in harness-docs/TOOL_REGISTRY.md.
 pub fn normalize_capability(value: &str) -> Result<String, ToolValidationError> {
     let normalized = value.trim().to_lowercase().replace([' ', '_'], "-");
     let well_formed = !normalized.is_empty()
@@ -777,7 +777,7 @@ pub fn score_context(source: ContextScoreSource) -> ContextScoreResult {
     {
         must.push((
             "SQLite durable layer decision",
-            "docs/decisions/0004-sqlite-durable-layer.md",
+            "harness-docs/decisions/0004-sqlite-durable-layer.md",
         ));
     }
     if changed
@@ -786,7 +786,7 @@ pub fn score_context(source: ContextScoreSource) -> ContextScoreResult {
     {
         must.push((
             "Prebuilt CLI decision",
-            "docs/decisions/0005-prebuilt-rust-harness-cli.md",
+            "harness-docs/decisions/0005-prebuilt-rust-harness-cli.md",
         ));
     }
 
@@ -843,7 +843,7 @@ fn add_base_context_rules<'a>(
 ) {
     match phase {
         "trace" => {
-            must.push(("Trace specification", "docs/TRACE_SPEC.md"));
+            must.push(("Trace specification", "harness-docs/TRACE_SPEC.md"));
             must.push(("Changed-file list", "git status --short"));
             if lane == "normal" || lane == "high_risk" {
                 must.push(("Durable matrix", "scripts/bin/harness-cli query matrix"));
@@ -854,40 +854,40 @@ fn add_base_context_rules<'a>(
         "implementation" => {
             must.push(("Files being changed", "<changed-files>"));
             if lane == "normal" || lane == "high_risk" {
-                must.push(("Relevant story packet", "docs/stories/"));
-                should.push(("Architecture rules", "docs/ARCHITECTURE.md"));
+                must.push(("Relevant story packet", "harness-docs/stories/"));
+                should.push(("Architecture rules", "harness-docs/ARCHITECTURE.md"));
             }
             if lane == "high_risk" {
-                must.push(("Architecture rules", "docs/ARCHITECTURE.md"));
+                must.push(("Architecture rules", "harness-docs/ARCHITECTURE.md"));
                 must.push((
                     "High-risk story template",
-                    "docs/templates/high-risk-story/",
+                    "harness-docs/templates/high-risk-story/",
                 ));
             }
         }
         "planning" => {
             must.push(("Files to edit", "<changed-files>"));
             if lane == "normal" || lane == "high_risk" {
-                must.push(("Story template", "docs/templates/story.md"));
-                must.push(("Test matrix", "docs/TEST_MATRIX.md"));
+                must.push(("Story template", "harness-docs/templates/story.md"));
+                must.push(("Test matrix", "harness-docs/TEST_MATRIX.md"));
             }
             if lane == "high_risk" {
                 must.push((
                     "High-risk story template",
-                    "docs/templates/high-risk-story/",
+                    "harness-docs/templates/high-risk-story/",
                 ));
-                must.push(("Harness maturity", "docs/HARNESS_MATURITY.md"));
+                must.push(("Harness maturity", "harness-docs/HARNESS_MATURITY.md"));
             }
         }
         _ => {
             must.push(("Agent entrypoint", "AGENTS.md"));
-            must.push(("Feature intake", "docs/FEATURE_INTAKE.md"));
+            must.push(("Feature intake", "harness-docs/FEATURE_INTAKE.md"));
             must.push(("Durable matrix", "scripts/bin/harness-cli query matrix"));
             if lane == "tiny" {
-                skipped.push("docs/ARCHITECTURE.md");
+                skipped.push("harness-docs/ARCHITECTURE.md");
             } else {
                 must.push(("README", "README.md"));
-                must.push(("Harness operating model", "docs/HARNESS.md"));
+                must.push(("Harness operating model", "harness-docs/HARNESS.md"));
             }
         }
     }
@@ -1263,7 +1263,7 @@ mod tests {
         standard_source.agent = Some("codex".to_owned());
         standard_source.actions_taken = Some("[\"read\",\"patched\"]".to_owned());
         standard_source.files_read = Some("[\"PHASE3.md\"]".to_owned());
-        standard_source.files_changed = Some("[\"docs/TRACE_SPEC.md\"]".to_owned());
+        standard_source.files_changed = Some("[\"harness-docs/TRACE_SPEC.md\"]".to_owned());
         standard_source.harness_friction = Some("none".to_owned());
         let standard = score_trace(standard_source);
         assert_eq!(standard.achieved, TraceQualityTier::Standard);
@@ -1272,7 +1272,7 @@ mod tests {
         detailed_source.agent = Some("codex".to_owned());
         detailed_source.actions_taken = Some("[\"read\",\"patched\"]".to_owned());
         detailed_source.files_read = Some("[\"PHASE3.md\"]".to_owned());
-        detailed_source.files_changed = Some("[\"docs/TRACE_SPEC.md\"]".to_owned());
+        detailed_source.files_changed = Some("[\"harness-docs/TRACE_SPEC.md\"]".to_owned());
         detailed_source.decisions_made = Some("[\"kept schema unchanged\"]".to_owned());
         detailed_source.errors = Some("[\"none\"]".to_owned());
         detailed_source.harness_friction = Some("none".to_owned());
@@ -1289,7 +1289,7 @@ mod tests {
         source.agent = Some("codex".to_owned());
         source.actions_taken = Some("[\"read\",\"patched\"]".to_owned());
         source.files_read = Some("[\"PHASE3.md\"]".to_owned());
-        source.files_changed = Some("[\"docs/TRACE_SPEC.md\"]".to_owned());
+        source.files_changed = Some("[\"harness-docs/TRACE_SPEC.md\"]".to_owned());
         source.harness_friction = Some("none".to_owned());
 
         let result = score_trace(source);
@@ -1310,7 +1310,7 @@ mod tests {
             risk_lane: Some("normal".to_owned()),
             story_id: Some("US-019".to_owned()),
             files_read: Some(
-                "[\"docs/stories/epics/E03-phase-5-evolution-infrastructure/US-019-tool-registry.md\",\"docs/decisions/0005-prebuilt-rust-harness-cli.md\"]".to_owned(),
+                "[\"harness-docs/stories/epics/E03-phase-5-evolution-infrastructure/US-019-tool-registry.md\",\"harness-docs/decisions/0005-prebuilt-rust-harness-cli.md\"]".to_owned(),
             ),
             files_changed: Some("[\"crates/harness-cli/src/interface.rs\"]".to_owned()),
             outcome: None,
@@ -1320,9 +1320,9 @@ mod tests {
         assert!(result
             .must
             .iter()
-            .any(|item| item.target == "docs/stories/" && item.met));
+            .any(|item| item.target == "harness-docs/stories/" && item.met));
         assert!(result.must.iter().any(|item| item.target
-            == "docs/decisions/0005-prebuilt-rust-harness-cli.md"
+            == "harness-docs/decisions/0005-prebuilt-rust-harness-cli.md"
             && item.met));
     }
 }

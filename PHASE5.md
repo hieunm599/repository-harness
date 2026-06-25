@@ -109,7 +109,7 @@ the right ones.
 
 **Solution:**
 
-1. New file `docs/TOOL_REGISTRY.md` — human-readable command reference generated
+1. New file `harness-docs/TOOL_REGISTRY.md` — human-readable command reference generated
    from CLI help, grouped by responsibility.
 2. New command `harness-cli query tools --json` — outputs a JSON array of tool
    entries from two sources:
@@ -166,7 +166,7 @@ harness-cli tool register \
 
 | # | Criterion | How to verify |
 |---|-----------|---------------|
-| 1 | `docs/TOOL_REGISTRY.md` lists every CLI command with arguments and purpose. | Read the file. Every command visible in `harness-cli --help` is documented. |
+| 1 | `harness-docs/TOOL_REGISTRY.md` lists every CLI command with arguments and purpose. | Read the file. Every command visible in `harness-cli --help` is documented. |
 | 2 | `harness-cli query tools --json` returns valid JSON listing all compiled-in and registered commands. | Run command, pipe to `jq .`; verify each entry has `command`, `description`, `args`, `responsibility`. |
 | 3 | `harness-cli query tools --summary` prints a compact one-liner list. | Run command. Output is a table with command, responsibility, and short description. |
 | 4 | `harness-cli query tools --responsibility Verification` filters correctly. | Run command. Only verification-related tools appear. |
@@ -212,8 +212,8 @@ command.
    any fail.
 2. Summary output:
    `N stories verified: X passed, Y failed, Z skipped (no verify_command)`.
-3. Update `docs/HARNESS.md` with batch verification workflow.
-4. Update `docs/HARNESS_MATURITY.md` — H4 current status: Partial → Achieved.
+3. Update `harness-docs/HARNESS.md` with batch verification workflow.
+4. Update `harness-docs/HARNESS_MATURITY.md` — H4 current status: Partial → Achieved.
 
 **Acceptance Criteria:**
 
@@ -222,7 +222,7 @@ command.
 | 1 | `harness-cli story verify-all` runs all stories with `verify_command` and prints summary. | Add 3 stories (2 with verify commands, 1 without). Run `verify-all`. Output shows 2 verified, 1 skipped. |
 | 2 | Exit code is 0 when all pass, 1 when any fail. | Add a story with `--verify "exit 1"`. Run `verify-all`. Exit code is 1. |
 | 3 | Each story result is printed individually before the summary. | Output includes per-story lines: `Story US-XXX: pass/fail`. |
-| 4 | `docs/HARNESS_MATURITY.md` H4 current status is updated to "Achieved." | Read the file. |
+| 4 | `harness-docs/HARNESS_MATURITY.md` H4 current status is updated to "Achieved." | Read the file. |
 | 5 | `cargo test` passes with tests covering pass-all, fail-some, and no-verify-command cases. | Run `cargo test`. |
 
 **Lane:** Normal (new CLI subcommand, touches all four code layers + documentation).
@@ -266,7 +266,7 @@ identify which agent behaviors need improvement. The improvement proposal pipeli
 4. Update trace recording prompt — after recording a trace, print a reminder:
    `Reminder: Record any human corrections with: harness-cli intervention add`.
 5. Update `HARNESS_COMPONENTS.md` — Intervention recording: Partial → Covered.
-6. Update `docs/HARNESS.md` — add intervention recording to the Harness Delta
+6. Update `harness-docs/HARNESS.md` — add intervention recording to the Harness Delta
    section.
 
 **Intervention types:**
@@ -349,7 +349,7 @@ score-context → "you read 3/5 Must docs, missed: ARCHITECTURE.md"
 5. "Relevant" doc matching uses Retrieval Triggers from `CONTEXT_RULES.md`:
    - If `files_changed` includes `scripts/schema/*` → flag decision 0004 as Must.
    - If `files_changed` includes CLI code → flag decision 0005 as Must.
-   - Pattern paths (`docs/stories/*`) match if any file under that path was read.
+   - Pattern paths (`harness-docs/stories/*`) match if any file under that path was read.
 
 **Example output:**
 
@@ -362,10 +362,10 @@ harness-cli score-context 43
 →   ✓ Adjacent files with same pattern
 →   ✓ Relevant product docs
 →   ✓ Relevant story packet
-→   ✗ MISSING: docs/ARCHITECTURE.md (Must for structural changes)
+→   ✗ MISSING: harness-docs/ARCHITECTURE.md (Must for structural changes)
 →
 → Should-read: 2/3
-→ Over-reading: 1 doc (docs/HARNESS_MATURITY.md — Skip for normal implementation)
+→ Over-reading: 1 doc (harness-docs/HARNESS_MATURITY.md — Skip for normal implementation)
 →
 → Context score: 4/5 must, 2/3 should
 ```
@@ -415,7 +415,7 @@ outcome.
      disk.
 2. Output: per-category counts, specific record IDs, and an overall entropy score
    (0-100, lower is better).
-3. New `docs/HARNESS_AUDIT.md` documenting what the audit checks and how to
+3. New `harness-docs/HARNESS_AUDIT.md` documenting what the audit checks and how to
    interpret scores.
 
 **Entropy score calculation:**
@@ -475,7 +475,7 @@ harness-cli audit
 | 2 | Entropy score is 0 when all records are clean. | Create a clean dataset (all verified, traced, outcomes recorded). Score is 0. |
 | 3 | Entropy score increases proportionally with drift. | Add unverified stories and open backlog items. Score increases. |
 | 4 | Broken tools check finds registered tools with missing command paths. | Register a tool with a nonexistent path. Run `audit`. Broken tools category lists it. |
-| 5 | `docs/HARNESS_AUDIT.md` documents each check and score interpretation. | Read the file. |
+| 5 | `harness-docs/HARNESS_AUDIT.md` documents each check and score interpretation. | Read the file. |
 | 6 | `cargo test` passes with tests covering clean, partial, and high-drift states. | Run `cargo test`. |
 
 **Lane:** Normal (new CLI command + documentation, queries existing tables plus
@@ -508,8 +508,8 @@ improvements." This is the capstone story for Phase 5.
    impact, risk level, suggested action, and validation plan.
 3. Proposals are printed as structured text and optionally stored as `proposed`
    backlog items via `--commit` flag.
-4. Update `docs/HARNESS_MATURITY.md` — H5 current status: Not achieved → Partial.
-5. New `docs/IMPROVEMENT_PROTOCOL.md` documenting the proposal review workflow.
+4. Update `harness-docs/HARNESS_MATURITY.md` — H5 current status: Not achieved → Partial.
+5. New `harness-docs/IMPROVEMENT_PROTOCOL.md` documenting the proposal review workflow.
 
 **Pipeline architecture:**
 
@@ -600,8 +600,8 @@ Items appear in `query backlog --open` for human review.
 | 2 | Each proposal has title, component, evidence, predicted impact, risk, suggested action, and validation plan. | Read output. All fields present. |
 | 3 | Confidence levels are assigned based on pattern frequency. | Create patterns with 2 and ≥3 occurrences. Medium and high confidence respectively. |
 | 4 | `harness-cli propose --commit` creates `proposed` backlog items. | Run with `--commit`. Query backlog. New items exist with status `proposed` and `predicted_impact` filled. |
-| 5 | `docs/IMPROVEMENT_PROTOCOL.md` documents the proposal-to-implementation workflow. | Read the file. |
-| 6 | `docs/HARNESS_MATURITY.md` H5 updated to "Partial." | Read the file. |
+| 5 | `harness-docs/IMPROVEMENT_PROTOCOL.md` documents the proposal-to-implementation workflow. | Read the file. |
+| 6 | `harness-docs/HARNESS_MATURITY.md` H5 updated to "Partial." | Read the file. |
 | 7 | `cargo test` passes. | Run `cargo test`. |
 
 **Lane:** High-risk (new analysis logic, changes harness evolution model, affects
@@ -636,7 +636,7 @@ Step 1: US-019 — Tool registry
   - Add QueryAction::Tools to interface.rs (--json, --summary, --responsibility)
   - Add compiled-in registry Vec<ToolEntry> to domain.rs
   - Add tool CRUD and query to infrastructure.rs
-  - Write docs/TOOL_REGISTRY.md
+  - Write harness-docs/TOOL_REGISTRY.md
   - Update HARNESS_COMPONENTS.md
   - Test: registration validation, query output, compiled-in completeness
   Estimated effort: ~4-5 hours
@@ -667,7 +667,7 @@ Step 4: US-022 — Context rule measurement
 
 Step 5: US-023 — Drift detection / entropy score
   - Add `audit` command querying existing tables + tool table
-  - Write docs/HARNESS_AUDIT.md
+  - Write harness-docs/HARNESS_AUDIT.md
   - Test: clean, partial, and high-drift states; broken tools
   Estimated effort: ~3-4 hours
 
@@ -675,8 +675,8 @@ Step 6: US-024 — Improvement proposal pipeline
   - Add `propose` command composing friction + audit + interventions
   - Add pattern detection logic (grouping, counting, ranking)
   - Add --commit flag to create backlog items
-  - Write docs/IMPROVEMENT_PROTOCOL.md
-  - Write docs/decisions/0007-improvement-proposal-rules.md
+  - Write harness-docs/IMPROVEMENT_PROTOCOL.md
+  - Write harness-docs/decisions/0007-improvement-proposal-rules.md
   - Update HARNESS_MATURITY.md
   - Test: pattern detection, confidence levels, commit behavior
   Estimated effort: ~5-6 hours

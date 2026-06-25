@@ -15,7 +15,7 @@ command-shape friction loops:
 - T4 authentication included decision text in the trace but did not create a
   durable decision record. High-risk work that changes auth, authorization,
   data ownership, API behavior, architecture, or validation must add a
-  `docs/decisions/NNNN-*.md` record and a durable `decision` row with
+  `harness-docs/decisions/NNNN-*.md` record and a durable `decision` row with
   `scripts/bin/harness-cli decision add`. Trace `--decisions` is evidence, not
   the decision log.
 - Rust CLI proof flags require numeric booleans. Use
@@ -23,7 +23,7 @@ command-shape friction loops:
 - `story verify <id>` runs the story's configured `verify_command` and records
   pass/fail. It accepts only the story id. Proof flags belong to
   `story update`.
-- Agents should prefer the command examples in `docs/HARNESS.md` and
+- Agents should prefer the command examples in `harness-docs/HARNESS.md` and
   `scripts/README.md` before repeated help probing. Re-run help only when the
   command shape is still unknown.
 
@@ -352,10 +352,10 @@ Step 4: US-017 — Pre-close verification gate
   Estimated effort: ~1-2 hours
 
 Step 5: Cross-references and documentation
-  - Update docs/HARNESS.md with story verification workflow
-  - Update docs/HARNESS_COMPONENTS.md (Verification: Partial → Covered)
-  - Update docs/HARNESS_MATURITY.md (H4 current status)
-  - Update docs/GLOSSARY.md with "verification gate" term
+  - Update harness-docs/HARNESS.md with story verification workflow
+  - Update harness-docs/HARNESS_COMPONENTS.md (Verification: Partial → Covered)
+  - Update harness-docs/HARNESS_MATURITY.md (H4 current status)
+  - Update harness-docs/GLOSSARY.md with "verification gate" term
   - Update AGENTS.md if new commands need to be in the reading list
   - Record Phase 4 trace
   Estimated effort: ~1-2 hours

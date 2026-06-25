@@ -19,17 +19,17 @@ Options:
       --claude           Also install or refresh CLAUDE.md so Claude Code
                          auto-loads the harness context. Claude Code never
                          auto-loads AGENTS.md; the shim @-imports AGENTS.md
-                         and docs/FEATURE_INTAKE.md inside a marked block.
+                         and harness-docs/FEATURE_INTAKE.md inside a marked block.
                          Existing CLAUDE.md files get the block appended
                          after a backup; a stale block is refreshed in place.
       --override         On protected-path conflict, back up and replace
-                         AGENTS.md, docs/, and scripts/.
+                         AGENTS.md, harness-docs/, and scripts/.
       --force            Overwrite existing files after backing them up.
       --dry-run          Show what would change without writing files.
   -h, --help             Show this help.
 
 Safety:
-  If AGENTS.md, docs/, or scripts/ already exist, interactive installs ask
+  If AGENTS.md, harness-docs/, or scripts/ already exist, interactive installs ask
   whether to merge missing files, override after backup, or stop. Merge is the
   safe update path for repositories that already have Harness: existing files
   stay in place and new Harness files are appended by path. Non-
@@ -202,11 +202,11 @@ agent_shim_block() {
 This repo uses Harness. Before work, read:
 
 - `README.md`
-- `docs/HARNESS.md`
-- `docs/FEATURE_INTAKE.md`
-- `docs/ARCHITECTURE.md`
-- `docs/CONTEXT_RULES.md`
-- `docs/TOOL_REGISTRY.md`
+- `harness-docs/HARNESS.md`
+- `harness-docs/FEATURE_INTAKE.md`
+- `harness-docs/ARCHITECTURE.md`
+- `harness-docs/CONTEXT_RULES.md`
+- `harness-docs/TOOL_REGISTRY.md`
 - `scripts/bin/harness-cli query matrix`
 
 Use the Rust Harness CLI at `scripts/bin/harness-cli` as the main operational
@@ -224,18 +224,18 @@ claude_shim_block() {
 
 Claude Code loads this file into every session, but it does not auto-load
 `AGENTS.md`. The bare `@` lines below import the always-required harness
-context (the "Must in all lanes" set from `docs/CONTEXT_RULES.md`) at
+context (the "Must in all lanes" set from `harness-docs/CONTEXT_RULES.md`) at
 context-load time. Never wrap them in backticks; that disables the import.
 
 @AGENTS.md
 
-@docs/FEATURE_INTAKE.md
+@harness-docs/FEATURE_INTAKE.md
 
 Also run `scripts/bin/harness-cli query matrix` before starting work.
 
-Lane-dependent context (`README.md`, `docs/HARNESS.md`, `docs/ARCHITECTURE.md`,
-`docs/CONTEXT_RULES.md`, product docs, stories, decisions) is intentionally not
-imported — read it per lane, as `docs/CONTEXT_RULES.md` prescribes.
+Lane-dependent context (`README.md`, `harness-docs/HARNESS.md`, `harness-docs/ARCHITECTURE.md`,
+`harness-docs/CONTEXT_RULES.md`, product docs, stories, decisions) is intentionally not
+imported — read it per lane, as `harness-docs/CONTEXT_RULES.md` prescribes.
 <!-- HARNESS:END -->
 EOF
 }
@@ -588,7 +588,7 @@ check_protected_target_paths() {
   local conflicts=()
 
   [ -e "$TARGET_DIR/AGENTS.md" ] && conflicts+=("AGENTS.md")
-  [ -e "$TARGET_DIR/docs" ] && conflicts+=("docs/")
+  [ -e "$TARGET_DIR/harness-docs" ] && conflicts+=("harness-docs/")
   [ -e "$TARGET_DIR/scripts" ] && conflicts+=("scripts/")
 
   [ "${#conflicts[@]}" -gt 0 ] || return 0
@@ -627,7 +627,7 @@ check_protected_target_paths() {
     printf 'Warning: target already contains protected Harness paths: %s\n' "$joined"
     printf 'Choose how to continue:\n'
     printf '  1. Merge    Copy missing Harness files and skip existing files\n'
-    printf '  2. Override Back up and replace AGENTS.md, docs/, and scripts/\n'
+    printf '  2. Override Back up and replace AGENTS.md, harness-docs/, and scripts/\n'
     printf '  3. Stop     Exit without writing files (recommended)\n'
   } > /dev/tty
   prompt_tty 'Choice [1/2/3, default 3]: '
@@ -655,7 +655,7 @@ check_protected_target_paths() {
 override_protected_target_paths() {
   local protected
 
-  for protected in AGENTS.md docs scripts; do
+  for protected in AGENTS.md harness-docs scripts; do
     [ -e "$TARGET_DIR/$protected" ] || continue
 
     if [ "$DRY_RUN" -eq 1 ]; then
@@ -758,7 +758,7 @@ SOURCE_BASE_URL="${SOURCE_BASE_URL%/}"
 CLI_BASE_URL="${HARNESS_CLI_BASE_URL:-}"
 CLI_BASE_URL="${CLI_BASE_URL%/}"
 
-if [ -n "$SCRIPT_DIR" ] && [ -f "$SCRIPT_DIR/../AGENTS.md" ] && [ -f "$SCRIPT_DIR/../docs/HARNESS.md" ]; then
+if [ -n "$SCRIPT_DIR" ] && [ -f "$SCRIPT_DIR/../AGENTS.md" ] && [ -f "$SCRIPT_DIR/../harness-docs/HARNESS.md" ]; then
   SOURCE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd -P)"
   SOURCE_MODE="local"
 fi
@@ -821,39 +821,39 @@ while IFS= read -r relative; do
 done <<'EOF'
 AGENTS.md
 README.md
-docs/ARCHITECTURE.md
-docs/CONTEXT_RULES.md
-docs/FEATURE_INTAKE.md
-docs/GLOSSARY.md
-docs/HARNESS.md
-docs/HARNESS_AUDIT.md
-docs/HARNESS_BACKLOG.md
-docs/HARNESS_COMPONENTS.md
-docs/HARNESS_MATURITY.md
-docs/IMPROVEMENT_PROTOCOL.md
-docs/README.md
-docs/TEST_MATRIX.md
-docs/TOOL_REGISTRY.md
-docs/TRACE_SPEC.md
-docs/decisions/0001-harness-first-development.md
-docs/decisions/0002-post-spec-product-lifecycle.md
-docs/decisions/0003-generic-spec-intake-harness.md
-docs/decisions/0004-sqlite-durable-layer.md
-docs/decisions/0005-prebuilt-rust-harness-cli.md
-docs/decisions/0006-phase-4-benchmark-triage.md
-docs/decisions/0007-improvement-proposal-rules.md
-docs/decisions/README.md
-docs/product/README.md
-docs/stories/README.md
-docs/stories/backlog.md
-docs/templates/decision.md
-docs/templates/spec-intake.md
-docs/templates/story.md
-docs/templates/validation-report.md
-docs/templates/high-risk-story/design.md
-docs/templates/high-risk-story/execplan.md
-docs/templates/high-risk-story/overview.md
-docs/templates/high-risk-story/validation.md
+harness-docs/ARCHITECTURE.md
+harness-docs/CONTEXT_RULES.md
+harness-docs/FEATURE_INTAKE.md
+harness-docs/GLOSSARY.md
+harness-docs/HARNESS.md
+harness-docs/HARNESS_AUDIT.md
+harness-docs/HARNESS_BACKLOG.md
+harness-docs/HARNESS_COMPONENTS.md
+harness-docs/HARNESS_MATURITY.md
+harness-docs/IMPROVEMENT_PROTOCOL.md
+harness-docs/README.md
+harness-docs/TEST_MATRIX.md
+harness-docs/TOOL_REGISTRY.md
+harness-docs/TRACE_SPEC.md
+harness-docs/decisions/0001-harness-first-development.md
+harness-docs/decisions/0002-post-spec-product-lifecycle.md
+harness-docs/decisions/0003-generic-spec-intake-harness.md
+harness-docs/decisions/0004-sqlite-durable-layer.md
+harness-docs/decisions/0005-prebuilt-rust-harness-cli.md
+harness-docs/decisions/0006-phase-4-benchmark-triage.md
+harness-docs/decisions/0007-improvement-proposal-rules.md
+harness-docs/decisions/README.md
+harness-docs/product/README.md
+harness-docs/stories/README.md
+harness-docs/stories/backlog.md
+harness-docs/templates/decision.md
+harness-docs/templates/spec-intake.md
+harness-docs/templates/story.md
+harness-docs/templates/validation-report.md
+harness-docs/templates/high-risk-story/design.md
+harness-docs/templates/high-risk-story/execplan.md
+harness-docs/templates/high-risk-story/overview.md
+harness-docs/templates/high-risk-story/validation.md
 scripts/README.md
 scripts/schema/001-init.sql
 scripts/schema/002-story-verify.sql

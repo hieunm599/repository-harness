@@ -16,7 +16,7 @@ Phase 2 creates the **conceptual infrastructure** that all future phases depend 
 - "How do we measure if the harness is getting better?" (maturity ladder)
 - "How does an agent decide what to read for a given task?" (context rules)
 
-Phase 2 is **pure specification work**. No new code, no CLI changes, no schema migrations. Only markdown documents added to `docs/`.
+Phase 2 is **pure specification work**. No new code, no CLI changes, no schema migrations. Only markdown documents added to `harness-docs/`.
 
 ---
 
@@ -43,10 +43,10 @@ Each story builds on the previous. US-006 can't define context rules without kno
 
 **Purpose:** Map every file and capability in `repository-harness` to a recognized framework so we can evaluate coverage, attribute failures, and do ablation studies.
 
-**What gets created:** `docs/HARNESS_COMPONENTS.md`
+**What gets created:** `harness-docs/HARNESS_COMPONENTS.md`
 
 **Methodology:**
-1. Inventory all harness files (AGENTS.md, docs/*, scripts/*, crates/*, templates/*)
+1. Inventory all harness files (AGENTS.md, harness-docs/*, scripts/*, crates/*, templates/*)
 2. Map each to the **11-responsibility framework** from Runtime Substrate (2605.13357):
    - Task specification, Context selection, Tool access, Project memory, Task state, Observability, Failure attribution, Verification, Permissions, Entropy auditing, Intervention recording
 3. Also cross-reference with **NexAU 7-component decomposition** from AHE (2604.25850):
@@ -98,7 +98,7 @@ Each story builds on the previous. US-006 can't define context rules without kno
 
 **Purpose:** Define H0–H5 with verifiable criteria specific to this project, so "improvement" has direction and progress is measurable.
 
-**What gets created:** `docs/HARNESS_MATURITY.md`
+**What gets created:** `harness-docs/HARNESS_MATURITY.md`
 
 **Methodology:**
 1. Start from Runtime Substrate's H0–H3 ladder
@@ -172,7 +172,7 @@ Structured records, trace spec, component taxonomy, maturity tracking.
 
 **Purpose:** Define what agents should actually record in the `trace` table, at what depth, in what structure. The `trace` table exists but is a bucket — this spec defines what goes in it.
 
-**What gets created:** `docs/TRACE_SPEC.md`
+**What gets created:** `harness-docs/TRACE_SPEC.md`
 
 **Methodology:**
 1. Audit current `trace` table schema (001-init.sql lines 109-129):
@@ -251,7 +251,7 @@ Structured records, trace spec, component taxonomy, maturity tracking.
 
 **Purpose:** Define dynamic guidance for what information should reach the model, per risk lane and task phase. The current static reading list in AGENTS.md doesn't scale.
 
-**What gets created:** `docs/CONTEXT_RULES.md` + update to `AGENTS.md` harness section
+**What gets created:** `harness-docs/CONTEXT_RULES.md` + update to `AGENTS.md` harness section
 
 **Methodology:**
 1. Define the **context phases** of a task:
@@ -269,7 +269,7 @@ Structured records, trace spec, component taxonomy, maturity tracking.
    - Normal: Standard context (~5K tokens)
    - High-risk: Full context (~10K tokens, including templates and prior decisions)
 4. Define **retrieval triggers**: when should an agent go read something it hasn't read yet?
-   - "If you're about to change a database schema, read `docs/decisions/` for prior schema decisions"
+   - "If you're about to change a database schema, read `harness-docs/decisions/` for prior schema decisions"
    - "If the task touches auth, read the high-risk story template"
 5. Update AGENTS.md to reference CONTEXT_RULES.md instead of / in addition to the static reading list
 
@@ -300,9 +300,9 @@ Read to classify the request and choose a lane.
 
 | Trigger Condition | Action |
 |-------------------|--------|
-| Task touches database schema | Read docs/decisions/ for prior schema decisions |
+| Task touches database schema | Read harness-docs/decisions/ for prior schema decisions |
 | Task touches auth/authorization | Read high-risk-story templates |
-| Task changes API shape | Read docs/product/api.md |
+| Task changes API shape | Read harness-docs/product/api.md |
 | ...
 
 ## Token Budget Guidance
@@ -409,13 +409,13 @@ Week 2-3:
 
 | # | Deliverable | Story | File |
 |---|-------------|-------|------|
-| 1 | Component taxonomy | US-003 | `docs/HARNESS_COMPONENTS.md` |
-| 2 | Maturity ladder | US-005 | `docs/HARNESS_MATURITY.md` |
-| 3 | Trace specification | US-004 | `docs/TRACE_SPEC.md` |
-| 4 | Context rules | US-006 | `docs/CONTEXT_RULES.md` |
+| 1 | Component taxonomy | US-003 | `harness-docs/HARNESS_COMPONENTS.md` |
+| 2 | Maturity ladder | US-005 | `harness-docs/HARNESS_MATURITY.md` |
+| 3 | Trace specification | US-004 | `harness-docs/TRACE_SPEC.md` |
+| 4 | Context rules | US-006 | `harness-docs/CONTEXT_RULES.md` |
 | 5 | AGENTS.md update | US-006 | `AGENTS.md` (add CONTEXT_RULES.md reference) |
-| 6 | HARNESS.md update | US-004 | `docs/HARNESS.md` (add TRACE_SPEC.md reference in Task Loop) |
-| 7 | GLOSSARY.md update | All | `docs/GLOSSARY.md` (new terms) |
+| 6 | HARNESS.md update | US-004 | `harness-docs/HARNESS.md` (add TRACE_SPEC.md reference in Task Loop) |
+| 7 | GLOSSARY.md update | All | `harness-docs/GLOSSARY.md` (new terms) |
 | 8 | Benchmark comparison | — | `benchmark/runs/phase-2/` (in harness-benchmark repo) |
 
 ---

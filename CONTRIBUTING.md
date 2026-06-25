@@ -26,7 +26,7 @@ Chia sẻ các trường hợp mà một agent thực hiện thay đổi không 
 
 ### 3. Cải tiến các template
 
-Cải thiện các file trong thư mục `docs/templates/` khi bạn tìm thấy một mẫu thiết kế có thể tái sử dụng cho:
+Cải thiện các file trong thư mục `harness-docs/templates/` khi bạn tìm thấy một mẫu thiết kế có thể tái sử dụng cho:
 
 - đặc tả sản phẩm (product specs)
 - các story packet
@@ -37,7 +37,7 @@ Cải thiện các file trong thư mục `docs/templates/` khi bạn tìm thấy
 
 ### 4. Các mẫu xác thực (Validation patterns)
 
-Thêm hoặc tinh chỉnh các kỳ vọng trong file `docs/TEST_MATRIX.md` cho các stack công nghệ và loại công việc phổ biến. Mục tiêu không chỉ dừng lại ở việc "vượt qua các bài kiểm thử" (tests pass). Mục tiêu là bằng chứng rõ ràng chứng minh công việc phù hợp với đặc tả sản phẩm (product contract).
+Thêm hoặc tinh chỉnh các kỳ vọng trong file `harness-docs/TEST_MATRIX.md` cho các stack công nghệ và loại công việc phổ biến. Mục tiêu không chỉ dừng lại ở việc "vượt qua các bài kiểm thử" (tests pass). Mục tiêu là bằng chứng rõ ràng chứng minh công việc phù hợp với đặc tả sản phẩm (product contract).
 
 ### 5. Sự rõ ràng của tài liệu
 
@@ -46,7 +46,7 @@ Nếu một khái niệm khó hiểu, hãy cải thiện phần giải thích đ
 ## Trước khi mở một Pull Request
 
 1. Đọc kỹ file `AGENTS.md`.
-2. Phân loại công việc bằng cách sử dụng file `docs/FEATURE_INTAKE.md`.
+2. Phân loại công việc bằng cách sử dụng file `harness-docs/FEATURE_INTAKE.md`.
 3. Giữ cho các thay đổi tập trung và dễ đánh giá (reviewable).
 4. Cập nhật các tài liệu liên quan nếu bạn thay đổi một quy tắc harness (harness rule) hoặc một template.
 5. Giải thích bằng chứng nào chứng minh thay đổi này là hữu ích.

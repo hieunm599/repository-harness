@@ -8,11 +8,11 @@ Add project-specific agent instructions here.
 This repo uses Harness. Before work, read:
 
 - `README.md`
-- `docs/HARNESS.md`
-- `docs/FEATURE_INTAKE.md`
-- `docs/ARCHITECTURE.md`
-- `docs/CONTEXT_RULES.md`
-- `docs/TOOL_REGISTRY.md`
+- `harness-docs/HARNESS.md`
+- `harness-docs/FEATURE_INTAKE.md`
+- `harness-docs/ARCHITECTURE.md`
+- `harness-docs/CONTEXT_RULES.md`
+- `harness-docs/TOOL_REGISTRY.md`
 - `scripts/bin/harness-cli query matrix` on macOS/Linux, or `.\scripts\bin\harness-cli.exe query matrix` on Windows
 
 Use the Rust Harness CLI at `scripts/bin/harness-cli` on macOS/Linux or

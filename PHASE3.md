@@ -60,23 +60,23 @@ improve lane accuracy") or the outcome ("lane accuracy improved 5/6 → 6/6").
 The harness can't learn from its own improvements.
 
 **What gets created/changed:**
-1. Update `docs/HARNESS.md` Growth Rule section to document the
+1. Update `harness-docs/HARNESS.md` Growth Rule section to document the
    predicted-impact → actual-outcome workflow.
 2. Add `query backlog --open` filter (shows `proposed` and `accepted` items
    only).
 3. Add `query backlog --closed` filter (shows `implemented` and `rejected`
    items only).
-4. Update `docs/GLOSSARY.md` with "backlog outcome loop" term.
+4. Update `harness-docs/GLOSSARY.md` with "backlog outcome loop" term.
 
 **Acceptance Criteria:**
 
 | # | Criterion | How to verify |
 |---|-----------|---------------|
-| 1 | `docs/HARNESS.md` Growth Rule section documents when to fill `--predicted` on `backlog add` and `--outcome` on `backlog close`. | Read `docs/HARNESS.md`, confirm the workflow is explicit: predicted at creation, outcome at close with measured evidence. |
+| 1 | `harness-docs/HARNESS.md` Growth Rule section documents when to fill `--predicted` on `backlog add` and `--outcome` on `backlog close`. | Read `harness-docs/HARNESS.md`, confirm the workflow is explicit: predicted at creation, outcome at close with measured evidence. |
 | 2 | `scripts/bin/harness-cli query backlog --open` returns only rows where `status IN ('proposed', 'accepted')`. | Run `scripts/bin/harness-cli init && scripts/bin/harness-cli backlog add --title "test" --predicted "x"` then `scripts/bin/harness-cli backlog close --id 1 --outcome "y"`. Verify `query backlog --open` returns 0 rows and `query backlog` returns 1 row. |
 | 3 | `scripts/bin/harness-cli query backlog --closed` returns only rows where `status IN ('implemented', 'rejected')`. | After the above, verify `query backlog --closed` returns 1 row with both `predicted_impact` and `actual_outcome` visible. |
 | 4 | `query backlog` (no filter) continues to return all items as it does today. | Existing behavior unchanged. |
-| 5 | `docs/GLOSSARY.md` includes the term "backlog outcome loop" with a definition. | Read the glossary. |
+| 5 | `harness-docs/GLOSSARY.md` includes the term "backlog outcome loop" with a definition. | Read the glossary. |
 | 6 | `cargo test` passes with tests covering the `--open` and `--closed` filters. | Run `cargo test` in the workspace root. |
 
 **Lane:** Tiny (additive documentation + minor query filter, no schema change,
@@ -255,7 +255,7 @@ change).
 
 ```
 Step 1: US-011 — Backlog outcome workflow
-  - Update docs/HARNESS.md
+  - Update harness-docs/HARNESS.md
   - Add --open and --closed filters to query backlog
   - Add glossary term
   - Write unit tests

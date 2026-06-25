@@ -1,16 +1,16 @@
-# Context Engineering Rules
+# Quy Tắc Context Engineering
 
-Context rules help agents decide what to read, when to read it, and when to
-stop reading. They are additive to the stable `AGENTS.md` reading list.
+Context rule giúp agent quyết định cần đọc gì, đọc khi nào, và khi nào nên
+dừng đọc. Chúng bổ sung cho danh sách đọc ổn định trong `AGENTS.md`.
 
-The goal is not to maximize context. The goal is to put the right information
-in the model for the current task phase and risk lane.
+Mục tiêu không phải tối đa hóa context. Mục tiêu là đưa đúng thông tin vào model
+cho phase và risk lane hiện tại của task.
 
-## Context Phases
+## Context Phase
 
 ### Intake Phase
 
-Read to classify the request, find the affected surface, and choose a lane.
+Đọc để phân loại yêu cầu, tìm surface bị ảnh hưởng và chọn lane.
 
 | Document Or Source | Tiny | Normal | High-Risk |
 | --- | --- | --- | --- |
@@ -27,7 +27,7 @@ Read to classify the request, find the affected surface, and choose a lane.
 
 ### Planning Phase
 
-Read to decide the smallest safe approach and expected proof.
+Đọc để quyết định cách tiếp cận nhỏ nhất an toàn và bằng chứng được kỳ vọng.
 
 | Document Or Source | Tiny | Normal | High-Risk |
 | --- | --- | --- | --- |
@@ -42,8 +42,8 @@ Read to decide the smallest safe approach and expected proof.
 
 ### Implementation Phase
 
-Read while making the change. Keep this phase scoped to files that directly
-affect the selected story.
+Đọc trong khi thực hiện thay đổi. Giữ phase này giới hạn ở các file ảnh hưởng
+trực tiếp tới story đã chọn.
 
 | Document Or Source | Tiny | Normal | High-Risk |
 | --- | --- | --- | --- |
@@ -58,7 +58,7 @@ affect the selected story.
 
 ### Validation Phase
 
-Read to prove the change and avoid claiming unsupported completion.
+Đọc để chứng minh thay đổi và tránh tuyên bố hoàn thành khi chưa có hỗ trợ.
 
 | Document Or Source | Tiny | Normal | High-Risk |
 | --- | --- | --- | --- |
@@ -72,7 +72,7 @@ Read to prove the change and avoid claiming unsupported completion.
 
 ### Trace Phase
 
-Read to leave useful evidence for the next agent and for benchmark scoring.
+Đọc để để lại bằng chứng hữu ích cho agent tiếp theo và cho benchmark scoring.
 
 | Document Or Source | Tiny | Normal | High-Risk |
 | --- | --- | --- | --- |
@@ -84,7 +84,7 @@ Read to leave useful evidence for the next agent and for benchmark scoring.
 | Story packet or progress log | Skip if no story | Must | Must |
 | `docs/HARNESS_COMPONENTS.md` | Skip | Should if attributing friction | Must if failure attribution is needed |
 
-## Retrieval Triggers
+## Retrieval Trigger
 
 | Trigger Condition | Action |
 | --- | --- |
@@ -98,39 +98,39 @@ Read to leave useful evidence for the next agent and for benchmark scoring.
 | Task is normal or high-risk and spans multiple iterations | Create or update a story/progress file under `docs/stories/` and keep it current. |
 | Final response is being prepared | Re-read the validation evidence, `git status --short`, and `docs/TRACE_SPEC.md` before recording the final trace. |
 
-## Token Budget Guidance
+## Hướng Dẫn Token Budget
 
 | Lane | Target Context Budget | Read Shape | Reasoning |
 | --- | --- | --- | --- |
-| Tiny | About 2K tokens of Harness context | `AGENTS.md`, `docs/FEATURE_INTAKE.md`, matrix query, and the exact file being changed. | Tiny work should not spend more context on policy than on the edit. |
-| Normal | About 5K tokens of Harness context | Intake docs, relevant product/story docs, architecture when structural, validation expectations, and trace spec at the end. | Normal work needs enough context to preserve contracts and record proof without reading every historical file. |
-| High-risk | About 10K tokens of Harness context | Full intake, architecture, relevant decisions, high-risk templates, product docs, validation docs, trace spec, and component/maturity docs when Harness behavior changes. | High-risk work needs source hierarchy, prior decisions, and proof expectations in context before implementation. |
+| Tiny | Khoảng 2K token ngữ cảnh Harness | `AGENTS.md`, `docs/FEATURE_INTAKE.md`, matrix query và đúng file đang được thay đổi. | Tiny work không nên tiêu nhiều context cho policy hơn cho bản chỉnh sửa. |
+| Normal | Khoảng 5K token ngữ cảnh Harness | Tài liệu intake, product/story docs liên quan, architecture khi có cấu trúc, kỳ vọng xác thực và trace spec ở cuối. | Normal work cần đủ context để giữ contract và ghi bằng chứng mà không đọc mọi file lịch sử. |
+| High-risk | Khoảng 10K token ngữ cảnh Harness | Toàn bộ intake, architecture, decision liên quan, high-risk template, product docs, validation docs, trace spec và component/maturity docs khi thay đổi hành vi Harness. | High-risk work cần source hierarchy, quyết định trước đó và kỳ vọng bằng chứng trong context trước khi triển khai. |
 
-Budget rules:
+Quy tắc budget:
 
-- Prefer targeted `rg` searches over bulk reading.
-- Read the smallest section that answers the current phase question.
-- Escalate context when a retrieval trigger fires.
-- Do not keep reading unrelated history after the lane, affected files, and
-  validation path are clear.
+- Ưu tiên tìm kiếm `rg` có mục tiêu thay vì đọc hàng loạt.
+- Đọc phần nhỏ nhất trả lời câu hỏi của phase hiện tại.
+- Tăng context khi một retrieval trigger kích hoạt.
+- Đừng tiếp tục đọc lịch sử không liên quan sau khi lane, file bị ảnh hưởng và
+  đường xác thực đã rõ.
 
-## Additive Behavior
+## Hành Vi Bổ Sung
 
-These rules do not replace `AGENTS.md`. Agents should still read the stable
-entrypoint documents listed there before work. This document explains what to
-retrieve after that initial context, based on lane, phase, and trigger.
+Các quy tắc này không thay thế `AGENTS.md`. Agent vẫn nên đọc các tài liệu
+entrypoint ổn định được liệt kê ở đó trước khi làm việc. Tài liệu này giải thích
+cần truy xuất gì sau ngữ cảnh ban đầu đó, dựa trên lane, phase và trigger.
 
-## Review Checklist
+## Checklist Review
 
-Before implementation:
+Trước khi triển khai:
 
-- Lane is chosen from `docs/FEATURE_INTAKE.md`.
-- Relevant product docs or story packets are identified.
-- Any high-risk trigger has been handled.
+- Lane được chọn từ `docs/FEATURE_INTAKE.md`.
+- Product docs hoặc story packet liên quan đã được xác định.
+- Mọi high-risk trigger đã được xử lý.
 
-Before final response:
+Trước final response:
 
-- Validation evidence has been read.
-- `docs/TRACE_SPEC.md` has been read for normal/high-risk tasks.
-- The final trace includes files read, files changed, outcome, and friction
-  when applicable.
+- Bằng chứng xác thực đã được đọc.
+- `docs/TRACE_SPEC.md` đã được đọc cho task normal/high-risk.
+- Trace cuối cùng bao gồm file đã đọc, file đã thay đổi, outcome và friction
+  khi áp dụng.

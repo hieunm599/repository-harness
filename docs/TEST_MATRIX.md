@@ -1,33 +1,33 @@
 # Test Matrix
 
-This file maps product behavior to proof.
+File này ánh xạ hành vi sản phẩm tới bằng chứng.
 
-No product behavior has been defined or implemented yet. Do not mark a row
-implemented until tests or validation evidence exist.
+Chưa có hành vi sản phẩm nào được định nghĩa hoặc triển khai. Đừng đánh dấu một
+row là implemented cho tới khi test hoặc bằng chứng xác thực tồn tại.
 
-## Status Values
+## Giá Trị Status
 
 | Status | Meaning |
 | --- | --- |
-| planned | Accepted as intended behavior, not implemented |
-| in_progress | Actively being built |
-| implemented | Implemented and proof exists |
-| changed | Contract changed after earlier implementation |
-| retired | No longer part of the product contract |
+| planned | Được chấp nhận như hành vi dự định, chưa triển khai |
+| in_progress | Đang được xây dựng |
+| implemented | Đã triển khai và có bằng chứng |
+| changed | Contract đã thay đổi sau implementation trước đó |
+| retired | Không còn là một phần của hợp đồng sản phẩm |
 
 ## Matrix
 
 | Story | Contract | Unit | Integration | E2E | Platform | Status | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| TBD | Add rows when story packets are created | no | no | no | no | planned | none |
+| TBD | Thêm row khi story packet được tạo | no | no | no | no | planned | none |
 
-## Evidence Rules
+## Quy Tắc Evidence
 
-- Unit proof covers pure domain and application rules.
-- Integration proof covers backend enforcement, data integrity, provider
-  behavior, jobs, or service contracts.
-- E2E proof covers user-visible browser flows.
-- Platform proof covers only shell, deployment, mobile, desktop, or runtime
-  behavior that cannot be proven in lower layers.
-- A story can be implemented without every proof column if the story packet
-  explains why.
+- Unit proof bao phủ quy tắc domain và application thuần.
+- Integration proof bao phủ backend enforcement, data integrity, hành vi
+  provider, job hoặc service contract.
+- E2E proof bao phủ luồng browser nhìn thấy bởi người dùng.
+- Platform proof chỉ bao phủ shell, deployment, mobile, desktop hoặc hành vi
+  runtime không thể chứng minh ở layer thấp hơn.
+- Một story có thể được implemented mà không có mọi cột proof nếu story packet
+  giải thích lý do.

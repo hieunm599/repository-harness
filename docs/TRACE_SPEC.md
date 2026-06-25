@@ -1,145 +1,129 @@
-# Trace Specification
+# Đặc tả Dấu vết thực thi (Trace Specification)
 
-The `trace` table records what happened during a Harness task. This document
-defines the expected depth and format for each field so traces are useful for
-review, benchmark scoring, failure attribution, and future harness evolution.
+Bảng `trace` ghi lại những gì đã xảy ra trong một nhiệm vụ của Harness. Tài liệu này định nghĩa độ sâu và định dạng kỳ vọng cho từng trường dữ liệu để các trace hữu ích cho việc đánh giá, tính điểm benchmark, quy trách nhiệm lỗi và sự phát triển của harness trong tương lai.
 
-The current schema lives in `scripts/schema/001-init.sql` under the `trace`
-table. The schema is not changed by Phase 2.
+Lược đồ cơ sở dữ liệu (schema) hiện tại nằm trong file `scripts/schema/001-init.sql` dưới bảng `trace`. Sơ đồ này không bị thay đổi bởi Phase 2.
 
-## Field Reference
+## Tham chiếu các Trường dữ liệu (Field Reference)
 
-| Field | Type | Required | Format | Example |
+| Trường (Field) | Kiểu dữ liệu | Bắt buộc | Định dạng | Ví dụ |
 | --- | --- | --- | --- | --- |
-| `id` | INTEGER | Automatic | SQLite autoincrement primary key. Do not set manually. | `42` |
-| `created_at` | TEXT | Automatic | SQLite `datetime('now')`. Do not set manually. | `2026-05-27 09:24:37` |
-| `task_summary` | TEXT | Yes | One sentence, at least 10 characters, naming the outcome or attempted outcome. | `Completed Phase 2 docs-only observability and taxonomy specification` |
-| `intake_id` | INTEGER | Standard+ when an intake was recorded | Integer id from the related `intake` row. | `36` |
-| `story_id` | TEXT | Standard+ when work maps to one story | Story id from the `story` table. Use the main story when one trace covers several; list the rest in `notes`. | `US-004` |
-| `agent` | TEXT | Optional for minimal; Standard+ expected | Short agent/tool name. | `codex` |
-| `actions_taken` | TEXT | Standard+ | JSON array text. With the current CLI, pass a comma-separated list and the CLI stores JSON text. | `["read PHASE2.md","drafted TRACE_SPEC.md","updated HARNESS.md"]` |
-| `files_read` | TEXT | Standard+ | JSON array text of paths or command names. With the current CLI, pass a comma-separated list. | `["PHASE2.md","docs/HARNESS.md","scripts/bin/harness-cli query matrix"]` |
-| `files_changed` | TEXT | Standard+ | JSON array text of changed file paths. With the current CLI, pass a comma-separated list; omit only when no files changed. | `["docs/TRACE_SPEC.md","docs/HARNESS.md"]` |
-| `decisions_made` | TEXT | Detailed | JSON array text of decision strings. Include scope decisions, validation choices, and explicit non-goals. | `["Kept Phase 2 docs-only; installer propagation remains out of scope"]` |
-| `errors` | TEXT | Standard+ if errors occurred; Detailed always | JSON array text of error or blocker strings. Until the CLI supports empty arrays directly, use `none` when a detailed trace needs explicit no-error evidence. | `["git diff --check failed before whitespace fix"]` |
-| `outcome` | TEXT | Yes before final response | One of `completed`, `blocked`, `partial`, or `failed`. | `completed` |
-| `duration_seconds` | INTEGER | Detailed when available | Positive integer estimate or measured duration. Leave null if unknown. | `1800` |
-| `token_estimate` | INTEGER | Detailed when available | Positive integer estimate. Leave null if unknown. | `24000` |
-| `harness_friction` | TEXT | Standard+ when friction exists; Detailed always | Free text naming what was hard, missing, ambiguous, or repeated. Use `none` only when the agent actively checked and found no friction. | `New Phase 2 docs are not in installer copy list; recorded as out-of-scope follow-up.` |
-| `notes` | TEXT | Optional | Free text for review context that does not fit other fields. | `Trace covers US-003, US-004, US-005, and US-006.` |
+| `id` | INTEGER | Tự động | Khóa chính tự động tăng của SQLite. Không được đặt thủ công. | `42` |
+| `created_at` | TEXT | Tự động | Sử dụng lệnh `datetime('now')` của SQLite. Không được đặt thủ công. | `2026-05-27 09:24:37` |
+| `task_summary` | TEXT | Có | Một câu, dài ít nhất 10 ký tự, nêu rõ kết quả hoặc kết quả dự kiến. | `Completed Phase 2 docs-only observability and taxonomy specification` |
+| `intake_id` | INTEGER | Có (từ Tiêu chuẩn trở lên) | Số nguyên ID từ dòng liên quan trong bảng `intake`. | `36` |
+| `story_id` | TEXT | Có (từ Tiêu chuẩn trở lên) | Story ID từ bảng `story`. Sử dụng ID story chính khi một trace bao gồm nhiều story; liệt kê các story còn lại trong trường `notes`. | `US-004` |
+| `agent` | TEXT | Tùy chọn (Tối giản); Bắt buộc (Tiêu chuẩn trở lên) | Tên viết tắt của agent hoặc công cụ. | `codex` |
+| `actions_taken` | TEXT | Tiêu chuẩn trở lên | Văn bản dạng mảng JSON. Với CLI hiện tại, truyền một danh sách phân tách bằng dấu phẩy và CLI sẽ lưu trữ dưới dạng văn bản JSON. | `["read PHASE2.md","drafted TRACE_SPEC.md","updated HARNESS.md"]` |
+| `files_read` | TEXT | Tiêu chuẩn trở lên | Văn bản dạng mảng JSON chứa các đường dẫn hoặc tên lệnh. Với CLI hiện tại, truyền một danh sách phân tách bằng dấu phẩy. | `["PHASE2.md","docs/HARNESS.md","scripts/bin/harness-cli query matrix"]` |
+| `files_changed` | TEXT | Tiêu chuẩn trở lên | Văn bản dạng mảng JSON chứa các đường dẫn file thay đổi. Với CLI hiện tại, truyền một danh sách phân tách bằng dấu phẩy; chỉ bỏ qua khi không có file nào thay đổi. | `["docs/TRACE_SPEC.md","docs/HARNESS.md"]` |
+| `decisions_made` | TEXT | Chi tiết | Văn bản dạng mảng JSON chứa các chuỗi quyết định. Bao gồm các quyết định về phạm vi (scope decisions), lựa chọn xác thực và các phi mục tiêu (non-goals) rõ ràng. | `["Kept Phase 2 docs-only; installer propagation remains out of scope"]` |
+| `errors` | TEXT | Tiêu chuẩn trở lên (khi lỗi xảy ra); Chi tiết (luôn bắt buộc) | Văn bản dạng mảng JSON chứa các chuỗi lỗi hoặc điểm nghẽn (blocker). Cho đến khi CLI hỗ trợ mảng trống trực tiếp, hãy sử dụng chuỗi `none` khi một trace chi tiết cần chỉ ra rõ không có lỗi. | `["git diff --check failed before whitespace fix"]` |
+| `outcome` | TEXT | Có | Một trong các giá trị: `completed` (hoàn thành), `blocked` (bị chặn), `partial` (một phần) hoặc `failed` (thất bại). | `completed` |
+| `duration_seconds` | INTEGER | Chi tiết khi có sẵn | Số nguyên dương ước lượng hoặc thời gian đo được. Để trống nếu không xác định. | `1800` |
+| `token_estimate` | INTEGER | Chi tiết khi có sẵn | Số nguyên dương ước lượng token. Để trống nếu không xác định. | `24000` |
+| `harness_friction` | TEXT | Tiêu chuẩn trở lên (khi có ma sát); Chi tiết (luôn bắt buộc) | Văn bản tự do nêu rõ những gì đã gây khó khăn, còn thiếu, mơ hồ hoặc lặp đi lặp lại. Chỉ sử dụng chuỗi `none` khi agent đã chủ động kiểm tra và không phát hiện thấy ma sát nào. | `New Phase 2 docs are not in installer copy list; recorded as out-of-scope follow-up.` |
+| `notes` | TEXT | Tùy chọn | Văn bản tự do cung cấp ngữ cảnh đánh giá không phù hợp với các trường dữ liệu khác. | `Trace covers US-003, US-004, US-005, and US-006.` |
 
-## Quality Tiers
+## Các Cấp độ Chất lượng (Quality Tiers)
 
-### Minimal (score: 1)
+### Tối giản (Minimal) (điểm: 1)
 
-Minimum fields:
+Các trường dữ liệu tối thiểu:
 
-- `task_summary` is filled and at least 10 characters.
-- `outcome` is filled before the final response.
+- `task_summary` được điền và dài ít nhất 10 ký tự.
+- `outcome` được điền trước phản hồi cuối cùng.
 
-Acceptable for:
+Chấp nhận cho:
 
-- Tiny-lane tasks with no file changes or only low-risk copy/doc edits.
+- Các tác vụ thuộc làn rủi ro nhỏ (tiny-lane) không thay đổi file hoặc chỉ chỉnh sửa văn bản/tài liệu rủi ro thấp.
 
-Not acceptable for:
+Không chấp nhận cho:
 
-- Normal or high-risk work.
-- Any work that discovered friction, errors, or a missing validation path.
+- Công việc có mức độ rủi ro bình thường hoặc cao.
+- Bất kỳ công việc nào phát hiện thấy ma sát, lỗi hoặc thiếu đường dẫn xác thực.
 
-### Standard (score: 2)
+### Tiêu chuẩn (Standard) (điểm: 2)
 
-Minimum fields:
+Các trường dữ liệu tối thiểu:
 
-- All Minimal fields.
-- `intake_id` when an intake was recorded.
-- `story_id` when the work maps cleanly to one story.
+- Tất cả các trường của cấp độ Tối giản.
+- `intake_id` khi một intake được ghi lại.
+- `story_id` khi công việc tương thích trực tiếp với một story.
 - `agent`.
-- `actions_taken` as JSON array text.
-- `files_read` as JSON array text.
-- `files_changed` as JSON array text.
-- At least one of `errors` or `harness_friction`.
+- `actions_taken` dưới dạng văn bản mảng JSON.
+- `files_read` dưới dạng văn bản mảng JSON.
+- `files_changed` dưới dạng văn bản mảng JSON.
+- Ít nhất một trong hai trường `errors` hoặc `harness_friction`.
 
-Required for:
+Yêu cầu cho:
 
-- Normal-lane tasks.
-- Tiny tasks that changed Harness instructions, validation expectations, or
-  durable records.
+- Các tác vụ thuộc làn rủi ro bình thường (normal-lane).
+- Các tác vụ nhỏ (tiny tasks) làm thay đổi các hướng dẫn Harness, kỳ vọng xác thực hoặc các bản ghi lâu dài.
 
-Standard traces may leave `duration_seconds`, `token_estimate`, and
-`decisions_made` empty when those details are not useful.
+Các trace tiêu chuẩn có thể để trống các trường `duration_seconds`, `token_estimate` và `decisions_made` khi các chi tiết đó không hữu ích.
 
-### Detailed (score: 3)
+### Chi tiết (Detailed) (điểm: 3)
 
-Minimum fields:
+Các trường dữ liệu tối thiểu:
 
-- All Standard fields.
-- `decisions_made` as JSON array text.
-- `errors` as JSON array text, using `none` with the current CLI when no
-  errors occurred.
-- `harness_friction`, using `none` only after checking for friction.
-- `duration_seconds` or a note explaining why duration is unavailable.
-- `token_estimate` or a note explaining why token estimate is unavailable.
-- `notes` when one trace covers multiple stories, multiple risk flags, or
-  skipped validation.
+- Tất cả các trường của cấp độ Tiêu chuẩn.
+- `decisions_made` dưới dạng văn bản mảng JSON.
+- `errors` dưới dạng văn bản mảng JSON, sử dụng chuỗi `none` với CLI hiện tại khi không có lỗi xảy ra.
+- `harness_friction`, chỉ sử dụng chuỗi `none` sau khi đã kiểm tra kỹ ma sát.
+- `duration_seconds` hoặc một ghi chú giải thích tại sao không đo được thời gian.
+- `token_estimate` hoặc một ghi chú giải thích tại sao không ước lượng được token.
+- `notes` khi một trace bao gồm nhiều story, nhiều cờ rủi ro hoặc bỏ qua xác thực.
 
-Required for:
+Yêu cầu cho:
 
-- High-risk tasks.
-- Changes touching architecture direction, source-of-truth hierarchy,
-  validation requirements, auth, authorization, data loss, audit/security, or
-  external provider behavior.
-- Benchmark or release work where later review needs precise proof.
+- Các tác vụ rủi ro cao (high-risk).
+- Các thay đổi chạm đến hướng đi kiến trúc, phân cấp nguồn sự thật, yêu cầu xác thực, xác thực (auth), phân quyền (authorization), mất mát dữ liệu, kiểm toán/bảo mật hoặc hành vi của nhà cung cấp bên ngoài.
+- Công việc chạy benchmark hoặc phát hành (release) cần lưu trữ bằng chứng chính xác cho các đánh giá sau này.
 
-For high-risk work, `decisions_made` in the trace summarizes what was decided.
-It does not replace a durable decision record. If the work changes behavior,
-architecture, authorization, data ownership, API shape, or validation
-requirements, add a `docs/decisions/NNNN-*.md` file and record it with
-`scripts/bin/harness-cli decision add`.
+Đối với công việc rủi ro cao, trường `decisions_made` trong trace tóm tắt những gì đã được quyết định. Nó không thay thế cho bản ghi quyết định kỹ thuật lâu dài. Nếu công việc thay đổi hành vi, kiến trúc, phân quyền, quyền sở hữu dữ liệu, cấu trúc API hoặc các yêu cầu xác thực, hãy thêm một file `docs/decisions/NNNN-*.md` và ghi lại nó bằng lệnh `scripts/bin/harness-cli decision add`.
 
-## Lane Mapping
+## Áh xạ Làn rủi ro (Lane Mapping)
 
-| Lane | Expected Tier | Minimum Trace Behavior |
+| Làn rủi ro (Lane) | Cấp độ kỳ vọng (Expected Tier) | Hành vi Trace Tối thiểu |
 | --- | --- | --- |
-| Tiny | Minimal | Record summary and outcome; use Standard if friction or Harness docs changed. |
-| Normal | Standard | Record intake, actions, files read, files changed, outcome, and friction/errors. |
-| High-risk | Detailed | Record all fields or explicitly explain unavailable duration/token estimates. |
+| Nhỏ (Tiny) | Tối giản | Ghi lại tóm tắt và kết quả; sử dụng cấp Tiêu chuẩn nếu có ma sát hoặc thay đổi tài liệu Harness. |
+| Bình thường (Normal) | Tiêu chuẩn | Ghi lại intake, hành động, các file đã đọc, các file đã thay đổi, kết quả và ma sát/lỗi. |
+| Rủi ro cao (High-risk) | Chi tiết | Ghi lại tất cả các trường hoặc giải thích rõ ràng tại sao không ước lượng được thời gian/token. |
 
-## Friction Capture Protocol
+## Giao thức Ghi nhận Ma sát (Friction Capture Protocol)
 
-Populate `harness_friction` when any of these occur:
+Điền vào trường `harness_friction` khi xảy ra bất kỳ điều nào sau đây:
 
-- The agent had to infer a missing rule or source of truth.
-- Required validation was unclear, unavailable, or too expensive to run.
-- A document, durable record, or story packet was stale or contradictory.
-- The task revealed a repeated manual step that should become a template,
-  command, or checklist.
-- A requested change was out of scope but likely important later.
-- A benchmark or review failure could not be attributed to a component.
+- Agent phải tự suy luận một quy tắc còn thiếu hoặc nguồn sự thật bị thiếu.
+- Việc xác thực yêu cầu chưa rõ ràng, không có sẵn hoặc quá tốn kém để thực thi.
+- Một tài liệu, bản ghi lâu dài hoặc gói story packet đã cũ hoặc mâu thuẫn.
+- Nhiệm vụ làm lộ ra một bước thủ công lặp đi lặp lại đáng lẽ phải trở thành một template, lệnh hoặc danh sách kiểm tra.
+- Một thay đổi được yêu cầu nằm ngoài phạm vi nhưng có khả năng sẽ quan trọng sau này.
+- Một lỗi benchmark hoặc lỗi đánh giá không thể quy cho một thành phần cụ thể.
 
-How to write friction:
+Cách viết ma sát:
 
-- Name the concrete pain, not a vague mood.
-- Include the missing capability or contradiction.
-- If the friction should become work, also add or update a backlog item with
-  `scripts/bin/harness-cli backlog add`.
-- If there was no friction, use `none` only for Detailed traces.
+- Nêu rõ khó khăn cụ thể, không viết cảm xúc mơ hồ.
+- Bao gồm capability còn thiếu hoặc điểm mâu thuẫn.
+- Nếu ma sát nên được đưa vào kế hoạch thực hiện, hãy thêm hoặc cập nhật một mục backlog bằng lệnh `scripts/bin/harness-cli backlog add`.
+- Nếu không có ma sát, chỉ sử dụng chuỗi `none` cho các trace Chi tiết.
 
-Good friction:
+Ví dụ viết ma sát tốt:
 
 ```text
-New Phase 2 docs are not copied by scripts/install-harness.sh, but installer
-propagation is out of scope for docs-only Phase 2.
+New Phase 2 docs are not copied by scripts/install-harness.sh, but installer propagation is out of scope for docs-only Phase 2.
 ```
 
-Weak friction:
+Ví dụ viết ma sát kém:
 
 ```text
 docs confusing
 ```
 
-## Examples
+## Các Ví dụ (Examples)
 
-### Good Trace (Detailed)
+### Trace tốt (Chi tiết)
 
 ```bash
 scripts/bin/harness-cli trace \
@@ -159,7 +143,7 @@ scripts/bin/harness-cli trace \
   --notes "Detailed trace required because the task touched authorization and audit behavior."
 ```
 
-### Adequate Trace (Standard)
+### Trace đầy đủ (Tiêu chuẩn)
 
 ```bash
 scripts/bin/harness-cli trace \
@@ -174,7 +158,7 @@ scripts/bin/harness-cli trace \
   --friction "none"
 ```
 
-### Insufficient Trace
+### Trace thiếu thông tin (Insufficient Trace)
 
 ```bash
 scripts/bin/harness-cli trace \
@@ -182,23 +166,20 @@ scripts/bin/harness-cli trace \
   --outcome completed
 ```
 
-Why this is insufficient for normal-lane Phase 2 work:
+Lý do tại sao trace này không đầy đủ đối với công việc Phase 2 thuộc làn bình thường:
 
-- It does not identify actions.
-- It does not list files read or changed.
-- It does not connect to intake or stories.
-- It gives no friction or error signal.
+- Nó không xác định được các hành động đã thực hiện.
+- Nó không liệt kê các file đã đọc hoặc đã thay đổi.
+- Nó không kết nối với intake hoặc các story.
+- Nó không cung cấp tín hiệu về ma sát hoặc lỗi.
 
-## Review Checklist
+## Danh sách Kiểm tra (Review Checklist)
 
-Before the final response, check:
+Trước phản hồi cuối cùng, hãy kiểm tra:
 
-- The trace tier matches the lane.
-- Review the score printed automatically by `scripts/bin/harness-cli trace`.
-  Use `scripts/bin/harness-cli score-trace --id N` when re-checking a specific
-  historical trace.
-- `files_changed` matches the actual changed-file set at a useful level.
-- `errors` names real blockers or is `none` for Detailed traces when the
-  current CLI is used.
-- `harness_friction` either names a concrete issue or is intentionally `none`.
-- Any friction that should become future work is recorded in the backlog.
+- Cấp độ trace khớp với làn rủi ro của tác vụ.
+- Đọc lại điểm số được in tự động bởi lệnh `scripts/bin/harness-cli trace`. Sử dụng lệnh `scripts/bin/harness-cli score-trace --id N` khi kiểm tra lại một trace lịch sử cụ thể.
+- Trường `files_changed` khớp với tập hợp các file thực tế đã thay đổi ở mức độ hữu ích.
+- Trường `errors` chỉ ra các điểm nghẽn thực sự hoặc là `none` đối với các trace Chi tiết khi sử dụng CLI hiện tại.
+- Trường `harness_friction` chỉ ra một vấn đề cụ thể hoặc được cố ý đặt là `none`.
+- Bất kỳ ma sát nào đáng lẽ trở thành công việc tương lai đều được ghi lại trong backlog.

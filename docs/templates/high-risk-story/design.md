@@ -1,29 +1,29 @@
-# Design
+# Thiết kế (Design)
 
-## Domain Model
+## Mô hình Miền (Domain Model)
 
-Describe entities, value objects, and business rules.
+Mô tả các thực thể (entities), đối tượng giá trị (value objects) và các quy tắc nghiệp vụ (business rules).
 
-## Application Flow
+## Luồng Ứng dụng (Application Flow)
 
-Describe commands, queries, and handlers.
+Mô tả các lệnh (commands), truy vấn (queries) và bộ xử lý (handlers).
 
-## Interface Contract
+## Khế ước Giao diện (Interface Contract)
 
-Describe routes, messages, commands, request DTOs, response DTOs, and errors.
+Mô tả các tuyến đường (routes), thông điệp (messages), lệnh (commands), request DTOs, response DTOs và các mã lỗi (errors).
 
-## Data Model
+## Mô hình Dữ liệu (Data Model)
 
-Describe tables, indexes, migrations, and retention concerns.
+Mô tả các bảng (tables), chỉ mục (indexes), migration lược đồ dữ liệu và các vấn đề về giữ lại dữ liệu (retention concerns).
 
-## UI / Platform Impact
+## Tác động UI / Nền tảng (UI / Platform Impact)
 
-Describe browser, mobile, desktop, CLI, deployment, or platform-shell impact.
+Mô tả tác động đến trình duyệt (browser), ứng dụng di động (mobile), máy tính (desktop), CLI, triển khai (deployment) hoặc platform-shell.
 
-## Observability
+## Khả năng Quan sát (Observability)
 
-Describe logs, audit records, metrics, or traces.
+Mô tả logs, bản ghi kiểm toán (audit records), số liệu đo lường (metrics) hoặc traces.
 
-## Alternatives Considered
+## Các Giải pháp Thay thế đã cân nhắc (Alternatives Considered)
 
-1. Option.
+1. Tùy chọn.

@@ -1,32 +1,32 @@
-# Validation Report
+# Báo cáo Xác thực (Validation Report)
 
-Date: YYYY-MM-DD
+Ngày: YYYY-MM-DD
 
-## Scope
+## Phạm vi (Scope)
 
-What story or change was validated?
+Story hoặc thay đổi nào đã được xác thực?
 
-## Commands Run
+## Các Lệnh đã chạy (Commands Run)
 
 ```text
-command
+command (lệnh thực thi)
 ```
 
-## Results
+## Kết quả (Results)
 
-| Check | Result | Notes |
+| Kiểm tra (Check) | Kết quả (Result) | Ghi chú (Notes) |
 | --- | --- | --- |
-| Typecheck | not run | Command does not exist yet |
-| Unit | not run | Command does not exist yet |
-| Integration | not run | Command does not exist yet |
-| E2E | not run | Command does not exist yet |
-| Platform | not run | Command does not exist yet |
-| Release | not run | Command does not exist yet |
+| Typecheck (Kiểm tra kiểu) | not run (chưa chạy) | Lệnh thực thi chưa tồn tại |
+| Unit (Kiểm thử đơn vị) | not run (chưa chạy) | Lệnh thực thi chưa tồn tại |
+| Integration (Kiểm thử tích hợp) | not run (chưa chạy) | Lệnh thực thi chưa tồn tại |
+| E2E (Kiểm thử đầu cuối) | not run (chưa chạy) | Lệnh thực thi chưa tồn tại |
+| Platform (Kiểm thử nền tảng) | not run (chưa chạy) | Lệnh thực thi chưa tồn tại |
+| Release (Kiểm thử phát hành) | not run (chưa chạy) | Lệnh thực thi chưa tồn tại |
 
-## Evidence
+## Bằng chứng (Evidence)
 
-Add report paths, screenshots, logs, or other artifacts.
+Thêm đường dẫn báo cáo, ảnh chụp màn hình, log hoặc các artifact khác.
 
-## Gaps
+## Khoảng trống/Thiếu sót (Gaps)
 
-List remaining risk or missing harness capability.
+Liệt kê các rủi ro còn lại hoặc capability harness còn thiếu.

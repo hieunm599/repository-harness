@@ -23,7 +23,7 @@ should publish a fresh CLI release for downstream installers.
 
 ## Acceptance Criteria
 
-- Merged PRs to `main` prepend a summary entry to `CHANGELOG.md`.
+- Merged PRs to `vi` prepend a summary entry to `CHANGELOG.md`.
 - PRs that do not touch CLI files update only the changelog.
 - PRs that touch CLI source, schema, Cargo metadata, or release packaging bump
   the CLI patch version, update `scripts/harness-cli-release-tag`, create a

@@ -1,40 +1,39 @@
 # Harness Backlog
 
-Use this file when an agent discovers a missing harness capability but should
-not change the operating model immediately.
+Sử dụng file này khi một agent phát hiện ra một capability harness còn thiếu nhưng không nên thay đổi mô hình vận hành ngay lập tức.
 
-## Template
+## Mẫu thiết kế (Template)
 
 ```md
-## Missing Harness Capability
+## Capability Harness còn thiếu
 
-### Title
+### Tiêu đề
 
-Short name.
+Tên ngắn gọn.
 
-### Discovered While
+### Phát hiện Trong khi
 
-Task or story that exposed the gap.
+Nhiệm vụ hoặc story đã làm lộ ra khoảng trống/thiếu sót này.
 
-### Current Pain
+### Khó khăn Hiện tại (Pain)
 
-What was hard, repeated, ambiguous, or unsafe?
+Điều gì đã gây khó khăn, lặp đi lặp lại, mơ hồ hoặc không an toàn?
 
-### Suggested Improvement
+### Đề xuất Cải tiến
 
-What should be added or changed?
+Nên thêm hoặc thay đổi điều gì?
 
-### Risk
+### Độ rủi ro (Risk)
 
-Tiny, normal, or high-risk.
+Nhỏ (tiny), bình thường (normal) hoặc rủi ro cao (high-risk).
 
-CLI value: `--risk tiny`, `--risk normal`, or `--risk high-risk`.
+Giá trị truyền vào CLI: `--risk tiny`, `--risk normal` hoặc `--risk high-risk`.
 
-### Status
+### Trạng thái (Status)
 
-proposed | accepted | implemented | rejected
+proposed (đề xuất) | accepted (chấp nhận) | implemented (triển khai) | rejected (từ chối)
 ```
 
-## Items
+## Các mục công việc (Items)
 
-No backlog items yet.
+Chưa có mục backlog nào.

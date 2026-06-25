@@ -1,20 +1,19 @@
-# Harness Audit
+# Kiểm toán Harness (Harness Audit)
 
-`scripts/bin/harness-cli audit` detects drift in durable Harness state and
-prints an entropy score. Lower is better.
+Lệnh `scripts/bin/harness-cli audit` phát hiện sự sai lệch (drift) trong trạng thái bền vững của Harness và in ra điểm entropy. Điểm số càng thấp càng tốt.
 
-## Checks
+## Các Hạng mục Kiểm tra (Checks)
 
-| Category | Meaning | Weight |
+| Danh mục | Ý nghĩa | Trọng số (Weight) |
 | --- | --- | --- |
-| Orphaned stories | Planned or in-progress stories with no linked trace. | 10 |
-| Unverified stories | Stories with `verify_command` but no recorded verification result. | 5 |
-| Unverified decisions | Decisions with `verify_command` but no recorded verification result. | 5 |
-| Open backlog without outcomes | Implemented backlog items with predicted impact but no actual outcome. | 2 |
-| Stale stories | Unimplemented stories whose latest linked trace is more than 30 days old. | 3 |
-| Broken tools | Registered tools whose command is not found on disk or `PATH`. | 8 |
+| Các story bị mồ côi (Orphaned stories) | Các story đang lên kế hoạch hoặc đang triển khai nhưng không có trace nào liên kết. | 10 |
+| Các story chưa xác thực (Unverified stories) | Các story có cấu hình `verify_command` nhưng chưa có kết quả xác thực nào được ghi lại. | 5 |
+| Quyết định chưa xác thực | Các quyết định kỹ thuật có cấu hình `verify_command` nhưng chưa có kết quả xác thực nào được ghi lại. | 5 |
+| Backlog mở thiếu kết quả thực tế | Các mục backlog đã triển khai có tác động dự kiến nhưng thiếu kết quả thực tế đo được. | 2 |
+| Các story bị cũ (Stale stories) | Các story chưa được triển khai mà trace liên kết gần nhất đã quá 30 ngày. | 3 |
+| Các công cụ bị hỏng (Broken tools) | Các công cụ đã đăng ký nhưng lệnh thực thi của chúng không tìm thấy trên đĩa hoặc trong biến môi trường `PATH`. | 8 |
 
-## Score
+## Điểm số (Score)
 
 ```text
 score = orphaned_stories * 10
@@ -25,14 +24,13 @@ score = orphaned_stories * 10
       + broken_tools * 8
 ```
 
-The score is capped at 100.
+Điểm số tối đa được giới hạn ở mức 100.
 
-| Range | Interpretation |
+| Khoảng điểm | Ý nghĩa giải thích |
 | --- | --- |
-| 0 | Perfect: records are traced, verified, and healthy. |
-| 1-25 | Healthy: minor housekeeping remains. |
-| 26-50 | Attention needed: drift is accumulating. |
-| 51-100 | Action required: stale state undermines Harness value. |
+| 0 | Hoàn hảo: các bản ghi được theo dõi, xác thực và khỏe mạnh. |
+| 1-25 | Khỏe mạnh: chỉ còn một vài công việc dọn dẹp nhỏ. |
+| 26-50 | Cần chú ý: sự sai lệch (drift) đang tích tụ dần. |
+| 51-100 | Yêu cầu hành động: trạng thái cũ làm giảm giá trị của Harness. |
 
-Audit findings feed `scripts/bin/harness-cli propose`, which can turn repeated
-drift into proposed backlog items.
+Các phát hiện kiểm toán (audit findings) làm đầu vào cho lệnh `scripts/bin/harness-cli propose`, lệnh này có thể chuyển đổi các sai lệch lặp đi lặp lại thành các mục backlog đề xuất.

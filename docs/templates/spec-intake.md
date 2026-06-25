@@ -1,50 +1,49 @@
-# Spec Intake
+# Tiếp nhận Đặc tả (Spec Intake)
 
-Date: YYYY-MM-DD
+Ngày: YYYY-MM-DD
 
-## Source
+## Nguồn dữ liệu (Source)
 
-Where did the spec come from?
+Tài liệu đặc tả (spec) này đến từ đâu?
 
-- User prompt:
-- Attached file:
-- External reference:
+- Prompt của người dùng:
+- File đính kèm:
+- Tài liệu tham khảo bên ngoài:
 
-## Project Summary
+## Tóm tắt Dự án (Project Summary)
 
-What product are we building, for whom, and why?
+Chúng ta đang xây dựng sản phẩm gì, dành cho ai và tại sao?
 
-## Candidate Product Docs
+## Các Tài liệu Sản phẩm ứng viên (Candidate Product Docs)
 
-List the product contract files that should be created under `docs/product/`.
+Liệt kê các file đặc tả sản phẩm (product contract) nên được tạo dưới thư mục `docs/product/`.
 
-| File | Purpose | Source sections |
+| File | Mục đích | Các phần nguồn |
 | --- | --- | --- |
 | `docs/product/overview.md` | | |
 
-## Candidate Epics
+## Các Epic ứng viên (Candidate Epics)
 
-List only the epics that are clear enough to name. Do not create every story
-packet yet.
+Chỉ liệt kê các epic đã đủ rõ ràng để đặt tên. Không tạo tất cả các gói story packet ngay lúc này.
 
-| Epic | Description | Status |
+| Epic | Mô tả | Trạng thái (Status) |
 | --- | --- | --- |
-| E01 | | unsliced |
+| E01 | | unsliced (chưa phân rã) |
 
-## Architecture Questions
+## Câu hỏi về Kiến trúc (Architecture Questions)
 
-- Runtime stack:
-- Product surfaces:
-- Storage:
-- External providers:
-- Deployment target:
-- Security model:
+- Runtime stack (ngăn xếp runtime):
+- Product surfaces (bề mặt sản phẩm):
+- Storage (lưu trữ):
+- External providers (nhà cung cấp bên ngoài):
+- Deployment target (mục tiêu triển khai):
+- Security model (mô hình bảo mật):
 
-## Validation Shape
+## Dạng thức Xác thực (Validation Shape)
 
-What proof will this project eventually need?
+Dự án này cuối cùng sẽ cần những bằng chứng xác thực (proof) nào?
 
-| Layer | Expected proof |
+| Phân lớp (Layer) | Bằng chứng xác thực kỳ vọng (Expected proof) |
 | --- | --- |
 | Unit | |
 | Integration | |
@@ -52,14 +51,14 @@ What proof will this project eventually need?
 | Platform | |
 | Release | |
 
-## Open Decisions
+## Các Quyết định chưa ngã ngũ (Open Decisions)
 
-- Item.
+- Mục.
 
-## First Story Candidates
+## Các Story ứng viên đầu tiên (First Story Candidates)
 
-- Item.
+- Mục.
 
-## Harness Delta
+## Thay đổi Harness (Harness Delta)
 
-What harness changes were made or should be proposed because of this spec?
+Những thay đổi harness nào đã được thực hiện hoặc nên được đề xuất do đặc tả này mang lại?

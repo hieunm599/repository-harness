@@ -1,136 +1,129 @@
-# Context Engineering Rules
+# Các Quy tắc Kỹ thuật Ngữ cảnh (Context Engineering Rules)
 
-Context rules help agents decide what to read, when to read it, and when to
-stop reading. They are additive to the stable `AGENTS.md` reading list.
+Các quy tắc ngữ cảnh (context rules) giúp agent quyết định tài liệu nào cần đọc, khi nào nên đọc và khi nào nên dừng đọc. Chúng bổ sung cho danh sách tài liệu cần đọc ổn định trong file `AGENTS.md`.
 
-The goal is not to maximize context. The goal is to put the right information
-in the model for the current task phase and risk lane.
+Mục tiêu không phải là tối đa hóa ngữ cảnh. Mục tiêu là đưa thông tin phù hợp vào mô hình cho giai đoạn nhiệm vụ (task phase) và làn rủi ro (risk lane) hiện tại.
 
-## Context Phases
+## Các Giai đoạn Ngữ cảnh (Context Phases)
 
-### Intake Phase
+### Giai đoạn Tiếp nhận (Intake Phase)
 
-Read to classify the request, find the affected surface, and choose a lane.
+Đọc để phân loại yêu cầu, tìm bề mặt bị ảnh hưởng và chọn làn rủi ro (lane).
 
-| Document Or Source | Tiny | Normal | High-Risk |
+| Tài liệu hoặc Nguồn | Nhỏ (Tiny) | Bình thường (Normal) | Rủi ro cao (High-Risk) |
 | --- | --- | --- | --- |
-| `AGENTS.md` | Must | Must | Must |
-| `docs/FEATURE_INTAKE.md` | Must | Must | Must |
-| `scripts/bin/harness-cli query matrix` | Must | Must | Must |
-| `README.md` | Should | Must | Must |
-| `docs/HARNESS.md` | Should | Must | Must |
-| `docs/ARCHITECTURE.md` | Skip | Should | Must |
-| Relevant `docs/product/*` | Skip if unrelated | Must if product behavior changes | Must |
-| Relevant `docs/stories/*` | Skip if unrelated | Must if a story exists | Must |
-| `docs/decisions/*` | Skip | Should if architecture or durable rules are touched | Must |
-| `docs/HARNESS_COMPONENTS.md` | Skip | Should for Harness improvements | Must for observability or benchmark work |
+| `AGENTS.md` | Bắt buộc (Must) | Bắt buộc (Must) | Bắt buộc (Must) |
+| `docs/FEATURE_INTAKE.md` | Bắt buộc (Must) | Bắt buộc (Must) | Bắt buộc (Must) |
+| `scripts/bin/harness-cli query matrix` | Bắt buộc (Must) | Bắt buộc (Must) | Bắt buộc (Must) |
+| `README.md` | Nên (Should) | Bắt buộc (Must) | Bắt buộc (Must) |
+| `docs/HARNESS.md` | Nên (Should) | Bắt buộc (Must) | Bắt buộc (Must) |
+| `docs/ARCHITECTURE.md` | Bỏ qua (Skip) | Nên (Should) | Bắt buộc (Must) |
+| `docs/product/*` liên quan | Bỏ qua nếu không liên quan | Bắt buộc nếu hành vi sản phẩm thay đổi | Bắt buộc (Must) |
+| `docs/stories/*` liên quan | Bỏ qua nếu không liên quan | Bắt buộc nếu tồn tại story | Bắt buộc (Must) |
+| `docs/decisions/*` liên quan | Bỏ qua (Skip) | Nên nếu chạm đến kiến trúc hoặc quy tắc lâu dài | Bắt buộc (Must) |
+| `docs/HARNESS_COMPONENTS.md` | Bỏ qua (Skip) | Nên đối với cải tiến Harness | Bắt buộc đối với công việc về khả năng quan sát hoặc benchmark |
 
-### Planning Phase
+### Giai đoạn Lên kế hoạch (Planning Phase)
 
-Read to decide the smallest safe approach and expected proof.
+Đọc để quyết định phương pháp tiếp cận an toàn nhỏ nhất và bằng chứng xác thực (proof) dự kiến.
 
-| Document Or Source | Tiny | Normal | High-Risk |
+| Tài liệu hoặc Nguồn | Nhỏ (Tiny) | Bình thường (Normal) | Rủi ro cao (High-Risk) |
 | --- | --- | --- | --- |
-| Current files to edit | Must | Must | Must |
-| `docs/templates/story.md` | Skip | Must when creating/updating a story | Should |
-| `docs/templates/high-risk-story/*` | Skip | Skip unless risk escalates | Must |
-| `docs/ARCHITECTURE.md` | Skip | Should for code or boundary changes | Must |
-| `docs/TEST_MATRIX.md` or `scripts/bin/harness-cli query matrix` | Should | Must | Must |
-| Relevant decisions | Skip | Should | Must |
-| `docs/HARNESS_MATURITY.md` | Skip | Should for Harness improvements | Must for maturity or process changes |
-| `docs/HARNESS_BACKLOG.md` and `scripts/bin/harness-cli query backlog` | Skip | Should if friction repeats | Must if changing Harness behavior |
+| Các file hiện tại cần chỉnh sửa | Bắt buộc (Must) | Bắt buộc (Must) | Bắt buộc (Must) |
+| `docs/templates/story.md` | Bỏ qua (Skip) | Bắt buộc khi tạo/cập nhật một story | Nên (Should) |
+| `docs/templates/high-risk-story/*` | Bỏ qua (Skip) | Bỏ qua trừ khi rủi ro leo thang | Bắt buộc (Must) |
+| `docs/ARCHITECTURE.md` | Bỏ qua (Skip) | Nên đối với các thay đổi về mã nguồn hoặc ranh giới | Bắt buộc (Must) |
+| `docs/TEST_MATRIX.md` hoặc `scripts/bin/harness-cli query matrix` | Nên (Should) | Bắt buộc (Must) | Bắt buộc (Must) |
+| Các quyết định kỹ thuật liên quan | Bỏ qua (Skip) | Nên (Should) | Bắt buộc (Must) |
+| `docs/HARNESS_MATURITY.md` | Bỏ qua (Skip) | Nên đối với cải tiến Harness | Bắt buộc đối với các thay đổi về độ hoàn thiện hoặc quy trình |
+| `docs/HARNESS_BACKLOG.md` và `scripts/bin/harness-cli query backlog` | Bỏ qua (Skip) | Nên nếu độ ma sát (friction) lặp lại | Bắt buộc nếu thay đổi hành vi Harness |
 
-### Implementation Phase
+### Giai đoạn Triển khai (Implementation Phase)
 
-Read while making the change. Keep this phase scoped to files that directly
-affect the selected story.
+Đọc trong khi thực hiện thay đổi. Giới hạn giai đoạn này trong các file ảnh hưởng trực tiếp đến story đã chọn.
 
-| Document Or Source | Tiny | Normal | High-Risk |
+| Tài liệu hoặc Nguồn | Nhỏ (Tiny) | Bình thường (Normal) | Rủi ro cao (High-Risk) |
 | --- | --- | --- | --- |
-| Files being changed | Must | Must | Must |
-| Adjacent files with same pattern | Should | Must | Must |
-| Relevant product docs | Skip if copy-only | Must if behavior changes | Must |
-| Relevant story packet | Skip if no story needed | Must | Must |
-| Relevant templates | Skip | Should when adding docs | Must |
-| `docs/ARCHITECTURE.md` | Skip | Should for structural changes | Must |
-| Provider/API/security docs | Skip | Should if touched | Must |
-| Unrelated docs and historical traces | Skip | Skip | Should only if they affect decisions |
+| Các file đang được thay đổi | Bắt buộc (Must) | Bắt buộc (Must) | Bắt buộc (Must) |
+| Các file liền kề có cùng mẫu thiết kế | Nên (Should) | Bắt buộc (Must) | Bắt buộc (Must) |
+| Tài liệu sản phẩm liên quan | Bỏ qua nếu chỉ sao chép nội dung | Bắt buộc nếu hành vi thay đổi | Bắt buộc (Must) |
+| Gói story packet liên quan | Bỏ qua nếu không cần story | Bắt buộc (Must) | Bắt buộc (Must) |
+| Các template liên quan | Bỏ qua (Skip) | Nên khi thêm tài liệu | Bắt buộc (Must) |
+| `docs/ARCHITECTURE.md` | Bỏ qua (Skip) | Nên đối với các thay đổi về mặt cấu trúc | Bắt buộc (Must) |
+| Tài liệu của Provider/API/bảo mật | Bỏ qua (Skip) | Nên nếu bị ảnh hưởng | Bắt buộc (Must) |
+| Tài liệu không liên quan và trace lịch sử | Bỏ qua (Skip) | Bỏ qua (Skip) | Chỉ nên nếu chúng ảnh hưởng đến các quyết định kỹ thuật |
 
-### Validation Phase
+### Giai đoạn Xác thực (Validation Phase)
 
-Read to prove the change and avoid claiming unsupported completion.
+Đọc để chứng minh sự thay đổi và tránh tuyên bố hoàn thành không có căn cứ.
 
-| Document Or Source | Tiny | Normal | High-Risk |
+| Tài liệu hoặc Nguồn | Nhỏ (Tiny) | Bình thường (Normal) | Rủi ro cao (High-Risk) |
 | --- | --- | --- | --- |
-| Story acceptance criteria | Should | Must | Must |
-| `docs/TEST_MATRIX.md` or `scripts/bin/harness-cli query matrix` | Should | Must | Must |
-| Validation section of story packet | Skip if no story | Must | Must |
-| `docs/templates/validation-report.md` | Skip | Should for notable proof | Must for high-risk proof |
-| Relevant commands from README/package docs | Should | Must | Must |
-| Benchmark protocol or external benchmark repo | Skip | Skip unless requested | Must if the story depends on benchmark proof |
-| `docs/HARNESS_MATURITY.md` | Skip | Should for Harness improvements | Must for maturity claims |
+| Tiêu chí nghiệm thu của Story | Nên (Should) | Bắt buộc (Must) | Bắt buộc (Must) |
+| `docs/TEST_MATRIX.md` hoặc `scripts/bin/harness-cli query matrix` | Nên (Should) | Bắt buộc (Must) | Bắt buộc (Must) |
+| Phần xác thực của gói story packet | Bỏ qua nếu không có story | Bắt buộc (Must) | Bắt buộc (Must) |
+| `docs/templates/validation-report.md` | Bỏ qua (Skip) | Nên đối với bằng chứng đáng chú ý | Bắt buộc đối với bằng chứng rủi ro cao |
+| Các lệnh liên quan từ README/tài liệu package | Nên (Should) | Bắt buộc (Must) | Bắt buộc (Must) |
+| Giao thức benchmark hoặc repo benchmark bên ngoài | Bỏ qua (Skip) | Bỏ qua trừ khi có yêu cầu | Bắt buộc nếu story phụ thuộc vào bằng chứng benchmark |
+| `docs/HARNESS_MATURITY.md` | Bỏ qua (Skip) | Nên đối với cải tiến Harness | Bắt buộc đối với tuyên bố về độ hoàn thiện |
 
-### Trace Phase
+### Giai đoạn Dấu vết (Trace Phase)
 
-Read to leave useful evidence for the next agent and for benchmark scoring.
+Đọc để để lại bằng chứng hữu ích cho agent tiếp theo và để chấm điểm benchmark.
 
-| Document Or Source | Tiny | Normal | High-Risk |
+| Tài liệu hoặc Nguồn | Nhỏ (Tiny) | Bình thường (Normal) | Rủi ro cao (High-Risk) |
 | --- | --- | --- | --- |
-| `docs/TRACE_SPEC.md` | Should | Must | Must |
-| `scripts/bin/harness-cli query matrix` | Should | Must | Must |
-| `scripts/bin/harness-cli query backlog` | Skip | Should if friction occurred | Must |
-| Changed-file list from `git status --short` | Must | Must | Must |
-| Validation command output | Should | Must | Must |
-| Story packet or progress log | Skip if no story | Must | Must |
-| `docs/HARNESS_COMPONENTS.md` | Skip | Should if attributing friction | Must if failure attribution is needed |
+| `docs/TRACE_SPEC.md` | Nên (Should) | Bắt buộc (Must) | Bắt buộc (Must) |
+| `scripts/bin/harness-cli query matrix` | Nên (Should) | Bắt buộc (Must) | Bắt buộc (Must) |
+| `scripts/bin/harness-cli query backlog` | Bỏ qua (Skip) | Nên nếu xảy ra ma sát | Bắt buộc (Must) |
+| Danh sách các file thay đổi từ `git status --short` | Bắt buộc (Must) | Bắt buộc (Must) | Bắt buộc (Must) |
+| Đầu ra của lệnh xác thực | Nên (Should) | Bắt buộc (Must) | Bắt buộc (Must) |
+| Gói story packet hoặc nhật ký tiến trình | Bỏ qua nếu không có story | Bắt buộc (Must) | Bắt buộc (Must) |
+| `docs/HARNESS_COMPONENTS.md` | Bỏ qua (Skip) | Nên nếu quy cho độ ma sát | Bắt buộc nếu cần quy trách nhiệm lỗi |
 
-## Retrieval Triggers
+## Các Bộ kích hoạt Truy xuất (Retrieval Triggers)
 
-| Trigger Condition | Action |
+| Điều kiện Kích hoạt | Hành động |
 | --- | --- |
-| Task touches database schema, durable records, or migrations | Read `docs/decisions/0004-sqlite-durable-layer.md`, `scripts/schema/`, and relevant CLI code before planning. |
-| Task touches CLI command behavior or installer distribution | Read `docs/decisions/0005-prebuilt-rust-harness-cli.md`, `scripts/README.md`, relevant `crates/harness-cli/*` code, CLI help output, and installer docs. |
-| Task touches auth, authorization, audit/security, data loss, or external providers | Treat as high-risk, read `docs/templates/high-risk-story/*`, and check prior decisions before implementation. |
-| Task changes public API shape, product behavior, or user-visible workflow | Read relevant `docs/product/*`, story packets, and validation expectations before editing. |
-| Task changes Harness policy, source hierarchy, risk classification, or validation requirements | Read `docs/HARNESS.md`, `docs/FEATURE_INTAKE.md`, `docs/ARCHITECTURE.md`, and `docs/decisions/*`; pause if direction is ambiguous. |
-| Task discovers repeated confusion, stale docs, or missing proof | Read `docs/HARNESS_BACKLOG.md`, record `harness_friction`, and add a backlog item when the fix is out of scope. |
-| Task makes a maturity, observability, trace quality, or benchmark claim | Read `docs/HARNESS_COMPONENTS.md`, `docs/HARNESS_MATURITY.md`, and `docs/TRACE_SPEC.md`. |
-| Task is normal or high-risk and spans multiple iterations | Create or update a story/progress file under `docs/stories/` and keep it current. |
-| Final response is being prepared | Re-read the validation evidence, `git status --short`, and `docs/TRACE_SPEC.md` before recording the final trace. |
+| Nhiệm vụ liên quan đến lược đồ cơ sở dữ liệu (database schema), bản ghi bền vững hoặc migration | Đọc `docs/decisions/0004-sqlite-durable-layer.md`, `scripts/schema/` và mã nguồn CLI liên quan trước khi lên kế hoạch. |
+| Nhiệm vụ liên quan đến hành vi lệnh CLI hoặc phân phối trình cài đặt (installer) | Đọc `docs/decisions/0005-prebuilt-rust-harness-cli.md`, `scripts/README.md`, mã nguồn `crates/harness-cli/*` liên quan, đầu ra trợ giúp của CLI và tài liệu trình cài đặt. |
+| Nhiệm vụ liên quan đến xác thực (auth), phân quyền (authorization), kiểm toán/bảo mật, mất mát dữ liệu hoặc nhà cung cấp bên ngoài | Coi như rủi ro cao, đọc `docs/templates/high-risk-story/*` và kiểm tra các quyết định trước đó trước khi triển khai. |
+| Nhiệm vụ thay đổi cấu trúc API công khai, hành vi sản phẩm hoặc luồng công việc hiển thị với người dùng | Đọc các file `docs/product/*` liên quan, các story packet và kỳ vọng xác thực trước khi chỉnh sửa. |
+| Nhiệm vụ thay đổi chính sách Harness, phân cấp nguồn, phân loại rủi ro hoặc yêu cầu xác thực | Đọc `docs/HARNESS.md`, `docs/FEATURE_INTAKE.md`, `docs/ARCHITECTURE.md` và `docs/decisions/*`; tạm dừng nếu hướng đi mơ hồ. |
+| Nhiệm vụ phát hiện sự mơ hồ lặp lại, tài liệu cũ hoặc thiếu bằng chứng xác thực | Đọc `docs/HARNESS_BACKLOG.md`, ghi lại `harness_friction` và thêm một mục backlog khi việc sửa lỗi nằm ngoài phạm vi. |
+| Nhiệm vụ đưa ra tuyên bố về độ hoàn thiện (maturity), khả năng quan sát (observability), chất lượng trace hoặc benchmark | Đọc `docs/HARNESS_COMPONENTS.md`, `docs/HARNESS_MATURITY.md` và `docs/TRACE_SPEC.md`. |
+| Nhiệm vụ có rủi ro bình thường hoặc cao và kéo dài qua nhiều lần lặp (iteration) | Tạo hoặc cập nhật một file story/tiến trình trong thư mục `docs/stories/` và cập nhật nó thường xuyên. |
+| Phản hồi cuối cùng đang được chuẩn bị | Đọc lại bằng chứng xác thực, lệnh `git status --short` và `docs/TRACE_SPEC.md` trước khi ghi lại trace cuối cùng. |
 
-## Token Budget Guidance
+## Hướng dẫn Ngân sách Token (Token Budget Guidance)
 
-| Lane | Target Context Budget | Read Shape | Reasoning |
+| Làn rủi ro | Ngân sách Ngữ cảnh Mục tiêu | Cấu trúc Đọc (Read Shape) | Lý do |
 | --- | --- | --- | --- |
-| Tiny | About 2K tokens of Harness context | `AGENTS.md`, `docs/FEATURE_INTAKE.md`, matrix query, and the exact file being changed. | Tiny work should not spend more context on policy than on the edit. |
-| Normal | About 5K tokens of Harness context | Intake docs, relevant product/story docs, architecture when structural, validation expectations, and trace spec at the end. | Normal work needs enough context to preserve contracts and record proof without reading every historical file. |
-| High-risk | About 10K tokens of Harness context | Full intake, architecture, relevant decisions, high-risk templates, product docs, validation docs, trace spec, and component/maturity docs when Harness behavior changes. | High-risk work needs source hierarchy, prior decisions, and proof expectations in context before implementation. |
+| Nhỏ (Tiny) | Khoảng 2K token ngữ cảnh Harness | `AGENTS.md`, `docs/FEATURE_INTAKE.md`, truy vấn ma trận và chính xác file đang được thay đổi. | Công việc nhỏ không nên tiêu tốn nhiều ngữ cảnh cho chính sách hơn là cho việc chỉnh sửa code thực tế. |
+| Bình thường (Normal) | Khoảng 5K token ngữ cảnh Harness | Tài liệu intake, tài liệu sản phẩm/story liên quan, tài liệu kiến trúc khi liên quan đến cấu trúc, kỳ vọng xác thực và đặc tả trace ở cuối. | Công việc bình thường cần đủ ngữ cảnh để bảo toàn các ràng buộc và ghi lại bằng chứng xác thực mà không cần đọc mọi file lịch sử. |
+| Rủi ro cao (High-risk) | Khoảng 10K token ngữ cảnh Harness | Đầy đủ tài liệu intake, tài liệu kiến trúc, các quyết định liên quan, template rủi ro cao, tài liệu sản phẩm, tài liệu xác thực, đặc tả trace, tài liệu thành phần/độ hoàn thiện khi hành vi Harness thay đổi. | Công việc rủi ro cao cần phân cấp nguồn, các quyết định trước đó và kỳ vọng bằng chứng xác thực trong ngữ cảnh trước khi triển khai. |
 
-Budget rules:
+Quy tắc ngân sách:
 
-- Prefer targeted `rg` searches over bulk reading.
-- Read the smallest section that answers the current phase question.
-- Escalate context when a retrieval trigger fires.
-- Do not keep reading unrelated history after the lane, affected files, and
-  validation path are clear.
+- Ưu tiên tìm kiếm mục tiêu bằng `rg` hơn là đọc hàng loạt.
+- Đọc phần nhỏ nhất trả lời cho câu hỏi của giai đoạn hiện tại.
+- Leo thang ngữ cảnh khi bộ kích hoạt truy xuất hoạt động.
+- Không tiếp tục đọc lịch sử không liên quan sau khi làn rủi ro, các file bị ảnh hưởng và đường dẫn xác thực đã rõ ràng.
 
-## Additive Behavior
+## Hành vi Bổ trợ (Additive Behavior)
 
-These rules do not replace `AGENTS.md`. Agents should still read the stable
-entrypoint documents listed there before work. This document explains what to
-retrieve after that initial context, based on lane, phase, and trigger.
+Các quy tắc này không thay thế `AGENTS.md`. Agent vẫn nên đọc các tài liệu điểm vào ổn định được liệt kê ở đó trước khi làm việc. Tài liệu này giải thích những gì cần truy xuất sau ngữ cảnh ban đầu đó, dựa trên làn rủi ro, giai đoạn và bộ kích hoạt.
 
-## Review Checklist
+## Danh sách Kiểm tra (Review Checklist)
 
-Before implementation:
+Trước khi triển khai:
 
-- Lane is chosen from `docs/FEATURE_INTAKE.md`.
-- Relevant product docs or story packets are identified.
-- Any high-risk trigger has been handled.
+- Làn rủi ro (lane) được chọn từ `docs/FEATURE_INTAKE.md`.
+- Tài liệu sản phẩm hoặc các story packet liên quan được xác định.
+- Bất kỳ bộ kích hoạt rủi ro cao nào đã được xử lý.
 
-Before final response:
+Trước phản hồi cuối cùng:
 
-- Validation evidence has been read.
-- `docs/TRACE_SPEC.md` has been read for normal/high-risk tasks.
-- The final trace includes files read, files changed, outcome, and friction
-  when applicable.
+- Bằng chứng xác thực (validation evidence) đã được đọc.
+- Tài liệu `docs/TRACE_SPEC.md` đã được đọc đối với các nhiệm vụ bình thường/rủi ro cao.
+- Trace cuối cùng bao gồm các file đã đọc, các file đã thay đổi, kết quả và độ ma sát nếu có.

@@ -1,12 +1,12 @@
-# Validation
+# Xác thực (Validation)
 
-## Proof Strategy
+## Chiến lược Kiểm chứng (Proof Strategy)
 
-Explain what must pass before the story is done.
+Giải thích những gì phải vượt qua (pass) trước khi story hoàn thành.
 
-## Test Plan
+## Kế hoạch Kiểm thử (Test Plan)
 
-| Layer | Cases |
+| Phân lớp (Layer) | Các kịch bản kiểm thử (Cases) |
 | --- | --- |
 | Unit | |
 | Integration | |
@@ -15,19 +15,18 @@ Explain what must pass before the story is done.
 | Performance | |
 | Logs/Audit | |
 
-## Fixtures
+## Fixtures (Dữ liệu mẫu/Cố định)
 
-List deterministic users, accounts, records, provider responses, or other
-fixtures needed for repeatable proof.
+Liệt kê người dùng cố định, tài khoản, bản ghi, phản hồi mẫu từ nhà cung cấp hoặc các dữ liệu cố định (fixtures) khác cần thiết để chạy kiểm chứng lặp lại.
 
-## Commands
+## Các lệnh thực thi (Commands)
 
-Add commands after scripts exist.
+Thêm các lệnh chạy sau khi các kịch bản kiểm thử đã tồn tại.
 
 ```text
-TBD
+TBD (Sẽ bổ sung)
 ```
 
-## Acceptance Evidence
+## Bằng chứng Nghiệm thu (Acceptance Evidence)
 
-Add results after verification.
+Thêm các kết quả kiểm thử sau khi hoàn thành xác thực.

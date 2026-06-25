@@ -1,22 +1,21 @@
-# Overview
+# Tổng quan (Overview)
 
-## Current Behavior
+## Hành vi Hiện tại (Current Behavior)
 
-Describe the current product or repo behavior.
+Mô tả hành vi hiện tại của sản phẩm hoặc kho lưu trữ.
 
-## Target Behavior
+## Hành vi Mục tiêu (Target Behavior)
 
-Describe the behavior after the story is complete.
+Mô tả hành vi sau khi story được hoàn thành.
 
-## Affected Users
+## Người dùng bị ảnh hưởng (Affected Users)
 
-- Role.
+- Vai trò (Role).
 
-## Affected Product Docs
+## Tài liệu Sản phẩm bị ảnh hưởng (Affected Product Docs)
 
 - `docs/product/...`
 
-## Non-Goals
+## Phi mục tiêu (Non-Goals)
 
-- Item.
-
+- Mục.

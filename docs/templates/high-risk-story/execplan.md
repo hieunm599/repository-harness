@@ -1,44 +1,43 @@
-# Exec Plan
+# Kế hoạch Thực hiện (Exec Plan)
 
-## Goal
+## Mục tiêu (Goal)
 
-What outcome are we trying to produce?
+Kết quả nào chúng ta đang cố gắng tạo ra?
 
-## Scope
+## Phạm vi (Scope)
 
-In scope:
+Trong phạm vi (In scope):
 
-- Item.
+- Mục.
 
-Out of scope:
+Ngoài phạm vi (Out of scope):
 
-- Item.
+- Mục.
 
-## Risk Classification
+## Phân loại Rủi ro (Risk Classification)
 
-Risk flags:
+Các cờ rủi ro (Risk flags):
 
-- Flag.
+- Cờ.
 
-Hard gates:
+Các chốt chặn cứng (Hard gates):
 
-- Gate.
+- Chốt chặn.
 
-## Work Phases
+## Các Giai đoạn Công việc (Work Phases)
 
-1. Discovery.
-2. Design.
-3. Validation planning.
-4. Implementation.
-5. Verification.
-6. Harness update.
+1. Khám phá (Discovery).
+2. Thiết kế (Design).
+3. Lập kế hoạch xác thực (Validation planning).
+4. Triển khai thực tế (Implementation).
+5. Xác thực (Verification).
+6. Cập nhật Harness (Harness update).
 
-## Stop Conditions
+## Điều kiện Dừng (Stop Conditions)
 
-Pause for human confirmation if:
+Tạm dừng để xin xác nhận từ con người nếu:
 
-- Product behavior is ambiguous.
-- Data migration or deletion risk appears.
-- Validation requirements need to be weakened.
-- Architecture direction changes.
-
+- Hành vi sản phẩm mơ hồ.
+- Xuất hiện rủi ro xóa hoặc di chuyển dữ liệu.
+- Các yêu cầu xác thực cần bị làm yếu đi.
+- Hướng đi kiến trúc thay đổi.

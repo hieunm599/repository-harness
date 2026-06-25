@@ -1,59 +1,51 @@
-# Harness Maturity Ladder
+# Nấc thang Độ hoàn thiện Harness (Harness Maturity Ladder)
 
-This ladder defines how `repository-harness` should progress from static
-agent instructions to measurable harness improvement.
+Nấc thang này định nghĩa cách `repository-harness` nên phát triển từ các hướng dẫn agent tĩnh sang các cải tiến harness có thể đo lường được.
 
-The levels are intentionally verifiable. A level is achieved only when its
-criteria can be inspected in repository files, durable Harness records, or
-benchmark output.
+Các cấp độ này được thiết kế để có thể xác thực một cách có chủ ý. Một cấp độ chỉ được coi là đạt được khi các tiêu chí của nó có thể được kiểm tra trong các file kho lưu trữ, các bản ghi Harness lâu dài hoặc kết quả đầu ra benchmark.
 
-## Levels
+## Các Cấp độ (Levels)
 
-### H0 - Bare Environment
+### H0 - Môi trường Thô sơ (Bare Environment)
 
-The model operates with no repository harness. It receives a prompt and may
-produce a patch, but the repo does not tell it how to classify, validate, or
-record work.
+Model hoạt động mà không có bất kỳ harness kho lưu trữ nào. Nó nhận được prompt và có thể tạo ra một bản vá (patch), nhưng repo không hướng dẫn nó cách phân loại, xác thực hoặc ghi lại công việc.
 
-Criteria:
+Tiêu chí (Criteria):
 
-- No `AGENTS.md` Harness block exists.
-- No feature intake policy exists.
-- No story, decision, validation, or trace artifact exists.
+- Không tồn tại khối Harness `AGENTS.md`.
+- Không tồn tại chính sách tiếp nhận tính năng (feature intake policy).
+- Không tồn tại artifact story, quyết định kỹ thuật (decision), xác thực (validation) hoặc trace.
 
-Required files:
+Các file bắt buộc:
 
-- None.
+- Không có.
 
-Benchmark indicators:
+Các chỉ số benchmark (Benchmark indicators):
 
-- Functional score is the only meaningful metric.
-- Harness compliance: 0%.
-- Trace quality: 0/3.
+- Điểm chức năng (Functional score) là số liệu có ý nghĩa duy nhất.
+- Độ tuân thủ Harness: 0%.
+- Chất lượng trace: 0/3.
 
-Current status:
+Trạng thái hiện tại:
 
-- Passed. This repository is beyond H0.
+- Đã vượt qua. Kho lưu trữ này đã vượt qua H0.
 
-Activated responsibilities:
+Các trách nhiệm được kích hoạt:
 
-- None.
+- Không có.
 
-### H1 - Scaffolding And Policy
+### H1 - Khung sườn và Chính sách (Scaffolding And Policy)
 
-The repository contains static operating instructions, templates, risk lanes,
-and source-of-truth rules. Agents can follow a documented workflow, but durable
-state may still be manual or incomplete.
+Kho lưu trữ chứa các hướng dẫn vận hành tĩnh, các template, các làn rủi ro và các quy tắc nguồn sự thật. Các agent có thể làm theo một luồng công việc được tài liệu hóa, nhưng trạng thái bền vững vẫn có thể là thủ công hoặc chưa đầy đủ.
 
-Criteria:
+Tiêu chí (Criteria):
 
-- `AGENTS.md` points agents to the Harness operating docs.
-- `docs/HARNESS.md`, `docs/FEATURE_INTAKE.md`, and `docs/ARCHITECTURE.md`
-  exist.
-- Story, decision, and validation templates exist under `docs/templates/`.
-- `docs/TEST_MATRIX.md` defines proof columns and status meanings.
+- File `AGENTS.md` trỏ agent đến tài liệu vận hành Harness.
+- Các file `docs/HARNESS.md`, `docs/FEATURE_INTAKE.md` và `docs/ARCHITECTURE.md` tồn tại.
+- Các template cho story, quyết định kỹ thuật và xác thực tồn tại trong thư mục `docs/templates/`.
+- File `docs/TEST_MATRIX.md` định nghĩa các cột bằng chứng và ý nghĩa trạng thái.
 
-Required files:
+Các file bắt buộc:
 
 - `AGENTS.md`
 - `docs/HARNESS.md`
@@ -64,43 +56,38 @@ Required files:
 - `docs/templates/decision.md`
 - `docs/templates/validation-report.md`
 
-Benchmark indicators:
+Các chỉ số benchmark:
 
-- Harness compliance: 20-40%.
-- Lane accuracy improves when agents read the intake policy.
-- Trace quality remains low unless traces are separately requested.
+- Độ tuân thủ Harness: 20-40%.
+- Độ chính xác của làn rủi ro (lane accuracy) được cải thiện khi agent đọc chính sách tiếp nhận (intake policy).
+- Chất lượng trace vẫn ở mức thấp trừ khi các trace được yêu cầu riêng biệt.
 
-Current status:
+Trạng thái hiện tại:
 
-- Achieved. H1 files exist and are used by current Harness instructions.
+- Đạt được. Các file H1 đã tồn tại và được sử dụng bởi các hướng dẫn Harness hiện tại.
 
-Activated responsibilities:
+Các trách nhiệm được kích hoạt:
 
-- Task specification.
-- Permissions.
-- Project memory.
-- Verification.
+- Đặc tả nhiệm vụ (Task specification).
+- Quyền hạn (Permissions).
+- Bộ nhớ dự án (Project memory).
+- Xác thực (Verification).
 
-### H2 - Durable State And Observability
+### H2 - Trạng thái Bền vững và Khả năng Quan sát (Durable State And Observability)
 
-The repository has structured operational records and explicit observation
-rules. Agents can record what happened, connect work to stories, and write
-traces with predictable depth.
+Kho lưu trữ có các bản ghi vận hành có cấu trúc và các quy tắc quan sát rõ ràng. Các agent có thể ghi lại những gì đã xảy ra, kết nối công việc với các story và ghi lại trace với độ sâu có thể dự đoán trước.
 
-Criteria:
+Tiêu chí (Criteria):
 
-- `scripts/bin/harness-cli` can record intake, story, decision, backlog, and trace
-  data in `harness.db`.
-- `scripts/schema/001-init.sql` defines durable tables for intake, story,
-  decision, backlog, and trace records.
-- `docs/HARNESS_COMPONENTS.md` maps files and responsibilities.
-- `docs/HARNESS_MATURITY.md` defines H0-H5 with measurable criteria.
-- `docs/TRACE_SPEC.md` defines trace fields, quality tiers, and friction
-  capture.
-- `docs/CONTEXT_RULES.md` defines phase-by-lane context rules.
-- `AGENTS.md` and `docs/HARNESS.md` reference the Phase 2 operating docs.
+- `scripts/bin/harness-cli` có thể ghi lại dữ liệu tiếp nhận (intake), story, quyết định kỹ thuật (decision), backlog và trace vào cơ sở dữ liệu `harness.db`.
+- File `scripts/schema/001-init.sql` định nghĩa các bảng bền vững cho tiếp nhận, story, quyết định kỹ thuật, backlog và trace.
+- File `docs/HARNESS_COMPONENTS.md` ánh xạ các file và trách nhiệm.
+- File `docs/HARNESS_MATURITY.md` định nghĩa H0-H5 với các tiêu chí có thể đo lường được.
+- File `docs/TRACE_SPEC.md` định nghĩa các trường của trace, các cấp chất lượng (quality tiers) và việc ghi nhận ma sát.
+- File `docs/CONTEXT_RULES.md` định nghĩa các quy tắc ngữ cảnh theo giai đoạn và làn rủi ro.
+- `AGENTS.md` và `docs/HARNESS.md` tham chiếu đến các tài liệu vận hành Phase 2.
 
-Required files:
+Các file bắt buộc:
 
 - `scripts/bin/harness-cli`
 - `scripts/schema/001-init.sql`
@@ -109,208 +96,168 @@ Required files:
 - `docs/TRACE_SPEC.md`
 - `docs/CONTEXT_RULES.md`
 
-Benchmark indicators:
+Các chỉ số benchmark:
 
-- Harness compliance: 75-90%.
-- Trace quality: at least 2.0/3 on normal-lane tasks.
-- Lane accuracy: 6/6 on the current benchmark suite.
-- Friction captured: at least 4/6 benchmark tasks when friction exists.
+- Độ tuân thủ Harness: 75-90%.
+- Chất lượng trace: ít nhất đạt 2.0/3 đối với các tác vụ thuộc làn rủi ro bình thường (normal-lane).
+- Độ chính xác làn rủi ro: 6/6 trên bộ suite benchmark hiện tại.
+- Ghi nhận ma sát: ít nhất 4/6 tác vụ benchmark khi có ma sát xảy ra.
 
-Current status:
+Trạng thái hiện tại:
 
-- Achieved. Durable state exists, and the Phase 2 docs define the
-  observability and context specification. Phase 3 active scoring builds on
-  this layer.
+- Đạt được. Trạng thái bền vững đã tồn tại, các tài liệu Phase 2 định nghĩa đặc tả khả năng quan sát và ngữ cảnh. Việc chấm điểm chủ động Phase 3 được xây dựng dựa trên lớp này.
 
-Activated responsibilities:
+Các trách nhiệm được kích hoạt:
 
-- Task state.
-- Observability.
-- Failure attribution.
-- Context selection.
-- Entropy auditing.
+- Trạng thái nhiệm vụ (Task state).
+- Khả năng quan sát (Observability).
+- Quy trách nhiệm lỗi (Failure attribution).
+- Lựa chọn ngữ cảnh (Context selection).
+- Kiểm toán entropy (Entropy auditing).
 
-### H3 - Active Observability And Evolution
+### H3 - Khả năng Quan sát Chủ động và Tiến hóa (Active Observability And Evolution)
 
-The harness can evaluate its own operational data and turn repeated failures
-into prioritized improvements.
+Harness có thể tự đánh giá dữ liệu vận hành của riêng mình và biến các lỗi lặp đi lặp lại thành các cải tiến được ưu tiên.
 
-Criteria:
+Tiêu chí (Criteria):
 
-- Trace quality can be scored by a repeatable command or benchmark step.
-- Harness friction can be grouped by component from `docs/HARNESS_COMPONENTS.md`.
-- Backlog items include predicted impact and actual outcome after completion.
-- Benchmark comparison output identifies which harness responsibility moved or
-  regressed.
+- Chất lượng trace có thể được chấm điểm bằng một lệnh lặp lại hoặc một bước benchmark.
+- Ma sát harness có thể được nhóm theo thành phần từ file `docs/HARNESS_COMPONENTS.md`.
+- Các mục backlog bao gồm tác động dự kiến và kết quả thực tế sau khi hoàn thành.
+- Kết quả so sánh benchmark xác định trách nhiệm harness nào đã thay đổi hoặc bị thoái lui (regressed).
 
-Required files:
+Các file bắt buộc:
 
-- H2 files.
-- A benchmark protocol or report that references maturity levels.
-- A documented trace quality scoring method.
-- A documented friction-to-backlog review loop.
+- Các file H2.
+- Giao thức benchmark hoặc báo cáo tham chiếu đến các cấp độ hoàn thiện.
+- Phương pháp chấm điểm chất lượng trace được tài liệu hóa.
+- Vòng lặp đánh giá từ ma sát sang backlog được tài liệu hóa.
 
-Benchmark indicators:
+Các chỉ số benchmark:
 
-- Harness compliance: 85-95%.
-- Trace quality: 2.3-2.7/3.
-- Friction captured and classified by component for most failed or awkward
-  tasks.
-- Regressions include an attributed harness component.
+- Độ tuân thủ Harness: 85-95%.
+- Chất lượng trace: 2.3-2.7/3.
+- Thu thập và phân loại ma sát theo thành phần cho hầu hết các nhiệm vụ thất bại hoặc gặp khó khăn.
+- Các thoái lui (regressions) bao gồm việc quy trách nhiệm cho một thành phần harness cụ thể.
 
-Current status:
+Trạng thái hiện tại:
 
-- Partially achieved by Phase 3. `scripts/bin/harness-cli score-trace` scores trace
-  quality against tier rules, `query friction` includes linked intake context,
-  the `trace` command now prints that score at write time, and the backlog
-  outcome loop documents predicted impact versus actual outcome. Full H3 still
-  requires benchmark comparison output that attributes moved or regressed
-  responsibilities.
+- Đạt được một phần bởi Phase 3. Lệnh `scripts/bin/harness-cli score-trace` chấm điểm chất lượng trace theo các quy tắc cấp độ, `query friction` bao gồm ngữ cảnh tiếp nhận liên kết, lệnh `trace` in ra điểm số đó tại thời điểm ghi ghi nhận trace, và vòng lặp kết quả backlog ghi lại tác động dự kiến so với kết quả thực tế. H3 đầy đủ vẫn yêu cầu đầu ra so sánh benchmark quy trách nhiệm cho các phần bị thay đổi hoặc thoái lui.
 
-Activated responsibilities:
+Các trách nhiệm được kích hoạt:
 
-- Observability.
-- Failure attribution.
-- Entropy auditing.
-- Intervention recording.
+- Khả năng quan sát.
+- Quy trách nhiệm lỗi.
+- Kiểm toán entropy.
+- Ghi nhận sự can thiệp (Intervention recording).
 
-### H4 - Automated Verification
+### H4 - Xác thực Tự động (Automated Verification)
 
-The harness can run or orchestrate proof checks consistently and can reject or
-flag incomplete work before the final response.
+Harness có thể chạy hoặc điều phối các kiểm tra chứng thực (proof checks) một cách nhất quán và có thể từ chối hoặc gắn cờ công việc chưa hoàn thành trước khi đưa ra phản hồi cuối cùng.
 
-Criteria:
+Tiêu chí (Criteria):
 
-- A documented verification command or protocol runs the expected checks for a
-  selected story and lane.
-- Stories can store and execute a `verify_command`.
-- Trace recording warns when a linked story has a verification command that has
-  not passed.
-- Missing validation evidence is surfaced before a task is marked implemented.
+- Một lệnh xác thực hoặc giao thức được tài liệu hóa chạy các kiểm tra kỳ vọng cho một story và làn rủi ro đã chọn.
+- Các story có thể lưu trữ và thực thi một lệnh `verify_command`.
+- Việc ghi trace đưa ra cảnh báo khi một story liên kết có lệnh xác thực chưa từng vượt qua.
+- Các bằng chứng xác thực bị thiếu được phát hiện trước khi một nhiệm vụ được đánh dấu là đã triển khai.
 
-Required files:
+Các file bắt buộc:
 
-- H3 files.
-- A verification protocol or command reference.
-- Validation report examples tied to story proof columns.
-- Story verification command documentation.
+- Các file H3.
+- Giao thức xác thực hoặc tài liệu tham chiếu lệnh.
+- Các ví dụ báo cáo xác thực gắn liền với các cột bằng chứng của story.
+- Tài liệu hướng dẫn lệnh xác thực story.
 
-Benchmark indicators:
+Các chỉ số benchmark:
 
-- Functional score remains stable.
-- Harness compliance: at least 90%.
-- Fewer false "done" claims in benchmark review.
-- Missing proof is detected before merge or final response.
+- Điểm chức năng vẫn ổn định.
+- Độ tuân thủ Harness: ít nhất đạt 90%.
+- Giảm số lượng tuyên bố hoàn thành giả (false "done" claims) trong đánh giá benchmark.
+- Thiếu bằng chứng được phát hiện trước khi merge hoặc trước phản hồi cuối cùng.
 
-Current status:
+Trạng thái hiện tại:
 
-- Achieved by Phase 5. `scripts/bin/harness-cli story verify <id>` runs
-  story-level proof commands, records pass/fail state, `trace --story` warns
-  before close when verification has not passed, and
-  `scripts/bin/harness-cli story verify-all` runs all configured story proof
-  commands in one pass. Proof-column automation remains a future enhancement,
-  but H4's required automated verification gate is now present.
+- Đạt được bởi Phase 5. Lệnh `scripts/bin/harness-cli story verify <id>` chạy lệnh xác thực cấp độ story, ghi nhận trạng thái thành công/thất bại, cờ `trace --story` cảnh báo trước khi đóng trace khi việc xác thực chưa đạt, và lệnh `scripts/bin/harness-cli story verify-all` chạy tất cả các lệnh xác thực story đã cấu hình trong một lượt. Tự động hóa cột bằng chứng (proof-column automation) vẫn là một cải tiến trong tương lai, nhưng chốt chặn xác thực tự động yêu cầu bởi H4 hiện đã hiện diện.
 
-Activated responsibilities:
+Các trách nhiệm được kích hoạt:
 
-- Verification.
-- Task state.
-- Permissions.
-- Intervention recording.
+- Xác thực (Verification).
+- Trạng thái nhiệm vụ.
+- Quyền hạn (Permissions).
+- Ghi nhận sự can thiệp.
 
-### H5 - Self-Improving Harness
+### H5 - Harness Tự cải tiến (Self-Improving Harness)
 
-The harness can use traces, benchmark results, and backlog outcomes to propose
-or apply safe improvements to itself.
+Harness có thể sử dụng các trace, kết quả benchmark và kết quả backlog để đề xuất hoặc áp dụng các cải tiến an toàn cho chính nó.
 
-Criteria:
+Tiêu chí (Criteria):
 
-- Repeated friction patterns are summarized into proposed harness changes.
-- Proposed changes include predicted impact, risk, validation plan, and rollback
-  criteria.
-- Completed changes compare predicted impact with actual benchmark or trace
-  outcomes.
-- High-risk harness changes pause for human confirmation before changing source
-  hierarchy, architecture direction, or validation requirements.
+- Các mẫu ma sát lặp đi lặp lại được tóm tắt thành các đề xuất thay đổi harness.
+- Các thay đổi đề xuất bao gồm tác động dự kiến, mức độ rủi ro, kế hoạch xác thực và tiêu chí khôi phục (rollback criteria).
+- Các thay đổi đã hoàn thành so sánh tác động dự kiến với kết quả benchmark thực tế hoặc kết quả trace thực tế.
+- Các thay đổi harness rủi ro cao phải tạm dừng để con người xác nhận trước khi thay đổi phân cấp nguồn, hướng đi kiến trúc hoặc các yêu cầu xác thực.
 
-Required files:
+Các file bắt buộc:
 
-- H4 files.
-- Self-improvement protocol.
-- Historical improvement reports.
-- Backlog outcome reviews.
+- Các file H4.
+- Giao thức tự cải tiến (Self-improvement protocol).
+- Các báo cáo cải tiến lịch sử.
+- Các đánh giá kết quả backlog.
 
-Benchmark indicators:
+Các chỉ số benchmark:
 
-- Harness compliance remains at least 90% across repeated benchmark runs.
-- Trace quality remains at least 2.5/3.
-- Improvements show measurable positive deltas or are explicitly reverted.
-- Scope creep and validation weakening are caught by policy.
+- Độ tuân thủ Harness duy trì ở mức ít nhất 90% qua các lượt chạy benchmark lặp đi lặp lại.
+- Chất lượng trace duy trì ở mức ít nhất 2.5/3.
+- Các cải tiến chỉ ra các thay đổi tích cực có thể đo lường được hoặc được khôi phục một cách rõ ràng.
+- Việc phình to phạm vi (scope creep) và làm yếu đi các yêu cầu xác thực bị chốt chặn chính sách bắt giữ.
 
-Current status:
+Trạng thái hiện tại:
 
-- Partially achieved by Phase 5. `scripts/bin/harness-cli audit` detects
-  durable-state drift, `scripts/bin/harness-cli propose` generates structured
-  improvement proposals from friction, interventions, and audit results, and
-  `docs/IMPROVEMENT_PROTOCOL.md` defines the review loop. H5 is not fully
-  achieved until repeated benchmark outcomes prove proposed improvements create
-  measurable positive deltas or are explicitly reverted.
+- Đạt được một phần bởi Phase 5. Lệnh `scripts/bin/harness-cli audit` phát hiện sai lệch trạng thái bền vững, lệnh `scripts/bin/harness-cli propose` tạo ra các đề xuất cải tiến có cấu trúc từ ma sát, các can thiệp và kết quả kiểm toán, và file `docs/IMPROVEMENT_PROTOCOL.md` định nghĩa vòng lặp đánh giá. H5 chưa đạt được hoàn toàn cho đến khi kết quả benchmark lặp đi lặp lại chứng minh rằng các đề xuất cải tiến tạo ra các thay đổi tích cực có thể đo lường được hoặc được khôi phục một cách rõ ràng.
 
-Activated responsibilities:
+Các trách nhiệm được kích hoạt:
 
-- Entropy auditing.
-- Failure attribution.
-- Intervention recording.
-- Permissions.
+- Kiểm toán entropy.
+- Quy trách nhiệm lỗi.
+- Ghi nhận sự can thiệp.
+- Quyền hạn.
 
-## Current Assessment
+## Đánh giá Hiện tại (Current Assessment)
 
-| Level | Status | Evidence |
+| Cấp độ | Trạng thái | Bằng chứng |
 | --- | --- | --- |
-| H0 | Passed | Harness docs, templates, and durable records exist. |
-| H1 | Achieved | `AGENTS.md`, `docs/HARNESS.md`, `docs/FEATURE_INTAKE.md`, `docs/ARCHITECTURE.md`, `docs/templates/*`, and `docs/TEST_MATRIX.md` exist. |
-| H2 | Achieved | `scripts/bin/harness-cli`, `scripts/schema/001-init.sql`, durable story records, `docs/HARNESS_COMPONENTS.md`, `docs/HARNESS_MATURITY.md`, `docs/TRACE_SPEC.md`, and `docs/CONTEXT_RULES.md` define the Phase 2 surface. |
-| H3 | Partial | Phase 3 adds `scripts/bin/harness-cli score-trace`, enriched friction context, and the backlog outcome loop; Phase 4 auto-scores traces on write. Component-level benchmark attribution remains open. |
-| H4 | Achieved | Phase 4 adds story-level `verify_command`, `story verify`, and trace-time verification warnings. Phase 5 adds `story verify-all` for batch story proof. |
-| H5 | Partial | Phase 5 adds `audit`, `score-context`, `intervention add/query`, `propose`, `docs/HARNESS_AUDIT.md`, and `docs/IMPROVEMENT_PROTOCOL.md`; repeated benchmark outcome proof remains open. |
+| H0 | Đã vượt qua | Tài liệu Harness, các template và các bản ghi lâu dài đã tồn tại. |
+| H1 | Đạt được | `AGENTS.md`, `docs/HARNESS.md`, `docs/FEATURE_INTAKE.md`, `docs/ARCHITECTURE.md`, `docs/templates/*` và `docs/TEST_MATRIX.md` đã tồn tại. |
+| H2 | Đạt được | `scripts/bin/harness-cli`, `scripts/schema/001-init.sql`, các bản ghi story lâu dài, `docs/HARNESS_COMPONENTS.md`, `docs/HARNESS_MATURITY.md`, `docs/TRACE_SPEC.md` và `docs/CONTEXT_RULES.md` định nghĩa bề mặt Phase 2. |
+| H3 | Một phần | Phase 3 bổ sung lệnh `scripts/bin/harness-cli score-trace`, làm phong phú ngữ cảnh ma sát và vòng lặp kết quả backlog; Phase 4 tự động chấm điểm các trace khi ghi nhận. Việc quy trách nhiệm thoái lui benchmark ở cấp độ thành phần vẫn còn bỏ ngỏ. |
+| H4 | Đạt được | Phase 4 bổ sung `verify_command` ở cấp độ story, `story verify` và các cảnh báo xác thực tại thời điểm ghi trace. Phase 5 bổ sung lệnh `story verify-all` cho kiểm chứng story hàng loạt. |
+| H5 | Một phần | Phase 5 bổ sung `audit`, `score-context`, `intervention add/query`, `propose`, `docs/HARNESS_AUDIT.md` và `docs/IMPROVEMENT_PROTOCOL.md`; việc chứng thực kết quả benchmark lặp đi lặp lại vẫn còn bỏ ngỏ. |
 
-## Responsibility Activation
+## Kích hoạt Trách nhiệm (Responsibility Activation)
 
-| Responsibility | H0 | H1 | H2 | H3 | H4 | H5 |
+| Trách nhiệm | H0 | H1 | H2 | H3 | H4 | H5 |
 | --- | --- | --- | --- | --- | --- | --- |
-| Task specification | Missing | Covered | Covered | Covered | Covered | Covered |
-| Context selection | Missing | Partial | Covered | Covered | Covered | Covered |
-| Tool access | Missing | Partial | Partial | Partial | Covered | Covered |
-| Project memory | Missing | Covered | Covered | Covered | Covered | Covered |
-| Task state | Missing | Partial | Covered | Covered | Covered | Covered |
-| Observability | Missing | Missing | Partial | Covered | Covered | Covered |
-| Failure attribution | Missing | Missing | Partial | Covered | Covered | Covered |
-| Verification | Missing | Partial | Partial | Partial | Covered | Covered |
-| Permissions | Missing | Partial | Partial | Partial | Covered | Covered |
-| Entropy auditing | Missing | Missing | Partial | Covered | Covered | Covered |
-| Intervention recording | Missing | Partial | Partial | Covered | Covered | Covered |
+| Đặc tả nhiệm vụ | Còn thiếu | Đã bao phủ | Đã bao phủ | Đã bao phủ | Đã bao phủ | Đã bao phủ |
+| Lựa chọn ngữ cảnh | Còn thiếu | Một phần | Đã bao phủ | Đã bao phủ | Đã bao phủ | Đã bao phủ |
+| Truy cập công cụ | Còn thiếu | Một phần | Một phần | Một phần | Đã bao phủ | Đã bao phủ |
+| Bộ nhớ dự án | Còn thiếu | Đã bao phủ | Đã bao phủ | Đã bao phủ | Đã bao phủ | Đã bao phủ |
+| Trạng thái nhiệm vụ | Còn thiếu | Một phần | Đã bao phủ | Đã bao phủ | Đã bao phủ | Đã bao phủ |
+| Khả năng quan sát | Còn thiếu | Còn thiếu | Một phần | Đã bao phủ | Đã bao phủ | Đã bao phủ |
+| Quy trách nhiệm lỗi | Còn thiếu | Còn thiếu | Một phần | Đã bao phủ | Đã bao phủ | Đã bao phủ |
+| Xác thực | Còn thiếu | Một phần | Một phần | Một phần | Đã bao phủ | Đã bao phủ |
+| Quyền hạn | Còn thiếu | Một phần | Một phần | Một phần | Đã bao phủ | Đã bao phủ |
+| Kiểm toán entropy | Còn thiếu | Còn thiếu | Một phần | Đã bao phủ | Đã bao phủ | Đã bao phủ |
+| Ghi nhận sự can thiệp | Còn thiếu | Một phần | Một phần | Đã bao phủ | Đã bao phủ | Đã bao phủ |
 
-## Phase 3 Interpretation
+## Giải thích Phase 3 (Phase 3 Interpretation)
 
-Phase 3 starts the H2 to H3 transition. It claims active trace scoring and a
-documented improvement feedback loop, but it does not claim full H3 because
-benchmark comparison and component-level regression attribution are explicitly
-outside this repository's Phase 3 scope.
+Phase 3 bắt đầu quá trình chuyển dịch từ H2 sang H3. Nó tuyên bố đạt được chấm điểm trace chủ động và vòng lặp phản hồi cải tiến được tài liệu hóa, nhưng không tuyên bố đạt H3 đầy đủ vì so sánh benchmark và quy trách nhiệm thoái lui ở cấp độ thành phần rõ ràng nằm ngoài phạm vi Phase 3 của kho lưu trữ này.
 
-## Phase 4 Interpretation
+## Giải thích Phase 4 (Phase 4 Interpretation)
 
-Phase 4 starts the H3 to H4 transition. It gives stories the same mechanical
-verification pattern that decisions already had, records story verification
-results in the durable layer, auto-scores traces when they are written, and
-warns before close when a linked story's verification has not passed. It does
-not claim full H4 because benchmark execution, batch verification, and automatic
-proof-column updates remain separate work.
+Phase 4 bắt đầu quá trình chuyển dịch từ H3 sang H4. Nó cung cấp cho các story mẫu thiết kế xác thực cơ học tương tự như các quyết định kỹ thuật đã có, ghi lại kết quả xác thực story trong lớp lưu trữ bền vững, tự động chấm điểm các trace khi ghi nhận và cảnh báo trước khi đóng trace khi việc xác thực story liên kết chưa vượt qua. Nó không tuyên bố đạt H4 đầy đủ vì việc thực thi benchmark, xác thực hàng loạt và cập nhật cột chứng thực tự động vẫn là các công việc riêng biệt.
 
-## Phase 5 Interpretation
+## Giải thích Phase 5 (Phase 5 Interpretation)
 
-Phase 5 completes H4 by adding batch story verification and starts H5 by adding
-tool discovery, intervention records, context scoring, drift audit, and
-deterministic proposal generation. The repository may claim H5 partial only
-when those commands and docs are present and validated; it must not claim full
-H5 until benchmark runs or trace outcomes prove the proposal loop improves the
-harness over time.
+Phase 5 hoàn thành H4 bằng cách bổ sung xác thực story hàng loạt và bắt đầu H5 bằng cách bổ sung khả năng khám phá công cụ, các bản ghi can thiệp, chấm điểm ngữ cảnh, kiểm toán sai lệch và tạo đề xuất mang tính xác định. Kho lưu trữ có thể tuyên bố đạt H5 một phần khi các lệnh và tài liệu này hiện diện và được xác thực; nó không được phép tuyên bố đạt H5 đầy đủ cho đến khi các lượt chạy benchmark hoặc kết quả trace chứng minh vòng lặp đề xuất cải thiện harness theo thời gian.

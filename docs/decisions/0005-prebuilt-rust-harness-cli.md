@@ -47,7 +47,7 @@ The Rust CLI should follow the existing architecture rules:
 - Interface: command-line parsing, terminal output, and installer integration.
 
 Release automation now follows the same distribution contract. After a PR is
-merged to `main`, the post-merge maintenance workflow updates `CHANGELOG.md`.
+merged to `vi`, the post-merge maintenance workflow updates `CHANGELOG.md`.
 When the merged PR changed the Rust CLI source, schema, Cargo metadata, or CLI
 release packaging, it also bumps the CLI patch version, updates the installer
 release tag pin, creates a `harness-cli-v*` tag, and invokes the reusable

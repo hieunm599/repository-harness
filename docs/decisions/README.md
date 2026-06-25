@@ -1,12 +1,10 @@
-# Decisions
+# Các Quyết định Kỹ thuật (Decisions)
 
-Decision records explain why important product, architecture, or harness choices
-were made.
+Các bản ghi quyết định kỹ thuật giải thích lý do tại sao các lựa chọn quan trọng về sản phẩm, kiến trúc hoặc harness được đưa ra.
 
-Use `docs/templates/decision.md` when adding a new decision.
+Sử dụng mẫu `docs/templates/decision.md` khi thêm một quyết định kỹ thuật mới.
 
-After adding or updating a markdown decision file, also add or refresh the
-durable decision row:
+Sau khi thêm hoặc cập nhật một file quyết định kỹ thuật định dạng markdown, hãy thêm hoặc làm mới dòng bản ghi quyết định kỹ thuật lâu dài trong cơ sở dữ liệu:
 
 ```bash
 scripts/bin/harness-cli decision add \
@@ -15,14 +13,13 @@ scripts/bin/harness-cli decision add \
   --doc docs/decisions/0008-auth-boundary.md
 ```
 
-Trace fields such as `--decisions` summarize task-level choices. They do not
-count as the Harness decision log.
+Các trường trong trace như `--decisions` chỉ tóm tắt các lựa chọn ở cấp độ nhiệm vụ. Chúng không được tính là nhật ký quyết định kỹ thuật của Harness.
 
-Add a decision when:
+Thêm một quyết định kỹ thuật khi:
 
-- A locked technical choice changes.
-- A product rule changes meaningfully.
-- A validation requirement is added, removed, or weakened.
-- A high-risk feature chooses one design over another.
-- Auth, authorization, data ownership, audit/security, or API behavior changes.
-- The source-of-truth hierarchy changes.
+- Một lựa chọn kỹ thuật cố định bị thay đổi.
+- Một quy tắc sản phẩm thay đổi một cách có ý nghĩa.
+- Một yêu cầu xác thực được thêm vào, loại bỏ hoặc bị làm yếu đi.
+- Một tính năng rủi ro cao lựa chọn thiết kế này thay vì thiết kế khác.
+- Xác thực (auth), phân quyền (authorization), quyền sở hữu dữ liệu, kiểm toán/bảo mật hoặc hành vi API thay đổi.
+- Phân cấp nguồn sự thật thay đổi.

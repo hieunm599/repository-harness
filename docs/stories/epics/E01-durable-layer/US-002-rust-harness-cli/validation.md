@@ -121,7 +121,7 @@ Remove-Item -Recurse -Force $target
 - Windows release extension expects two additional assets on the next CLI
   release: `harness-cli-windows-x64.exe` and
   `harness-cli-windows-x64.exe.sha256`.
-- Remote installer smoke passed from raw GitHub `main` plus
+- Remote installer smoke passed from raw GitHub `vi` plus
   `releases/latest/download`: the installer downloaded and verified the
   `macos-arm64` binary, preserved executable bits for `scripts/bin/harness-cli` and
   `scripts/bin/harness-cli`, and the installed command ran `init`, `intake`,

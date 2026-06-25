@@ -1,42 +1,42 @@
-# US-XXX Story Title
+# US-XXX Tiêu đề Story
 
-## Status
+## Trạng thái (Status)
 
-planned
+planned (lên kế hoạch)
 
-## Lane
+## Làn rủi ro (Lane)
 
 tiny | normal | high-risk
 
-## Product Contract
+## Đặc tả sản phẩm (Product Contract)
 
-Describe the behavior this story must make true.
+Mô tả hành vi mà story này phải làm cho đúng/trở thành sự thật.
 
-## Relevant Product Docs
+## Tài liệu Sản phẩm liên quan (Relevant Product Docs)
 
 - `docs/product/...`
 
-## Acceptance Criteria
+## Tiêu chí Nghiệm thu (Acceptance Criteria)
 
-- Criterion 1.
-- Criterion 2.
-- Criterion 3.
+- Tiêu chí 1.
+- Tiêu chí 2.
+- Tiêu chí 3.
 
-## Design Notes
+## Ghi chú Thiết kế (Design Notes)
 
-- Commands:
-- Queries:
-- API:
-- Tables:
-- Domain rules:
-- UI surfaces:
+- Commands (Lệnh thay đổi trạng thái):
+- Queries (Lệnh truy vấn đọc trạng thái):
+- API (Giao diện API):
+- Tables (Các bảng cơ sở dữ liệu):
+- Domain rules (Quy tắc miền):
+- UI surfaces (Bề mặt giao diện người dùng):
 
-## Validation
+## Xác thực (Validation)
 
-When updating durable proof status, use numeric booleans:
+Khi cập nhật trạng thái chứng thực lâu dài, hãy sử dụng các giá trị boolean dạng số:
 `scripts/bin/harness-cli story update --id <id> --unit 1 --integration 1 --e2e 0 --platform 0`.
 
-| Layer | Expected proof |
+| Phân lớp (Layer) | Bằng chứng xác thực kỳ vọng (Expected proof) |
 | --- | --- |
 | Unit | |
 | Integration | |
@@ -44,10 +44,10 @@ When updating durable proof status, use numeric booleans:
 | Platform | |
 | Release | |
 
-## Harness Delta
+## Thay đổi Harness (Harness Delta)
 
-Document any harness updates made or proposed because of this story.
+Ghi nhận bất kỳ bản cập nhật harness nào đã thực hiện hoặc đề xuất do story này mang lại.
 
-## Evidence
+## Bằng chứng (Evidence)
 
-Add commands, reports, screenshots, or links after validation exists.
+Thêm các lệnh chạy, báo cáo, ảnh chụp màn hình hoặc các liên kết sau khi đã có bằng chứng xác thực.

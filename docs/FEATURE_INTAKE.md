@@ -1,150 +1,134 @@
-# Feature Intake
+# Tiếp nhận Tính năng (Feature Intake)
 
-Every implementation prompt enters the intake gate before code changes. A new
-project spec also enters through this gate before it becomes product docs,
-stories, or implementation work.
+Mỗi prompt triển khai đều phải đi qua cổng tiếp nhận (intake gate) trước khi có bất kỳ sự thay đổi mã nguồn nào. Một đặc tả dự án mới (project spec) cũng đi qua cổng này trước khi trở thành tài liệu sản phẩm, các story hoặc công việc triển khai thực tế.
 
-The human does not need to classify risk. The harness does.
+Con người không cần phải phân loại rủi ro. Hệ thống harness sẽ làm việc đó.
 
-## Intake Flow
+## Luồng Tiếp nhận (Intake Flow)
 
 ```text
-User prompt
+Prompt của người dùng
     |
     v
-Classify input type
+Phân loại loại đầu vào (input type)
     |
     v
-Restate as work item
+Phát biểu lại dưới dạng mục công việc (work item)
     |
     v
-Find affected product docs and stories
+Tìm tài liệu sản phẩm và story bị ảnh hưởng
     |
     v
-Run risk checklist
+Chạy danh sách kiểm tra rủi ro (risk checklist)
     |
     v
-Choose lane: tiny, normal, or high-risk
+Chọn làn rủi ro: nhỏ (tiny), bình thường (normal) hoặc rủi ro cao (high-risk)
 ```
 
-## Input Types
+## Các Loại Đầu vào (Input Types)
 
-Use the input type to decide where the work should land before choosing the risk
-lane.
+Sử dụng loại đầu vào để quyết định xem công việc nên được đặt ở đâu trước khi chọn làn rủi ro.
 
-| Type | Use when | Typical artifact |
+| Loại đầu vào | Sử dụng khi | Artifact điển hình |
 | --- | --- | --- |
-| New spec | Turning a user-provided project spec into harness-ready docs | Product docs, candidate epics, decisions |
-| Spec slice | Implementing selected behavior from an accepted spec | Story packet |
-| Change request | Changing, fixing, or refining accepted behavior | Story packet or direct patch |
-| New initiative | Adding a larger product area that needs multiple stories | Initiative notes plus story packets |
-| Maintenance request | Changing technical, operational, or dependency behavior | Story packet, validation report, or decision |
-| Harness improvement | Improving how humans and agents collaborate | Direct docs update or `scripts/bin/harness-cli backlog add` |
+| Đặc tả mới (New spec) | Chuyển đổi spec dự án do người dùng cung cấp thành tài liệu sẵn sàng cho harness | Tài liệu sản phẩm, epic ứng viên, quyết định kỹ thuật |
+| Lát cắt đặc tả (Spec slice) | Triển khai hành vi được chọn từ một đặc tả đã được chấp nhận | Gói story packet |
+| Yêu cầu thay đổi (Change request) | Thay đổi, sửa lỗi hoặc tinh chỉnh hành vi đã được chấp nhận | Gói story packet hoặc bản vá trực tiếp |
+| Sáng kiến mới (New initiative) | Thêm một vùng sản phẩm lớn hơn cần nhiều story | Ghi chú sáng kiến kèm theo các gói story packet |
+| Yêu cầu bảo trì (Maintenance request) | Thay đổi hành vi kỹ thuật, vận hành hoặc phụ thuộc | Gói story packet, báo cáo xác thực hoặc quyết định kỹ thuật |
+| Cải tiến Harness (Harness improvement) | Cải thiện cách con người và agent cộng tác | Cập nhật trực tiếp tài liệu hoặc lệnh `scripts/bin/harness-cli backlog add` |
 
-Do not create or extend a monolithic spec by default after intake. Use product
-docs, stories, decisions, and initiative notes as the living surface.
+Theo mặc định, không tạo hoặc mở rộng một tài liệu đặc tả nguyên khối (monolithic spec) sau khi tiếp nhận. Hãy sử dụng tài liệu sản phẩm, story, quyết định kỹ thuật và ghi chú sáng kiến làm bề mặt tài liệu sống (living surface).
 
-## Lanes
+## Các Làn Rủi ro (Lanes)
 
-### Tiny
+### Nhỏ (Tiny)
 
-Use for low-risk docs, copy, names, or narrow edits.
+Sử dụng cho các chỉnh sửa tài liệu rủi ro thấp, chỉnh sửa văn bản, thay đổi tên gọi hoặc chỉnh sửa mã nguồn có phạm vi hẹp.
 
-Also use for initial project setup when the work is limited to installing
-declared dependencies, wiring a server entrypoint, adding a health/smoke
-endpoint, or opening a local development database connection without creating
-domain schema, CRUD behavior, auth, authorization, provider integration, or
-data migration. A health endpoint in a new benchmark or scaffolded project is
-smoke proof, not a public contract escalation by itself.
+Cũng sử dụng cho thiết lập dự án ban đầu khi công việc chỉ giới hạn ở việc cài đặt các dependency được khai báo, kết nối điểm vào máy chủ (server entrypoint), thêm endpoint kiểm tra sức khỏe hệ thống (health/smoke endpoint) hoặc mở kết nối cơ sở dữ liệu phát triển cục bộ mà không tạo lược đồ miền (domain schema), hành vi CRUD, xác thực (auth), phân quyền (authorization), tích hợp nhà cung cấp hoặc di chuyển dữ liệu (data migration). Một endpoint kiểm tra sức khỏe trong một dự án benchmark mới hoặc dự án scaffold chỉ là bằng chứng smoke test, bản thân nó không làm leo thang contract công khai.
 
-Requirements:
+Yêu cầu:
 
-- Record the intake row before implementation; tiny work skips story packet
-  overhead, not durable task classification.
-- Patch directly.
-- Keep affected docs current.
-- Run available quick checks.
-- Update the harness only if friction was found.
+- Ghi lại dòng tiếp nhận (intake row) trước khi triển khai; công việc nhỏ bỏ qua chi phí tạo gói story packet nhưng không bỏ qua việc phân loại tác vụ lâu dài.
+- Áp dụng bản vá trực tiếp.
+- Giữ cho tài liệu bị ảnh hưởng luôn được cập nhật.
+- Chạy các kiểm tra nhanh có sẵn.
+- Chỉ cập nhật harness nếu phát hiện thấy độ ma sát (friction).
 
-### Normal
+### Bình thường (Normal)
 
-Use for story-sized behavior with bounded blast radius.
+Sử dụng cho hành vi có kích thước phù hợp với story với bán kính ảnh hưởng có giới hạn.
 
-Requirements:
+Yêu cầu:
 
-- Create or update one story file from `docs/templates/story.md`.
-- Link relevant product docs.
-- Add or update validation expectations.
-- Implement the smallest vertical slice when implementation exists.
-- Record or update proof status with `scripts/bin/harness-cli story add` and
-  `scripts/bin/harness-cli story update`.
+- Tạo hoặc cập nhật một file story từ template `docs/templates/story.md`.
+- Liên kết với các tài liệu sản phẩm liên quan.
+- Thêm hoặc cập nhật các kỳ vọng xác thực.
+- Triển khai lát cắt dọc (vertical slice) nhỏ nhất khi quá trình triển khai tồn tại.
+- Ghi lại hoặc cập nhật trạng thái bằng chứng xác thực bằng lệnh `scripts/bin/harness-cli story add` và `scripts/bin/harness-cli story update`.
 
-### High-Risk
+### Rủi ro cao (High-Risk)
 
-Use when the work can affect security, data, scope, contracts, or multiple
-roles/platforms.
+Sử dụng khi công việc có thể ảnh hưởng đến bảo mật, dữ liệu, phạm vi, các contract hoặc nhiều vai trò/nền tảng.
 
-Requirements:
+Yêu cầu:
 
-- Create a story folder using `docs/templates/high-risk-story/`.
-- Fill in `execplan.md`, `overview.md`, `design.md`, and `validation.md`.
-- Ask for human confirmation before implementation if direction is ambiguous.
-- Record a durable decision when behavior, architecture, authorization, data
-  ownership, API shape, or validation requirements change meaningfully. Use a
-  `docs/decisions/NNNN-*.md` file from `docs/templates/decision.md`, then add
-  or refresh the durable row with `scripts/bin/harness-cli decision add`.
-  Decision text in a trace is not a durable decision record.
+- Tạo một thư mục story sử dụng cấu trúc `docs/templates/high-risk-story/`.
+- Điền đầy đủ thông tin vào các file `execplan.md`, `overview.md`, `design.md` và `validation.md`.
+- Yêu cầu xác nhận từ con người trước khi triển khai nếu hướng đi mơ hồ.
+- Ghi lại một quyết định kỹ thuật lâu dài khi hành vi, kiến trúc, phân quyền, quyền sở hữu dữ liệu, cấu trúc API hoặc các yêu cầu xác thực thay đổi một cách có ý nghĩa. Sử dụng một file dạng `docs/decisions/NNNN-*.md` từ template `docs/templates/decision.md`, sau đó thêm hoặc làm mới quyết định bằng lệnh `scripts/bin/harness-cli decision add`. Nội dung quyết định được viết trong trace không được coi là một bản ghi quyết định kỹ thuật lâu dài.
 
-## Risk Checklist
+## Danh sách Kiểm tra Rủi ro (Risk Checklist)
 
-Mark one flag for each item that applies:
+Đánh dấu một cờ cho mỗi mục áp dụng:
 
-| Risk flag | Applies when the work touches |
+| Cờ rủi ro | Áp dụng khi công việc chạm đến |
 | --- | --- |
-| Auth | login, logout, sessions, JWT, password, refresh token |
-| Authorization | roles, permissions, tenant or company scope |
-| Data model | schema, migrations, uniqueness, deletion, retention |
-| Audit/security | audit logs, privacy, sensitive data, access logs |
-| External systems | email, payments, cloud services, provider SDKs, queues, webhooks |
-| Public contracts | API shape, response envelope, client-visible behavior |
-| Cross-platform | desktop/mobile/browser split, native shell behavior, deep links |
-| Existing behavior | already implemented or test-covered behavior changes |
-| Weak proof | unclear or missing tests around the affected area |
-| Multi-domain | more than one product domain changes at once |
+| Auth (Xác thực) | đăng nhập, đăng xuất, phiên làm việc (sessions), JWT, mật khẩu, refresh token |
+| Authorization (Phân quyền) | vai trò (roles), quyền hạn (permissions), phạm vi tenant hoặc công ty |
+| Data model (Mô hình dữ liệu) | lược đồ (schema), migration, tính duy nhất, xóa dữ liệu, giữ lại dữ liệu |
+| Audit/security (Kiểm toán/bảo mật) | log kiểm toán, quyền riêng tư, dữ liệu nhạy cảm, log truy cập |
+| External systems (Hệ thống bên ngoài) | email, thanh toán, dịch vụ đám mây, SDK nhà cung cấp, hàng đợi, webhook |
+| Public contracts (Contract công khai) | cấu trúc API, response envelope, hành vi hiển thị phía client |
+| Cross-platform (Đa nền tảng) | phân chia desktop/mobile/trình duyệt, hành vi native shell, deep link |
+| Existing behavior (Hành vi hiện tại) | thay đổi hành vi đã được triển khai hoặc đã có kiểm thử bao phủ |
+| Weak proof (Chứng thực yếu) | kiểm thử xung quanh khu vực bị ảnh hưởng chưa rõ ràng hoặc còn thiếu |
+| Multi-domain (Đa miền) | thay đổi nhiều hơn một miền sản phẩm cùng một lúc |
 
-## Classification
+## Phân loại (Classification)
 
 ```text
-0-1 flags:
-  tiny or normal, based on code impact
+Có 0-1 cờ rủi ro:
+  nhỏ hoặc bình thường, dựa trên tác động của code
 
-2-3 flags:
-  normal with stronger validation
+Có 2-3 cờ rủi ro:
+  bình thường với yêu cầu xác thực mạnh mẽ hơn
 
-4+ flags:
-  high-risk
+Có từ 4 cờ rủi ro trở lên:
+  rủi ro cao
 
-Any hard gate:
-  high-risk unless the human explicitly narrows scope
+Bất kỳ chốt chặn cứng (hard gate) nào:
+  rủi ro cao trừ khi con người thu hẹp phạm vi một cách rõ ràng
 ```
 
-Hard gates:
+Các chốt chặn cứng (Hard gates):
 
-- Auth.
-- Authorization.
-- Data loss or migration.
-- Audit/security.
-- External provider behavior.
-- Removing or weakening validation requirements.
+- Xác thực (Auth).
+- Phân quyền (Authorization).
+- Mất mát hoặc di chuyển dữ liệu (Data loss/migration).
+- Kiểm toán/bảo mật.
+- Hành vi của nhà cung cấp bên ngoài (External provider).
+- Loại bỏ hoặc giảm bớt các yêu cầu xác thực.
 
-## Output
+## Đầu ra (Output)
 
-At the end of intake, the agent should be able to say:
+Tại thời điểm kết thúc quy trình tiếp nhận (intake), agent phải có khả năng mô tả như sau:
 
 ```text
-Lane: normal
-Reason: touches authorization, API contract, and audit behavior.
-Docs: permissions, account-settings, audit-log.
-Story: docs/stories/epics/E02-access-control/US-014-manager-updates-role.md.
-Validation: unit, integration, E2E.
+Lane (Làn): bình thường
+Reason (Lý do): chạm đến phân quyền, contract API và hành vi kiểm toán.
+Docs (Tài liệu): permissions, account-settings, audit-log.
+Story (Nhiệm vụ): docs/stories/epics/E02-access-control/US-014-manager-updates-role.md.
+Validation (Xác thực): unit, integration, E2E.
 ```

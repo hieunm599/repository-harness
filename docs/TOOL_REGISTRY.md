@@ -1,20 +1,17 @@
-# Tool Registry
+# Đăng ký Công cụ (Tool Registry)
 
-The harness deals with two distinct kinds of "tool". Keep them separate.
+Hệ thống harness làm việc với hai loại "công cụ" riêng biệt. Hãy phân biệt rõ chúng:
 
-| | Capability manifest (outbound) | Inbound tool registry |
+| | Manifest khả năng (outbound - hướng ra) | Hệ thống đăng ký công cụ inbound (inbound - hướng vào) |
 | --- | --- | --- |
-| Direction | harness offers it to the agent | a project equips it for the harness to use |
-| Examples | the `harness-cli` subcommands below | gitnexus, c3, a linter, a deploy check |
-| Presence | always compiled in | optional; may be absent on any machine |
-| If missing | n/a (it is the harness) | clean skip; never blocks the main process |
+| **Hướng** | harness cung cấp nó cho agent | một dự án trang bị nó để harness sử dụng |
+| **Ví dụ** | các lệnh con của `harness-cli` bên dưới | gitnexus, c3, linter, deploy check |
+| **Sự hiện diện** | luôn được biên dịch sẵn | tùy chọn; có thể vắng mặt trên một số máy |
+| **Nếu thiếu** | n/a (chính là bản thân harness) | bỏ qua sạch sẽ; không bao giờ chặn tiến trình chính |
 
-This document describes both. The **inbound registry** is the extension base:
-it is where the harness learns what extra capability is equipped, what purpose
-it serves, and whether it is actually present right now, so a workflow step can
-adapt to what is installed without the core ever depending on it.
+Tài liệu này mô tả cả hai loại. **Registry inbound** là cơ sở mở rộng: đó là nơi harness tìm hiểu xem khả năng (capability) bổ sung nào được trang bị, phục vụ mục đích gì và liệu nó có thực sự hiện diện ngay lúc này hay không, để một bước luồng công việc (workflow step) có thể điều chỉnh theo những gì được cài đặt mà không cần core phụ thuộc trực tiếp vào nó.
 
-## Inbound Registry: Register A Tool
+## Registry Inbound: Đăng ký một Công cụ (Register A Tool)
 
 ```bash
 scripts/bin/harness-cli tool register \
@@ -27,26 +24,15 @@ scripts/bin/harness-cli tool register \
   --args "env:enum:required:staging,production"
 ```
 
-Fields specific to inbound tools:
+Các trường dữ liệu cụ thể cho các công cụ inbound:
 
-- `--kind` — how the tool is reached and probed. One of `cli`, `binary`, `mcp`,
-  `skill`, `http`. Defaults to `cli`. The kind tells each agent runtime what it
-  can orchestrate (a non-Claude agent simply treats a `skill` it cannot run as
-  absent) and tells `tool check` which probe to use.
-- `--capability` — the workflow purpose a step looks the tool up by. Free-text
-  but normalized to kebab-case, so `Impact Analysis`, `impact_analysis`, and
-  `impact-analysis` all register as `impact-analysis`. This is the only coupling
-  between a step and a tool; steps reference the capability, never the tool name.
-- `--scan` — for `mcp`/`skill`/`http`, a declarative path or URL that
-  `tool check` resolves to decide presence (e.g. `.c3`, `~/.claude/skills/c3`,
-  `https://localhost:8080/health`). `cli`/`binary` are probed via their command.
+- `--kind` — cách công cụ được truy cập và thăm dò. Nhận một trong các giá trị: `cli`, `binary`, `mcp`, `skill`, `http`. Mặc định là `cli`. Loại công cụ cho mỗi môi trường chạy của agent biết nó có thể điều phối những gì (một agent không phải Claude sẽ coi một `skill` mà nó không thể chạy là vắng mặt) và hướng dẫn lệnh `tool check` sử dụng đầu dò (probe) nào.
+- `--capability` — mục đích luồng công việc mà một bước tìm kiếm công cụ thông qua đó. Là văn bản tự do nhưng được chuẩn hóa thành dạng kebab-case, vì vậy `Impact Analysis`, `impact_analysis` và `impact-analysis` đều đăng ký thành `impact-analysis`. Đây là kết nối duy nhất giữa một bước và một công cụ; các bước chỉ tham chiếu đến capability, không bao giờ tham chiếu đến tên công cụ cụ thể.
+- `--scan` — đối với `mcp`/`skill`/`http`, đây là một đường dẫn khai báo hoặc URL mà lệnh `tool check` phân giải để quyết định sự hiện diện (ví dụ: `.c3`, `~/.claude/skills/c3`, `https://localhost:8080/health`). Các loại `cli`/`binary` được thăm dò thông qua chính lệnh của chúng.
 
-`--force` is only needed for `cli`/`binary` whose command is intentionally
-absent on the current machine. `mcp`/`skill`/`http` are not on `PATH` by nature,
-so they register without `--force`; their presence is resolved later by
-`tool check`.
+Cờ `--force` chỉ cần thiết cho `cli`/`binary` có lệnh thực thi cố tình vắng mặt trên máy hiện tại. Các loại `mcp`/`skill`/`http` về bản chất không nằm trên `PATH`, vì vậy chúng đăng ký mà không cần cờ `--force`; sự hiện diện của chúng được phân giải sau đó bởi lệnh `tool check`.
 
-Registering an MCP server or a Claude skill (examples):
+Đăng ký một máy chủ MCP hoặc một kỹ năng Claude (ví dụ):
 
 ```bash
 scripts/bin/harness-cli tool register --name gitnexus --kind mcp \
@@ -58,80 +44,65 @@ scripts/bin/harness-cli tool register --name c3 --kind skill \
   --responsibility Verification
 ```
 
-Remove a tool with:
+Gỡ bỏ một công cụ bằng lệnh:
 
 ```bash
 scripts/bin/harness-cli tool remove --name deploy-check
 ```
 
-## Inbound Registry: Check Presence
+## Registry Inbound: Kiểm tra sự Hiện diện (Check Presence)
 
-Registration records intent. `tool check` reconciles intent with reality by
-scanning each registered tool and persisting the verdict (`status` and
-`checked_at`). Run it at intake start so status reflects current reality.
+Việc đăng ký ghi nhận ý định. Lệnh `tool check` đối chiếu ý định đó với thực tế bằng cách quét từng công cụ đã đăng ký và lưu lại kết quả phán quyết (`status` và `checked_at`). Chạy lệnh này lúc bắt đầu quy trình tiếp nhận (intake) để trạng thái phản ánh đúng thực tế hiện tại.
 
 ```bash
-scripts/bin/harness-cli tool check            # scan all registered tools
-scripts/bin/harness-cli tool check --name c3  # scan one
-scripts/bin/harness-cli tool check --json     # machine-readable for agents
+scripts/bin/harness-cli tool check            # quét tất cả các công cụ đã đăng ký
+scripts/bin/harness-cli tool check --name c3  # quét một công cụ cụ thể
+scripts/bin/harness-cli tool check --json     # trả về dạng JSON để agent đọc
 ```
 
-Probe per kind:
+Đầu dò cho mỗi loại công cụ (Probe per kind):
 
-| Kind | Probe | `present` means |
+| Loại (Kind) | Đầu dò (Probe) | `present` nghĩa là |
 | --- | --- | --- |
-| `cli`, `binary` | command resolves on `PATH` or as a path | installed and runnable |
-| `mcp`, `skill` | `scan_target` path resolves (`~` expands) | equipped/configured on disk |
-| `http` | `scan_target` reachable over TCP (2s), else path | endpoint answers |
+| `cli`, `binary` | lệnh được tìm thấy trên `PATH` hoặc dưới dạng một đường dẫn hợp lệ | đã cài đặt và có thể chạy được |
+| `mcp`, `skill` | đường dẫn `scan_target` tồn tại (hỗ trợ phân giải dấu `~`) | đã được trang bị/cấu hình trên đĩa |
+| `http` | `scan_target` có thể kết nối qua TCP (trong 2 giây), nếu không thì là đường dẫn | endpoint phản hồi |
 
-`tool check` always exits `0`: a missing extension is a fact to report, not a
-CLI failure. A `cli`/`binary` is `present` when runnable. An `mcp`/`skill`/`http`
-`present` means **equipped** (config/file resolves), not **live this session** —
-the agent still confirms live usability at call time, since only the agent
-runtime can see whether its MCP server is actually connected. With no
-`scan_target`, the status is `unknown` and the agent must confirm.
+Lệnh `tool check` luôn trả về mã thoát `0`: một extension bị thiếu chỉ là một sự thật cần báo cáo, không phải lỗi của CLI. Một `cli`/`binary` ở trạng thái `present` khi nó có thể chạy được. Một `mcp`/`skill`/`http` ở trạng thái `present` nghĩa là **được trang bị** (cấu hình/file tồn tại), không có nghĩa là **đang hoạt động trong phiên này** — agent vẫn phải xác nhận khả năng sử dụng thực tế tại thời điểm gọi, vì chỉ môi trường chạy của agent mới biết liệu máy chủ MCP của nó có thực sự kết nối hay không. Nếu không có `scan_target`, trạng thái sẽ là `unknown` và agent phải tự xác nhận.
 
-## Inbound Registry: Look Up By Capability
+## Registry Inbound: Tìm kiếm theo Capability
 
-A workflow step asks "what is present for this purpose?" rather than naming a
-tool:
+Một bước luồng công việc sẽ hỏi "cái gì hiện diện cho mục đích này?" thay vì gọi đích danh một công cụ:
 
 ```bash
 scripts/bin/harness-cli query tools --capability impact-analysis
 scripts/bin/harness-cli query tools --capability impact-analysis --status present
 ```
 
-The result is the set of providers. Multiple tools may provide one capability
-(gitnexus and c3 both serve `impact-analysis` and are complementary), so a step
-reads the set and degrades on how much of it is present.
+Kết quả trả về là tập hợp các provider (nhà cung cấp). Nhiều công cụ có thể cung cấp cùng một capability (cả gitnexus và c3 đều phục vụ `impact-analysis` và bổ sung cho nhau), vì vậy một bước luồng công việc sẽ đọc tập hợp này và tự động hạ cấp theo mức độ hiện diện của chúng.
 
-### Degrade Ladder
+### Nấc thang Hạ cấp Tự động (Degrade Ladder)
 
-The CLI reports facts (`status`); the agent applies policy. The generic rule,
-keyed on the present-provider count for a capability:
+CLI báo cáo các sự thật (`status`); agent áp dụng chính sách. Quy tắc chung dựa trên số lượng provider hiện diện cho một capability:
 
-| Providers present | Posture | Agent behavior |
+| Số provider hiện diện | Tư thế (Posture) | Hành vi của agent |
 | --- | --- | --- |
-| none registered | Inactive | clean skip; note `capability X: inactive` in the trace. Not drift. |
-| registered but none/some present | Degraded | run with what resolves; set the `Weak proof` flag; note the gap. |
-| all present | Full | normal operation. |
+| không có cái nào đăng ký | Inactive (Không hoạt động) | bỏ qua sạch sẽ; ghi nhận `capability X: inactive` trong trace. Không tính là sai lệch (drift). |
+| đã đăng ký nhưng không có/chỉ có một số hiện diện | Degraded (Bị hạ cấp) | chạy với những gì phân giải được; bật cờ `Weak proof` (chứng thực yếu); ghi nhận khoảng trống. |
+| tất cả đều hiện diện | Full (Đầy đủ) | vận hành bình thường. |
 
-A registered tool that scans as `missing` is a failed validity gate, not a skip.
-A capability with no registered providers is simply inactive and is skipped
-without penalty — this is what keeps the core seamless on a fresh install.
+Một công cụ đã đăng ký nhưng khi quét báo trạng thái `missing` là một chốt chặn hiệu lực bị thất bại, không phải là một sự bỏ qua sạch sẽ. Một capability không có nhà cung cấp nào đăng ký chỉ đơn giản là không hoạt động và được bỏ qua mà không bị phạt — điều này giúp core của harness hoạt động mượt mà ngay trên một bản cài đặt mới.
 
-### Recommended Capability Vocabulary
+### Từ vựng Capability Khuyến nghị
 
-Capability is open (no code change to add one), but a step and its providers
-must agree on the exact string. Reuse these where they fit before coining a new
-one; coin new ones in kebab-case:
+Danh sách capability là mở (không cần đổi mã nguồn để thêm), nhưng một bước và các nhà cung cấp của nó phải thống nhất về chuỗi ký tự chính xác. Hãy tái sử dụng các từ vựng dưới đây trước khi đặt từ mới; đặt từ mới ở dạng kebab-case:
 
 ```
 impact-analysis · deploy-verification · coverage · security-scan
 performance-benchmark · documentation-lookup
 ```
 
-## Inspecting The Registry
+## Kiểm tra Registry (Inspecting The Registry)
 
 ```bash
 scripts/bin/harness-cli query tools --summary
@@ -139,55 +110,50 @@ scripts/bin/harness-cli query tools --json
 scripts/bin/harness-cli query tools --responsibility Verification
 ```
 
-JSON records carry `kind`, `capability`, `scan_target`, `status`, and
-`checked_at` alongside the existing fields, so any agent can read the registry
-without parsing the human table.
+Các bản ghi JSON mang theo `kind`, `capability`, `scan_target`, `status` và `checked_at` cùng với các trường dữ liệu hiện có, vì vậy bất kỳ agent nào cũng có thể đọc registry mà không cần phân tích cú pháp bảng của con người.
 
-## Compiled Harness Commands (Outbound Manifest)
+## Các Lệnh Harness được Biên dịch (Outbound Manifest)
 
-| Command | Responsibility | Purpose | Arguments |
+| Lệnh (Command) | Trách nhiệm | Mục đích | Đối số (Arguments) |
 | --- | --- | --- | --- |
-| `init` | Task state | Create the harness database. | none |
-| `migrate` | Task state | Apply pending schema migrations. | none |
-| `import brownfield` | Project memory | Seed durable records from markdown state. | none |
-| `intake` | Task specification | Record a feature intake classification. | `--type`, `--summary`, `--lane` |
-| `story add` | Task state | Create a durable story record. | `--id`, `--title`, `--lane`, optional `--verify` |
-| `story update` | Task state | Update story status, proof flags, evidence, or verification command. | `--id`, optional proof/status fields |
-| `story verify` | Verification | Run one story `verify_command` and record pass/fail. | story id |
-| `story verify-all` | Verification | Run all configured story verification commands and skip stories without one. | none |
-| `decision add` | Project memory | Create a durable decision record. | `--id`, `--title`, optional `--doc`, `--verify` |
-| `decision verify` | Verification | Run one decision verification command. | decision id |
-| `backlog add` | Entropy auditing | Record a harness improvement proposal. | `--title`, optional pain/suggestion/risk/predicted fields |
-| `backlog close` | Entropy auditing | Close a backlog item with outcome evidence. | `--id`, optional `--status`, `--outcome` |
-| `tool register` | Tool access | Register an external project tool. | `--name`, `--command`, `--description`, `--responsibility`, optional `--kind`, `--capability`, `--scan`, `--args`, `--force` |
-| `tool check` | Tool access | Scan registered tools and persist present/missing/unknown status. | optional `--name`, `--json` |
-| `tool remove` | Tool access | Remove a registered external tool. | `--name` |
-| `intervention add` | Intervention recording | Record a human, reviewer, CI, or agent intervention. | `--type`, `--description`, `--source`, optional `--trace`, `--story`, `--impact` |
-| `trace` | Observability | Record an agent execution trace and print trace quality. | `--summary`, optional trace fields |
-| `score-trace` | Observability | Score trace detail against lane requirements. | optional `--id` |
-| `score-context` | Context selection | Score trace reads against compiled context rules. | trace id |
-| `audit` | Entropy auditing | Run drift checks and compute entropy score. | none |
-| `propose` | Entropy auditing | Generate improvement proposals from friction, interventions, and audit findings. | optional `--commit` |
-| `query matrix` | Task state | Show durable story proof matrix. | optional `--numeric` |
-| `query backlog` | Entropy auditing | Show harness improvement backlog. | optional `--open`, `--closed` |
-| `query decisions` | Project memory | Show durable decision records. | none |
-| `query intakes` | Task specification | Show recent intake records. | none |
-| `query traces` | Observability | Show recent trace records. | none |
-| `query friction` | Failure attribution | Show traces with harness friction. | none |
-| `query tools` | Tool access | Show compiled and registered tool entries. | optional `--json`, `--summary`, `--responsibility`, `--capability`, `--status` |
-| `query interventions` | Intervention recording | Show intervention records. | optional `--trace`, `--story`, `--type` |
-| `query stats` | Task state | Show durable record counts. | none |
-| `query sql` | Tool access | Run arbitrary SQL against `harness.db`. | SQL text |
+| `init` | Trạng thái nhiệm vụ | Tạo cơ sở dữ liệu harness. | không có |
+| `migrate` | Trạng thái nhiệm vụ | Áp dụng các migration lược đồ cơ sở dữ liệu đang chờ xử lý. | không có |
+| `import brownfield` | Bộ nhớ dự án | Gieo mầm các bản ghi lâu dài từ trạng thái markdown cũ. | không có |
+| `intake` | Đặc tả nhiệm vụ | Ghi lại phân loại tiếp nhận tính năng. | `--type`, `--summary`, `--lane` |
+| `story add` | Trạng thái nhiệm vụ | Tạo một bản ghi story lâu dài. | `--id`, `--title`, `--lane`, tùy chọn `--verify` |
+| `story update` | Trạng thái nhiệm vụ | Cập nhật trạng thái story, các cờ bằng chứng, chứng cứ, hoặc lệnh xác thực. | `--id`, tùy chọn các trường trạng thái/bằng chứng |
+| `story verify` | Xác thực | Chạy lệnh `verify_command` của một story và ghi nhận kết quả thành công/thất bại. | story id |
+| `story verify-all` | Xác thực | Chạy tất cả các lệnh xác thực story đã cấu hình và bỏ qua các story không có lệnh này. | không có |
+| `decision add` | Bộ nhớ dự án | Tạo một bản ghi quyết định kỹ thuật lâu dài. | `--id`, `--title`, tùy chọn `--doc`, `--verify` |
+| `decision verify` | Xác thực | Chạy một lệnh xác thực quyết định kỹ thuật. | decision id |
+| `backlog add` | Kiểm toán entropy | Ghi nhận một đề xuất cải tiến harness. | `--title`, tùy chọn các trường pain/suggestion/risk/predicted |
+| `backlog close` | Kiểm toán entropy | Đóng một mục backlog kèm theo bằng chứng kết quả thực tế. | `--id`, tùy chọn `--status`, `--outcome` |
+| `tool register` | Truy cập công cụ | Đăng ký một công cụ dự án bên ngoài. | `--name`, `--command`, `--description`, `--responsibility`, tùy chọn `--kind`, `--capability`, `--scan`, `--args`, `--force` |
+| `tool check` | Truy cập công cụ | Quét các công cụ đã đăng ký và lưu lại trạng thái present/missing/unknown. | tùy chọn `--name`, `--json` |
+| `tool remove` | Truy cập công cụ | Gỡ bỏ một công cụ bên ngoài đã đăng ký. | `--name` |
+| `intervention add` | Ghi nhận can thiệp | Ghi lại can thiệp của con người, người đánh giá, hệ thống CI hoặc agent. | `--type`, `--description`, `--source`, tùy chọn `--trace`, `--story`, `--impact` |
+| `trace` | Khả năng quan sát | Ghi lại trace thực thi của agent và in ra chất lượng trace. | `--summary`, tùy chọn các trường trace |
+| `score-trace` | Khả năng quan sát | Tính điểm chi tiết của trace so với yêu cầu của làn rủi ro. | tùy chọn `--id` |
+| `score-context` | Lựa chọn ngữ cảnh | Tính điểm các file đã đọc của trace so với các quy tắc ngữ cảnh đã biên dịch. | trace id |
+| `audit` | Kiểm toán entropy | Chạy kiểm tra sai lệch và tính điểm entropy. | không có |
+| `propose` | Kiểm toán entropy | Tạo các đề xuất cải tiến từ ma sát, các can thiệp và kết quả kiểm toán. | tùy chọn `--commit` |
+| `query matrix` | Trạng thái nhiệm vụ | Hiển thị ma trận chứng thực story lâu dài. | tùy chọn `--numeric` |
+| `query backlog` | Kiểm toán entropy | Hiển thị backlog cải tiến harness. | tùy chọn `--open`, `--closed` |
+| `query decisions` | Bộ nhớ dự án | Hiển thị các bản ghi quyết định kỹ thuật lâu dài. | không có |
+| `query intakes` | Đặc tả nhiệm vụ | Hiển thị các bản ghi tiếp nhận gần đây. | không có |
+| `query traces` | Khả năng quan sát | Hiển thị các bản ghi trace gần đây. | không có |
+| `query friction` | Quy trách nhiệm lỗi | Hiển thị các trace có chứa ma sát harness. | không có |
+| `query tools` | Truy cập công cụ | Hiển thị các mục công cụ đã biên dịch và đã đăng ký. | tùy chọn `--json`, `--summary`, `--responsibility`, `--capability`, `--status` |
+| `query interventions` | Ghi nhận can thiệp | Hiển thị các bản ghi can thiệp. | tùy chọn `--trace`, `--story`, `--type` |
+| `query stats` | Trạng thái nhiệm vụ | Hiển thị số lượng các bản ghi lâu dài. | không có |
+| `query sql` | Truy cập công cụ | Chạy các câu lệnh SQL tùy ý với `harness.db`. | văn bản lệnh SQL |
 
-## Validation Rules
+## Các Quy tắc Xác thực (Validation Rules)
 
-- Tool names must be unique among registered tools.
-- Descriptions must be 10-200 characters.
-- Responsibilities must match the Runtime Substrate responsibility list.
-- `--kind` must be one of `cli`, `binary`, `mcp`, `skill`, `http`.
-- `--capability` must be kebab-case (lowercase letters, digits, single hyphens);
-  spaces and underscores are normalized to hyphens.
-- `--args` entries must use `name:type:required` or
-  `name:type:required:help`, with `required` or `optional` as the third field.
-- For `cli`/`binary`, the command must exist as a path or on `PATH`, unless
-  `--force` is supplied. `mcp`/`skill`/`http` skip this check.
+- Tên công cụ phải là duy nhất trong số các công cụ đã đăng ký.
+- Mô tả phải từ 10 đến 200 ký tự.
+- Trách nhiệm (responsibility) phải khớp với danh sách trách nhiệm của Runtime Substrate.
+- Tham số `--kind` phải là một trong các giá trị: `cli`, `binary`, `mcp`, `skill`, `http`.
+- Tham số `--capability` phải ở dạng kebab-case (chữ thường, chữ số, dấu gạch ngang đơn); khoảng trắng và dấu gạch dưới được tự động chuẩn hóa thành dấu gạch ngang.
+- Các mục của `--args` phải sử dụng định dạng `name:type:required` hoặc `name:type:required:help`, với trường thứ ba là `required` hoặc `optional`.
+- Đối với `cli`/`binary`, lệnh thực thi phải tồn tại dưới dạng một đường dẫn hoặc trên hệ thống `PATH`, trừ khi cờ `--force` được cung cấp. Các loại `mcp`/`skill`/`http` bỏ qua kiểm tra này.

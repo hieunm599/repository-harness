@@ -1,26 +1,24 @@
-# Stories
+# Các Story (Câu chuyện Người dùng)
 
-Stories are work packets. They turn product intent into bounded implementation
-and validation work.
+Các story là các gói công việc. Chúng chuyển đổi ý định sản phẩm thành công việc triển khai và xác thực có giới hạn rõ ràng.
 
-No story packets are active yet.
+Hiện tại chưa có gói story packet nào đang hoạt động.
 
-## Normal Story
+## Story Bình thường (Normal Story)
 
-Use `docs/templates/story.md` for normal feature work.
+Sử dụng mẫu `docs/templates/story.md` cho các công việc phát triển tính năng thông thường.
 
-Suggested path:
+Đường dẫn gợi ý:
 
 ```text
 docs/stories/epics/E01-domain-name/US-001-short-story-title.md
 ```
 
-## High-Risk Story
+## Story Rủi ro cao (High-Risk Story)
 
-Use `docs/templates/high-risk-story/` when the feature intake classifies work as
-high-risk.
+Sử dụng thư mục template `docs/templates/high-risk-story/` khi việc tiếp nhận tính năng (feature intake) phân loại công việc thuộc làn rủi ro cao.
 
-Suggested path:
+Đường dẫn gợi ý:
 
 ```text
 docs/stories/epics/E02-risky-domain/US-012-risky-story-title/
@@ -30,14 +28,14 @@ docs/stories/epics/E02-risky-domain/US-012-risky-story-title/
   validation.md
 ```
 
-## Status Flow
+## Luồng Trạng thái (Status Flow)
 
 ```text
-planned -> in_progress -> implemented
-                  |
-                  v
-               changed
-                  |
-                  v
-               retired
+planned (lên kế hoạch) -> in_progress (đang làm) -> implemented (đã triển khai)
+                              |
+                              v
+                           changed (đã thay đổi)
+                              |
+                              v
+                           retired (đã loại bỏ)
 ```

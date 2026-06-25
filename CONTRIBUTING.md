@@ -1,63 +1,59 @@
-# Contributing to repository-harness
+# Đóng góp cho repository-harness
 
-Thanks for helping improve the harness.
+Cảm ơn bạn đã giúp cải thiện harness.
 
-This repository is early. The most valuable contributions are practical patterns
-that make coding agents safer, clearer, and easier to steer in real projects.
+Kho lưu trữ (repository) này đang ở giai đoạn đầu. Những đóng góp có giá trị nhất là các mẫu thiết kế (pattern) thực tế giúp các coding agent hoạt động an toàn hơn, rõ ràng hơn và dễ điều hướng hơn trong các dự án thực tế.
 
-## Good Contribution Types
+## Các hình thức đóng góp tốt (Good Contribution Types)
 
-### 1. Real-world harness examples
+### 1. Các ví dụ sử dụng harness trong thực tế
 
-Show how you installed or adapted the harness in a real project:
+Chỉ ra cách bạn đã cài đặt hoặc điều chỉnh harness trong một dự án thực tế:
 
-- What kind of project is it?
-- Which agent/tool did you use? Claude Code, Codex, Cursor, something else?
-- What did the harness help with?
-- What was missing or confusing?
+- Dự án đó thuộc loại nào?
+- Bạn đã sử dụng agent/công cụ nào? Claude Code, Codex, Cursor hay công cụ nào khác?
+- Harness đã giúp ích gì cho bạn?
+- Có điều gì còn thiếu hoặc gây khó hiểu không?
 
-### 2. Agent failure cases
+### 2. Các trường hợp lỗi của agent (Agent failure cases)
 
-Share cases where an agent made a bad change because the repo lacked context:
+Chia sẻ các trường hợp mà một agent thực hiện thay đổi không tốt do kho lưu trữ thiếu ngữ cảnh (context):
 
-- What did you ask the agent to do?
-- What did it misunderstand?
-- Which harness artifact could have prevented the issue?
-- Can the lesson become a template, rule, or validation expectation?
+- Bạn đã yêu cầu agent làm gì?
+- Nó đã hiểu sai điều gì?
+- Artifact nào của harness có thể ngăn chặn được vấn đề đó?
+- Bài học rút ra có thể trở thành một template, rule hoặc kỳ vọng xác thực (validation expectation) hay không?
 
-### 3. Template improvements
+### 3. Cải tiến các template
 
-Improve files in `docs/templates/` when you find a repeatable pattern for:
+Cải thiện các file trong thư mục `docs/templates/` khi bạn tìm thấy một mẫu thiết kế có thể tái sử dụng cho:
 
-- product specs
-- story packets
-- decision records
-- validation plans
-- agent operating rules
-- high-risk change reviews
+- đặc tả sản phẩm (product specs)
+- các story packet
+- bản ghi quyết định kỹ thuật (decision records)
+- kế hoạch xác thực (validation plans)
+- quy tắc vận hành của agent (agent operating rules)
+- đánh giá thay đổi rủi ro cao (high-risk change reviews)
 
-### 4. Validation patterns
+### 4. Các mẫu xác thực (Validation patterns)
 
-Add or refine expectations in `docs/TEST_MATRIX.md` for common stacks and work
-types. The goal is not only "tests pass". The goal is clear proof that the work
-matches the product contract.
+Thêm hoặc tinh chỉnh các kỳ vọng trong file `docs/TEST_MATRIX.md` cho các stack công nghệ và loại công việc phổ biến. Mục tiêu không chỉ dừng lại ở việc "vượt qua các bài kiểm thử" (tests pass). Mục tiêu là bằng chứng rõ ràng chứng minh công việc phù hợp với đặc tả sản phẩm (product contract).
 
-### 5. Documentation clarity
+### 5. Sự rõ ràng của tài liệu
 
-If a concept is hard to understand, improve the explanation. Small docs changes
-are welcome.
+Nếu một khái niệm khó hiểu, hãy cải thiện phần giải thích đó. Những thay đổi nhỏ đối với tài liệu luôn được chào đón.
 
-## Before Opening a Pull Request
+## Trước khi mở một Pull Request
 
-1. Read `AGENTS.md`.
-2. Classify the work using `docs/FEATURE_INTAKE.md`.
-3. Keep changes focused and reviewable.
-4. Update related docs if you change a harness rule or template.
-5. Explain what proof shows the change is useful.
+1. Đọc kỹ file `AGENTS.md`.
+2. Phân loại công việc bằng cách sử dụng file `docs/FEATURE_INTAKE.md`.
+3. Giữ cho các thay đổi tập trung và dễ đánh giá (reviewable).
+4. Cập nhật các tài liệu liên quan nếu bạn thay đổi một quy tắc harness (harness rule) hoặc một template.
+5. Giải thích bằng chứng nào chứng minh thay đổi này là hữu ích.
 
-## Pull Request Checklist
+## Danh sách kiểm tra Pull Request (Pull Request Checklist)
 
-Include this in your PR description:
+Bao gồm nội dung này trong mô tả PR của bạn:
 
 ```markdown
 ## Summary
@@ -78,11 +74,8 @@ Include this in your PR description:
 -
 ```
 
-## What Not To Add Yet
+## Những thứ chưa nên thêm vào (What Not To Add Yet)
 
-Avoid adding project-specific product specs to this harness unless they are part
-of a clearly marked demo or example. This repo should stay reusable across many
-projects.
+Tránh thêm các đặc tả sản phẩm (product specs) cụ thể của dự án vào harness này trừ khi chúng là một phần của bản demo hoặc ví dụ được đánh dấu rõ ràng. Repo này cần được giữ nguyên để có thể tái sử dụng trên nhiều dự án khác nhau.
 
-Avoid adding tool-specific rules that only work for one coding agent unless the
-tradeoff is explained and the generic harness behavior remains clear.
+Tránh thêm các quy tắc cụ thể cho một công cụ (tool-specific rules) chỉ hoạt động cho một coding agent duy nhất trừ khi sự đánh đổi được giải thích rõ ràng và hành vi harness tổng quát vẫn rõ ràng.

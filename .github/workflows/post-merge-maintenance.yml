@@ -4,7 +4,7 @@ on:
   pull_request_target:
     types: [closed]
     branches:
-      - main
+      - vi
 
 permissions:
   contents: write
@@ -20,10 +20,10 @@ jobs:
       release_tag: ${{ steps.maintenance.outputs.release_tag }}
       maintenance_ref: ${{ steps.maintenance.outputs.maintenance_ref }}
     steps:
-      - name: Checkout main
+      - name: Checkout vi
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: vi
           fetch-depth: 0
 
       - name: Configure Git author
@@ -39,7 +39,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          git pull --ff-only origin main
+          git pull --ff-only origin vi
 
           pr_json="$(gh pr view "$PR_NUMBER" --json number,title,author,files,mergeCommit)"
           pr_title="$(jq -r '.title' <<<"$pr_json")"
@@ -106,7 +106,7 @@ jobs:
             fi
             git add CHANGELOG.md Cargo.lock crates/harness-cli/Cargo.toml scripts/harness-cli-release-tag
             git commit -m "$commit_message"
-            git push origin HEAD:main
+            git push origin HEAD:vi
             maintenance_ref="$(git rev-parse HEAD)"
           fi
 

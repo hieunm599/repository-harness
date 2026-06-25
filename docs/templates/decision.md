@@ -1,34 +1,33 @@
-# NNNN Decision Title
+# NNNN Tiêu đề Quyết định
 
-Date: YYYY-MM-DD
+Ngày: YYYY-MM-DD
 
-## Status
+## Trạng thái (Status)
 
-Proposed | Accepted | Superseded | Rejected
+Proposed (Đề xuất) | Accepted (Chấp nhận) | Superseded (Thay thế) | Rejected (Từ chối)
 
-## Context
+## Bối cảnh (Context)
 
-What problem, constraint, or ambiguity forced this decision?
+Vấn đề, ràng buộc hoặc sự mơ hồ nào đã thúc đẩy quyết định này?
 
-## Decision
+## Quyết định (Decision)
 
-What did we decide?
+Chúng ta đã quyết định điều gì?
 
-## Alternatives Considered
+## Các Giải pháp Thay thế đã cân nhắc (Alternatives Considered)
 
-1. Alternative.
+1. Giải pháp thay thế.
 
-## Consequences
+## Hệ quả (Consequences)
 
-Positive:
+Tích cực (Positive):
 
-- Item.
+- Mục.
 
-Tradeoffs:
+Sự Đánh đổi (Tradeoffs):
 
-- Item.
+- Mục.
 
-## Follow-Up
+## Các bước Tiếp theo (Follow-Up)
 
-- Item.
-
+- Mục.

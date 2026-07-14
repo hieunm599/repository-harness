@@ -40,7 +40,7 @@ function Resolve-TargetPath([string]$PathValue) {
 function Get-SourceMode {
     if ($PSScriptRoot) {
         $candidate = Split-Path -Parent $PSScriptRoot
-        if ((Test-Path (Join-Path $candidate "AGENTS.md")) -and (Test-Path (Join-Path $candidate "docs/HARNESS.md"))) {
+        if ((Test-Path (Join-Path $candidate "AGENTS.md")) -and (Test-Path (Join-Path $candidate "harness-docs/HARNESS.md"))) {
             return @{ Mode = "local"; Root = $candidate }
         }
     }
@@ -384,7 +384,7 @@ $script:Created = 0
 $script:Updated = 0
 $script:Skipped = 0
 $script:Source = Get-SourceMode
-$script:SourceBaseUrl = if ($env:HARNESS_SOURCE_BASE_URL) { $env:HARNESS_SOURCE_BASE_URL.TrimEnd("/") } else { "https://raw.githubusercontent.com/hoangnb24/repository-harness/main" }
+$script:SourceBaseUrl = if ($env:HARNESS_SOURCE_BASE_URL) { $env:HARNESS_SOURCE_BASE_URL.TrimEnd("/") } else { "https://raw.githubusercontent.com/hieunm599/repository-harness/vi" }
 $script:PayloadManifest = "scripts/harness-install-files.txt"
 $script:SchemaDir = "scripts/schema"
 $script:CliBaseUrl = if ($env:HARNESS_CLI_BASE_URL) { $env:HARNESS_CLI_BASE_URL.TrimEnd("/") } else { Get-DefaultCliBaseUrl }
@@ -401,7 +401,7 @@ if ($UpgradeCli) {
         Fail "-Ref must be an immutable Harness CLI release tag such as harness-cli-v0.1.14"
     }
     $script:Source = @{ Mode = "remote"; Root = "" }
-    $script:SourceBaseUrl = if ($env:HARNESS_SOURCE_BASE_URL) { $env:HARNESS_SOURCE_BASE_URL.TrimEnd("/") } else { "https://raw.githubusercontent.com/hoangnb24/repository-harness/$Ref" }
+    $script:SourceBaseUrl = if ($env:HARNESS_SOURCE_BASE_URL) { $env:HARNESS_SOURCE_BASE_URL.TrimEnd("/") } else { "https://raw.githubusercontent.com/hieunm599/repository-harness/$Ref" }
     $script:CliBaseUrl = if ($env:HARNESS_CLI_BASE_URL) { $env:HARNESS_CLI_BASE_URL.TrimEnd("/") } else { "https://github.com/hoangnb24/repository-harness/releases/download/$Ref" }
     $RefreshAgentShim = $true
 }
@@ -417,14 +417,14 @@ if (!$DryRun -and !(Test-Path $script:TargetDir)) {
     New-Item -ItemType Directory -Force -Path $script:TargetDir | Out-Null
 }
 
-$conflicts = @("AGENTS.md", "docs", "scripts") | Where-Object { Test-Path (Join-Path $script:TargetDir $_) }
+$conflicts = @("AGENTS.md", "harness-docs", "scripts") | Where-Object { Test-Path (Join-Path $script:TargetDir $_) }
 if ($conflicts.Count -gt 0) {
     if ($Merge) {
         $script:ConflictAction = "merge"
         Write-Step "Continuing with merge. Existing files will be skipped."
     } elseif ($Override) {
         $script:ConflictAction = "override"
-        foreach ($protected in @("AGENTS.md", "docs", "scripts")) {
+        foreach ($protected in @("AGENTS.md", "harness-docs", "scripts")) {
             $path = Join-Path $script:TargetDir $protected
             if (!(Test-Path $path)) { continue }
             if ($DryRun) {
@@ -444,7 +444,7 @@ if ($conflicts.Count -gt 0) {
             "^(m|merge)$" { $script:ConflictAction = "merge"; Write-Step "Continuing with merge. Existing files will be skipped." }
             "^(o|override)$" {
                 $script:ConflictAction = "override"
-                foreach ($protected in @("AGENTS.md", "docs", "scripts")) {
+                foreach ($protected in @("AGENTS.md", "harness-docs", "scripts")) {
                     $path = Join-Path $script:TargetDir $protected
                     if (Test-Path $path) {
                         New-Item -ItemType Directory -Force -Path $script:BackupDir | Out-Null

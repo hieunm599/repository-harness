@@ -28,13 +28,13 @@ Options:
                          Existing CLAUDE.md files get the block appended
                          after a backup; a stale block is refreshed in place.
       --override         On protected-path conflict, back up and replace
-                         AGENTS.md, docs/, and scripts/.
+                         AGENTS.md, harness-docs/, and scripts/.
       --force            Overwrite existing files after backing them up.
       --dry-run          Show what would change without writing files.
   -h, --help             Show this help.
 
 Safety:
-  If AGENTS.md, docs/, or scripts/ already exist, interactive installs ask
+  If AGENTS.md, harness-docs/, or scripts/ already exist, interactive installs ask
   whether to merge missing files, override after backup, or stop. Merge is the
   safe update path for repositories that already have Harness: existing files
   stay in place and new Harness files are appended by path. Non-
@@ -46,11 +46,11 @@ Examples:
   scripts/install-harness.sh
   scripts/install-harness.sh --directory /path/to/project --yes
   scripts/install-harness.sh ./my-project --force
-  curl -fsSL https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.sh | bash -s -- --yes
-  curl -fsSL https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.sh | bash -s -- --merge --yes
-  curl -fsSL https://raw.githubusercontent.com/hoangnb24/repository-harness/harness-cli-v0.1.14/scripts/install-harness.sh | bash -s -- --merge --upgrade-cli --ref harness-cli-v0.1.14 --yes
-  curl -fsSL https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.sh | bash -s -- --merge --refresh-agent-shim --yes
-  curl -fsSL https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.sh | bash -s -- --claude --yes
+  curl -fsSL https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh | bash -s -- --yes
+  curl -fsSL https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh | bash -s -- --merge --yes
+  curl -fsSL https://raw.githubusercontent.com/hieunm599/repository-harness/harness-cli-v0.1.14/scripts/install-harness.sh | bash -s -- --merge --upgrade-cli --ref harness-cli-v0.1.14 --yes
+  curl -fsSL https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh | bash -s -- --merge --refresh-agent-shim --yes
+  curl -fsSL https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh | bash -s -- --claude --yes
 EOF
 }
 
@@ -689,7 +689,7 @@ check_protected_target_paths() {
   local conflicts=()
 
   [ -e "$TARGET_DIR/AGENTS.md" ] && conflicts+=("AGENTS.md")
-  [ -e "$TARGET_DIR/docs" ] && conflicts+=("docs/")
+  [ -e "$TARGET_DIR/harness-docs" ] && conflicts+=("harness-docs/")
   [ -e "$TARGET_DIR/scripts" ] && conflicts+=("scripts/")
 
   [ "${#conflicts[@]}" -gt 0 ] || return 0
@@ -728,7 +728,7 @@ check_protected_target_paths() {
     printf 'Warning: target already contains protected Harness paths: %s\n' "$joined"
     printf 'Choose how to continue:\n'
     printf '  1. Merge    Copy missing Harness files and skip existing files\n'
-    printf '  2. Override Back up and replace AGENTS.md, docs/, and scripts/\n'
+    printf '  2. Override Back up and replace AGENTS.md, harness-docs/, and scripts/\n'
     printf '  3. Stop     Exit without writing files (recommended)\n'
   } > /dev/tty
   prompt_tty 'Choice [1/2/3, default 3]: '
@@ -756,7 +756,7 @@ check_protected_target_paths() {
 override_protected_target_paths() {
   local protected
 
-  for protected in AGENTS.md docs scripts; do
+  for protected in AGENTS.md harness-docs scripts; do
     [ -e "$TARGET_DIR/$protected" ] || continue
 
     if [ "$DRY_RUN" -eq 1 ]; then
@@ -865,7 +865,7 @@ SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
 SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" 2>/dev/null && pwd -P || printf '')"
 SOURCE_ROOT=""
 SOURCE_MODE="remote"
-SOURCE_BASE_URL="${HARNESS_SOURCE_BASE_URL:-https://raw.githubusercontent.com/hoangnb24/repository-harness/main}"
+SOURCE_BASE_URL="${HARNESS_SOURCE_BASE_URL:-https://raw.githubusercontent.com/hieunm599/repository-harness/vi}"
 SOURCE_BASE_URL="${SOURCE_BASE_URL%/}"
 PAYLOAD_MANIFEST="scripts/harness-install-files.txt"
 SCHEMA_DIR="scripts/schema"
@@ -882,14 +882,14 @@ if [ "$UPGRADE_CLI" -eq 1 ]; then
     fail "--ref must be an immutable Harness CLI release tag such as harness-cli-v0.1.14"
   SOURCE_MODE="remote"
   SOURCE_ROOT=""
-  SOURCE_BASE_URL="${HARNESS_SOURCE_BASE_URL:-https://raw.githubusercontent.com/hoangnb24/repository-harness/$REQUESTED_REF}"
+  SOURCE_BASE_URL="${HARNESS_SOURCE_BASE_URL:-https://raw.githubusercontent.com/hieunm599/repository-harness/$REQUESTED_REF}"
   SOURCE_BASE_URL="${SOURCE_BASE_URL%/}"
   CLI_BASE_URL="${HARNESS_CLI_BASE_URL:-https://github.com/hoangnb24/repository-harness/releases/download/$REQUESTED_REF}"
   CLI_BASE_URL="${CLI_BASE_URL%/}"
   REFRESH_AGENT_SHIM=1
 fi
 
-if [ "$UPGRADE_CLI" -eq 0 ] && [ -n "$SCRIPT_DIR" ] && [ -f "$SCRIPT_DIR/../AGENTS.md" ] && [ -f "$SCRIPT_DIR/../docs/HARNESS.md" ]; then
+if [ "$UPGRADE_CLI" -eq 0 ] && [ -n "$SCRIPT_DIR" ] && [ -f "$SCRIPT_DIR/../AGENTS.md" ] && [ -f "$SCRIPT_DIR/../harness-docs/HARNESS.md" ]; then
   SOURCE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd -P)"
   SOURCE_MODE="local"
 fi

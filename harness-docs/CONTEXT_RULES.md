@@ -1,20 +1,31 @@
 # Các Quy tắc Kỹ thuật Ngữ cảnh (Context Engineering Rules)
 
-Các quy tắc ngữ cảnh (context rules) giúp agent quyết định tài liệu nào cần đọc, khi nào nên đọc và khi nào nên dừng đọc. Chúng bổ sung cho danh sách tài liệu cần đọc ổn định trong file `AGENTS.md`.
+Các quy tắc ngữ cảnh (context rules) giúp agent quyết định tài liệu nào cần đọc, khi nào nên đọc và khi nào nên dừng đọc. `AGENTS.md` là điểm vào có thẩm quyền giới hạn (bounded authority entrypoint); nó chọn loại yêu cầu (request class) trước khi tài liệu này mở rộng việc truy xuất.
 
 Mục tiêu không phải là tối đa hóa ngữ cảnh. Mục tiêu là đưa thông tin phù hợp vào mô hình cho giai đoạn nhiệm vụ (task phase) và làn rủi ro (risk lane) hiện tại.
+
+## Cổng Thẩm quyền (Authority Gate)
+
+Loại yêu cầu (request class) xác định cả thẩm quyền thay đổi (mutation authority) và ngữ cảnh mặc định.
+
+| Loại yêu cầu | Ví dụ | Thay đổi Harness | Ngữ cảnh mặc định |
+| --- | --- | --- | --- |
+| Chỉ đọc (Read-only) | trả lời, giải thích, đánh giá, chẩn đoán, lập kế hoạch, trạng thái | Không. Không bootstrap, khởi tạo/migrate, ghi nhận intake, cập nhật trạng thái bền vững hoặc ghi trace. | `AGENTS.md`, chính xác các file hoặc output được yêu cầu nêu rõ, sau đó là nguồn liền kề nhỏ nhất cần thiết để hỗ trợ câu trả lời. |
+| Thay đổi (Change) | thay đổi, xây dựng, sửa lỗi | Bootstrap trước, sau đó là intake, story/proof, trace và các thay đổi backlog theo yêu cầu của làn rủi ro được chọn. | `AGENTS.md`, `harness-docs/FEATURE_INTAKE.md`, tóm tắt ma trận hoạt động tập trung (focused active matrix summary), sau đó là các nguồn theo làn và bộ kích hoạt bên dưới. |
+
+Nguyên nhân và kết quả: một bản chẩn đoán có thể phát hiện rằng một schema migration bị thiếu, nhưng bản thân việc phát hiện không ủy quyền việc tạo nó. Một yêu cầu tiếp theo để sửa migration đó là yêu cầu thay đổi (change request), vì vậy bootstrap và intake xảy ra trước khi chỉnh sửa. Tương tự, "xem xét và áp dụng các bản sửa" là một yêu cầu thay đổi vì người dùng đã yêu cầu rõ ràng chỉnh sửa repository; kết quả yêu cầu chứ không phải một từ khóa đơn lẻ, xác định thẩm quyền.
 
 ## Các Giai đoạn Ngữ cảnh (Context Phases)
 
 ### Giai đoạn Tiếp nhận (Intake Phase)
 
-Đọc để phân loại yêu cầu, tìm bề mặt bị ảnh hưởng và chọn làn rủi ro (lane).
+Giai đoạn này chỉ áp dụng cho các yêu cầu thay đổi (change requests). Đọc để phân loại yêu cầu, tìm bề mặt bị ảnh hưởng và chọn làn rủi ro (lane).
 
 | Tài liệu hoặc Nguồn | Nhỏ (Tiny) | Bình thường (Normal) | Rủi ro cao (High-Risk) |
 | --- | --- | --- | --- |
 | `AGENTS.md` | Bắt buộc (Must) | Bắt buộc (Must) | Bắt buộc (Must) |
 | `harness-docs/FEATURE_INTAKE.md` | Bắt buộc (Must) | Bắt buộc (Must) | Bắt buộc (Must) |
-| `scripts/bin/harness-cli query matrix` | Bắt buộc (Must) | Bắt buộc (Must) | Bắt buộc (Must) |
+| `scripts/bin/harness-cli query matrix --active --summary` | Bắt buộc (Must) | Bắt buộc (Must) | Bắt buộc (Must) |
 | `README.md` | Nên (Should) | Bắt buộc (Must) | Bắt buộc (Must) |
 | `harness-docs/HARNESS.md` | Nên (Should) | Bắt buộc (Must) | Bắt buộc (Must) |
 | `harness-docs/ARCHITECTURE.md` | Bỏ qua (Skip) | Nên (Should) | Bắt buộc (Must) |
@@ -93,13 +104,13 @@ Mục tiêu không phải là tối đa hóa ngữ cảnh. Mục tiêu là đưa
 | Nhiệm vụ phát hiện sự mơ hồ lặp lại, tài liệu cũ hoặc thiếu bằng chứng xác thực | Đọc `harness-docs/HARNESS_BACKLOG.md`, ghi lại `harness_friction` và thêm một mục backlog khi việc sửa lỗi nằm ngoài phạm vi. |
 | Nhiệm vụ đưa ra tuyên bố về độ hoàn thiện (maturity), khả năng quan sát (observability), chất lượng trace hoặc benchmark | Đọc `harness-docs/HARNESS_COMPONENTS.md`, `harness-docs/HARNESS_MATURITY.md` và `harness-docs/TRACE_SPEC.md`. |
 | Nhiệm vụ có rủi ro bình thường hoặc cao và kéo dài qua nhiều lần lặp (iteration) | Tạo hoặc cập nhật một file story/tiến trình trong thư mục `harness-docs/stories/` và cập nhật nó thường xuyên. |
-| Phản hồi cuối cùng đang được chuẩn bị | Đọc lại bằng chứng xác thực, lệnh `git status --short` và `harness-docs/TRACE_SPEC.md` trước khi ghi lại trace cuối cùng. |
+| Phản hồi cuối cùng của yêu cầu thay đổi đang được chuẩn bị | Đọc lại bằng chứng xác thực, lệnh `git status --short` và `harness-docs/TRACE_SPEC.md` trước khi ghi lại trace cuối cùng. |
 
 ## Hướng dẫn Ngân sách Token (Token Budget Guidance)
 
 | Làn rủi ro | Ngân sách Ngữ cảnh Mục tiêu | Cấu trúc Đọc (Read Shape) | Lý do |
 | --- | --- | --- | --- |
-| Nhỏ (Tiny) | Khoảng 2K token ngữ cảnh Harness | `AGENTS.md`, `harness-docs/FEATURE_INTAKE.md`, truy vấn ma trận và chính xác file đang được thay đổi. | Công việc nhỏ không nên tiêu tốn nhiều ngữ cảnh cho chính sách hơn là cho việc chỉnh sửa code thực tế. |
+| Nhỏ (Tiny) | Khoảng 2K token ngữ cảnh Harness | `AGENTS.md`, `harness-docs/FEATURE_INTAKE.md`, tóm tắt ma trận hoạt động tập trung và chính xác file đang được thay đổi. | Công việc nhỏ không nên tiêu tốn nhiều ngữ cảnh cho chính sách hơn là cho việc chỉnh sửa code thực tế. |
 | Bình thường (Normal) | Khoảng 5K token ngữ cảnh Harness | Tài liệu intake, tài liệu sản phẩm/story liên quan, tài liệu kiến trúc khi liên quan đến cấu trúc, kỳ vọng xác thực và đặc tả trace ở cuối. | Công việc bình thường cần đủ ngữ cảnh để bảo toàn các ràng buộc và ghi lại bằng chứng xác thực mà không cần đọc mọi file lịch sử. |
 | Rủi ro cao (High-risk) | Khoảng 10K token ngữ cảnh Harness | Đầy đủ tài liệu intake, tài liệu kiến trúc, các quyết định liên quan, template rủi ro cao, tài liệu sản phẩm, tài liệu xác thực, đặc tả trace, tài liệu thành phần/độ hoàn thiện khi hành vi Harness thay đổi. | Công việc rủi ro cao cần phân cấp nguồn, các quyết định trước đó và kỳ vọng bằng chứng xác thực trong ngữ cảnh trước khi triển khai. |
 
@@ -110,19 +121,19 @@ Quy tắc ngân sách:
 - Leo thang ngữ cảnh khi bộ kích hoạt truy xuất hoạt động.
 - Không tiếp tục đọc lịch sử không liên quan sau khi làn rủi ro, các file bị ảnh hưởng và đường dẫn xác thực đã rõ ràng.
 
-## Hành vi Bổ trợ (Additive Behavior)
+## Hành vi Truy xuất Giới hạn (Bounded Retrieval Behavior)
 
-Các quy tắc này không thay thế `AGENTS.md`. Agent vẫn nên đọc các tài liệu điểm vào ổn định được liệt kê ở đó trước khi làm việc. Tài liệu này giải thích những gì cần truy xuất sau ngữ cảnh ban đầu đó, dựa trên làn rủi ro, giai đoạn và bộ kích hoạt.
+Không tải trước (preload) mọi tài liệu Harness. Đối với yêu cầu chỉ đọc, dừng lại sau khi câu trả lời được hỗ trợ. Đối với yêu cầu thay đổi, `AGENTS.md` chỉ đến intake và tóm tắt ma trận tập trung; tài liệu này sau đó mở rộng ngữ cảnh chỉ khi một làn rủi ro, giai đoạn hoặc bộ kích hoạt truy xuất yêu cầu.
 
 ## Danh sách Kiểm tra (Review Checklist)
 
-Trước khi triển khai:
+Trước khi triển khai yêu cầu thay đổi:
 
 - Làn rủi ro (lane) được chọn từ `harness-docs/FEATURE_INTAKE.md`.
 - Tài liệu sản phẩm hoặc các story packet liên quan được xác định.
 - Bất kỳ bộ kích hoạt rủi ro cao nào đã được xử lý.
 
-Trước phản hồi cuối cùng:
+Trước phản hồi cuối cùng của yêu cầu thay đổi:
 
 - Bằng chứng xác thực (validation evidence) đã được đọc.
 - Tài liệu `harness-docs/TRACE_SPEC.md` đã được đọc đối với các nhiệm vụ bình thường/rủi ro cao.

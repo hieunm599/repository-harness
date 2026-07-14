@@ -31,10 +31,10 @@ Thay đổi harness (Harness delta)
 Ý định tiếp theo (Next intent)
 ```
 
-Mỗi nhiệm vụ có hai đầu ra khả thi:
+Một yêu cầu thay đổi (change request) có thể có hai đầu ra:
 
 1. Thay đổi sản phẩm (Product delta): mã nguồn ứng dụng, kiểm thử, cấu trúc API, mô hình dữ liệu hoặc tài liệu sản phẩm.
-2. Thay đổi harness (Harness delta): tài liệu, template, kỳ vọng xác thực, các mục backlog hoặc bản ghi quyết định kỹ thuật giúp cho nhiệm vụ tiếp theo dễ dàng hơn.
+2. Thay đổi harness (Harness delta), khi cần thiết: tài liệu, template, kỳ vọng xác thực, các mục backlog hoặc bản ghi quyết định kỹ thuật giúp cho thay đổi tiếp theo dễ dàng hơn.
 
 ## Phạm vi Harness v0 (Harness v0 Scope)
 
@@ -46,21 +46,21 @@ Harness v0 bao gồm:
 - Các story template.
 - Template nhật ký quyết định kỹ thuật (decision log template).
 - Template báo cáo xác thực (validation report template).
-- Chỗ trống cho ma trận kiểm thử (test matrix placeholder).
+- Chỗ trống cho ma trận kiểm thử được hỗ trợ bởi SQLite và template nhập dữ liệu brownfield (SQLite-backed proof matrix).
 - Backlog tăng trưởng của Harness (Harness growth backlog).
 - Lớp lưu trữ bền vững (Durable layer): Cơ sở dữ liệu SQLite và CLI cho các bản ghi vận hành.
+- Các kiểm thử contract upstream và xác thực pull-request/release.
 
 Harness v0 cố tình không bao gồm:
 
-- Tài liệu đặc tả cụ thể của dự án `SPEC.md`.
-- Các miền sản phẩm được cắt lát sẵn (pre-sliced product domains).
-- Ngăn xếp ứng dụng bị khóa cứng.
-- Cấu trúc thư mục nguồn ứng dụng mẫu (app source scaffolding).
-- Các kịch bản package (package scripts).
-- Cấu hình chạy kiểm thử (test runner config).
-- Các workflow CI.
+- Tài liệu đặc tả cụ thể của dự án consumer `SPEC.md`.
+- Các miền sản phẩm consumer được cắt lát sẵn (pre-sliced consumer product domains).
+- Ngăn xếp ứng dụng consumer bị khóa cứng.
+- Cấu trúc thư mục nguồn ứng dụng mẫu consumer (consumer app source scaffolding).
+- Các kịch bản package consumer và cấu hình chạy kiểm thử.
+- Các workflow CI của consumer.
 
-Những thành phần này chỉ nên xuất hiện khi có một story cụ thể yêu cầu chúng.
+Những thành phần này thuộc về dự án được cài đặt và chỉ nên xuất hiện khi một story cụ thể của dự án đó yêu cầu chúng. Repository Harness upstream có Rust workspace, kiểm thử và CI riêng vì Harness CLI và các template là sản phẩm yêu cầu bằng chứng thực thi được (executable proof).
 
 ## Lớp Lưu trữ Bền vững (Durable Layer)
 
@@ -84,6 +84,7 @@ scripts/bin/harness-cli story   add --id <id> --title <text> --lane <lane>
 scripts/bin/harness-cli story   update --id <id> --status <status>
 scripts/bin/harness-cli story   update --id <id> --unit 1 --integration 1 --e2e 0 --platform 0
 scripts/bin/harness-cli story   verify <id>
+scripts/bin/harness-cli story   complete <id>
 scripts/bin/harness-cli story   verify-all
 scripts/bin/harness-cli decision add --id <id> --title <text> --doc harness-docs/decisions/<file>.md
 scripts/bin/harness-cli trace   --summary <text> --outcome <outcome>
@@ -175,19 +176,33 @@ scripts/bin/harness-cli query friction
 
 Độ rủi ro của backlog sử dụng cùng từ vựng làn rủi ro như tiếp nhận và story: `tiny`, `normal` hoặc `high-risk`. Sử dụng `--risk tiny` cho các mục theo dõi có rủi ro thấp; `low` không phải là một làn rủi ro hợp lệ.
 
-## Vòng lặp Nhiệm vụ (Task Loop)
+## Vòng lặp theo Loại Yêu cầu (Request-Class Loops)
 
-Đối với mỗi nhiệm vụ:
+Phân loại thẩm quyền (authority) trước khi chạy các lệnh Harness. Loại yêu cầu (request class) quyết định liệu trạng thái repository có thể thay đổi hay không.
 
-1. Phân loại yêu cầu bằng file `harness-docs/FEATURE_INTAKE.md`.
-2. Ghi lại phân loại bằng lệnh `scripts/bin/harness-cli intake`.
-3. Xác định tài liệu sản phẩm và các file story bị ảnh hưởng.
-4. Kiểm tra trạng thái chứng thực bằng lệnh `scripts/bin/harness-cli query matrix`.
-5. Chỉ làm việc trong làn rủi ro đã chọn: nhỏ (tiny), bình thường (normal) hoặc rủi ro cao (high-risk).
+### Yêu cầu Chỉ đọc (Read-Only Requests)
+
+Các yêu cầu trả lời, giải thích, đánh giá, chẩn đoán, lập kế hoạch và báo cáo trạng thái là chỉ đọc.
+
+1. Đọc `AGENTS.md` và chỉ các file hoặc bằng chứng cần thiết cho phản hồi.
+2. Sử dụng các lệnh kiểm tra chỉ đọc khi hữu ích.
+3. Không chạy bootstrap, khởi tạo hoặc migrate cơ sở dữ liệu, ghi nhận intake, cập nhật story hoặc backlog, hoặc ghi trace.
+4. Dừng lại khi câu trả lời được hỗ trợ bởi bằng chứng repository cụ thể.
+
+Ví dụ, một yêu cầu chẩn đoán tại sao bài kiểm thử installer thất bại có thể kiểm tra bài kiểm thử, installer và đầu ra bắt được. Nó không được bootstrap cơ sở dữ liệu bị thiếu hoặc tạo hàng intake chỉ để giải thích lỗi.
+
+### Yêu cầu Thay đổi (Change Requests)
+
+Các yêu cầu thay đổi, xây dựng và sửa lỗi ủy quyền vòng lặp thay đổi (mutation loop) Harness thông thường:
+
+1. Bootstrap runtime cục bộ được gitignore bằng `scripts/bootstrap-harness.sh` trên macOS/Linux hoặc `.\scripts\bootstrap-harness.ps1` trên Windows.
+2. Phân loại yêu cầu bằng file `harness-docs/FEATURE_INTAKE.md` và ghi lại phân loại bằng lệnh `scripts/bin/harness-cli intake`.
+3. Kiểm tra trạng thái chứng thực tập trung bằng `scripts/bin/harness-cli query matrix --active --summary`, sau đó sử dụng `scripts/bin/harness-cli query matrix --story <id>` nếu một story được chọn.
+4. Chỉ truy xuất các file sản phẩm, story, quyết định kỹ thuật và triển khai bị ảnh hưởng theo yêu cầu của làn rủi ro được chọn trong `harness-docs/CONTEXT_RULES.md`.
+5. Triển khai và xác thực trong làn rủi ro đó: nhỏ (tiny), bình thường (normal) hoặc rủi ro cao (high-risk).
 6. Trước khi hoàn thành, tự hỏi xem đặc tả sản phẩm, kỳ vọng xác thực, quy tắc kiến trúc, mẫu lỗi lặp lại hoặc hướng dẫn cho agent tiếp theo có thay đổi hay không.
-7. Ghi lại một trace bằng lệnh `scripts/bin/harness-cli trace`, sử dụng file `harness-docs/TRACE_SPEC.md` để biết cấp độ trace và độ sâu trường dữ liệu kỳ vọng.
-8. Xem xét điểm trace (trace score) được in ra bởi lệnh `scripts/bin/harness-cli trace`; chỉ sử dụng lệnh `scripts/bin/harness-cli score-trace --id <id>` khi kiểm tra lại một trace cụ thể trong lịch sử.
-9. Nếu phát hiện ma sát harness, hãy trực tiếp sửa đổi hoặc ghi lại nó bằng lệnh `scripts/bin/harness-cli backlog add`.
+7. Ghi lại một trace bằng lệnh `scripts/bin/harness-cli trace`, sử dụng file `harness-docs/TRACE_SPEC.md` để biết cấp độ trace và độ sâu trường dữ liệu kỳ vọng, và xem xét điểm được in ra.
+8. Nếu phát hiện ma sát Harness, sửa trực tiếp trong phạm vi hoặc ghi lại nó bằng lệnh `scripts/bin/harness-cli backlog add`.
 
 ## Xác thực Story (Story Verification)
 
@@ -206,6 +221,10 @@ Sử dụng lệnh `story verify-all` trước khi merge, tuyên bố độ hoà
 Lệnh `story verify` chỉ chấp nhận tham số story id. Cấu hình lệnh xác thực bằng `story add --verify` hoặc `story update --verify`. Ghi lại các giá trị boolean chứng thực bằng `story update` sử dụng giá trị số: `1` nghĩa là có (yes) và `0` nghĩa là không (no). Rust CLI từ chối các giá trị văn bản như `yes` và `no`.
 
 Sử dụng lệnh `scripts/bin/harness-cli query matrix --numeric` khi sao chép các giá trị chứng thực quay lại lệnh `story update`. Đầu ra mặc định của ma trận là dạng dễ đọc cho con người `yes`/`no`; đầu ra dạng số sẽ phản chiếu trực tiếp đầu vào của CLI.
+
+Sử dụng `query matrix --active --summary` để bỏ qua lịch sử đã hoàn thành và văn bản bằng chứng dài trong khi vẫn giữ lại làn rủi ro, trạng thái runnable và các cột bằng chứng. Cờ `--runnable` sử dụng cùng quy tắc planned/nonblank-verification/unblocked như khám phá story của giao thức (protocol story discovery), và `--story <id>` chọn chính xác một story. Các bộ lọc kết hợp với ngữ nghĩa AND. Ma trận không lọc vẫn là chế độ xem bằng chứng bền vững đầy đủ.
+
+Lệnh `story complete <id>` là chuyển đổi vòng đời rõ ràng cho công việc đã hoàn thành. Nó yêu cầu một story ở trạng thái `in_progress` hoặc `changed`, chạy bằng chứng mới và đánh dấu story là implemented chỉ khi bằng chứng đó vượt qua. Các story resolver bổ sung yêu cầu một intake `harness_improvement` liên kết ổn định và trace triển khai hoàn thành khớp được ghi lại sau liên kết resolver mới nhất. Khi vượt qua, bằng chứng story và các việc đóng backlog đã chấp nhận đủ điều kiện được commit nguyên tử và có thể phát lại (replayable). Các cập nhật văn bản thông thường và cập nhật JSON compare-and-set từ chối mục tiêu `implemented` và hướng người gọi đến `story complete`; các cập nhật vòng đời, bằng chứng, chứng cứ và lệnh xác thực khác vẫn khả dụng. Lệnh `story verify` và `story verify-all` thông thường vẫn chỉ làm việc với bằng chứng.
 
 ## Các Lệnh Tiến hóa Phase 5 (Phase 5 Evolution Commands)
 
@@ -239,10 +258,11 @@ Các đề xuất cải tiến (Improvement proposals):
 
 ```bash
 scripts/bin/harness-cli propose
-scripts/bin/harness-cli propose --commit
+scripts/bin/harness-cli propose --accept <key> --outcome-manual
+scripts/bin/harness-cli propose --reject <key> --reason "Lý do từ chối"
 ```
 
-Lệnh `propose` in ra các đề xuất mang tính xác định từ ma sát lặp đi lặp lại, các intervention và sai lệch kiểm toán. Cờ `--commit` chỉ tạo các mục backlog được đề xuất; nó không chỉnh sửa tài liệu chính sách hoặc phê duyệt đề xuất.
+Lệnh `propose` in ra các đề xuất mang tính xác định từ ma sát lặp đi lặp lại, các intervention và sai lệch kiểm toán. Chấp nhận (`--accept`) tạo một mục backlog `accepted` với lịch trình kết quả (outcome schedule). Từ chối (`--reject`) ghi lại quyết định kết thúc mà không tạo intake. `propose --commit` bị từ chối có chủ đích; Harness không bao giờ ghi hàng loạt mọi đề xuất đang hiển thị.
 
 ## Các Bản ghi Quyết định Kỹ thuật (Decision Records)
 

@@ -121,13 +121,24 @@ Các bản ghi JSON mang theo `kind`, `capability`, `scan_target`, `status` và 
 | `import brownfield` | Bộ nhớ dự án | Gieo mầm các bản ghi lâu dài từ trạng thái markdown cũ. | không có |
 | `intake` | Đặc tả nhiệm vụ | Ghi lại phân loại tiếp nhận tính năng. | `--type`, `--summary`, `--lane` |
 | `story add` | Trạng thái nhiệm vụ | Tạo một bản ghi story lâu dài. | `--id`, `--title`, `--lane`, tùy chọn `--verify` |
-| `story update` | Trạng thái nhiệm vụ | Cập nhật trạng thái story, các cờ bằng chứng, chứng cứ, hoặc lệnh xác thực. | `--id`, tùy chọn các trường trạng thái/bằng chứng |
+| `story update` | Trạng thái nhiệm vụ | Cập nhật trạng thái story không liên quan đến hoàn thành (non-completion), các cờ bằng chứng, chứng cứ, hoặc lệnh xác thực; `implemented` yêu cầu `story complete`. | `--id`, tùy chọn các trường trạng thái/bằng chứng |
+| `story update --json` | Trạng thái nhiệm vụ | Thực hiện cập nhật trạng thái non-completion có thể đọc bằng máy với so sánh-và-đặt giao dịch (transactional compare-and-set)/điều kiện tiên quyết runnable. | `--id`, `--status`, `--expected-status`, tùy chọn `--require-runnable` |
+| `story dependency add` | Trạng thái nhiệm vụ | Thêm cạnh phụ thuộc bền vững an toàn chu trình (cycle-safe). | `--blocker`, `--blocked` |
+| `story dependency remove` | Trạng thái nhiệm vụ | Xóa cạnh phụ thuộc bền vững; các cạnh không tồn tại không thay đổi. | `--blocker`, `--blocked` |
+| `story hierarchy add` | Trạng thái nhiệm vụ | Thêm cạnh cha/con bất biến (idempotent), an toàn chu trình. | `--parent`, `--child`, tùy chọn `--json` |
+| `story hierarchy remove` | Trạng thái nhiệm vụ | Xóa cạnh cha/con bất biến. | `--parent`, `--child`, tùy chọn `--json` |
+| `story backlog link` | Trạng thái nhiệm vụ | Thêm liên kết `resolves` hoặc `references` có thể phát lại (replayable) đến một mục backlog ổn định. | `--story`, `--backlog`, `--relationship` |
+| `story backlog unlink` | Trạng thái nhiệm vụ | Xóa mối quan hệ; nguồn gốc (provenance) của resolver đã đóng vẫn bất biến. | `--story`, `--backlog` |
+| `story backlog list` | Trạng thái nhiệm vụ | Hiển thị các mối quan hệ story-backlog. | tùy chọn `--story`, `--backlog` |
 | `story verify` | Xác thực | Chạy lệnh `verify_command` của một story và ghi nhận kết quả thành công/thất bại. | story id |
+| `story complete` | Trạng thái nhiệm vụ | Chạy bằng chứng mới và triển khai nguyên tử (atomically) một story đủ điều kiện cộng với công việc backlog resolver đã chấp nhận. | story id |
 | `story verify-all` | Xác thực | Chạy tất cả các lệnh xác thực story đã cấu hình và bỏ qua các story không có lệnh này. | không có |
 | `decision add` | Bộ nhớ dự án | Tạo một bản ghi quyết định kỹ thuật lâu dài. | `--id`, `--title`, tùy chọn `--doc`, `--verify` |
 | `decision verify` | Xác thực | Chạy một lệnh xác thực quyết định kỹ thuật. | decision id |
 | `backlog add` | Kiểm toán entropy | Ghi nhận một đề xuất cải tiến harness. | `--title`, tùy chọn các trường pain/suggestion/risk/predicted |
 | `backlog close` | Kiểm toán entropy | Đóng một mục backlog kèm theo bằng chứng kết quả thực tế. | `--id`, tùy chọn `--status`, `--outcome` |
+| `backlog reconcile` | Kiểm toán entropy | Xem trước hoặc áp dụng backfill danh tính vòng đời di sản bảo thủ. | `--action backfill-lifecycle-identity`, chính xác một trong `--dry-run` hoặc `--apply` |
+| `backlog outcome record` | Kiểm toán entropy | Thêm quan sát kết quả đo được vào mục đã triển khai có khóa. | `--id`, `--status`, `--outcome`, tùy chọn `--evidence` |
 | `tool register` | Truy cập công cụ | Đăng ký một công cụ dự án bên ngoài. | `--name`, `--command`, `--description`, `--responsibility`, tùy chọn `--kind`, `--capability`, `--scan`, `--args`, `--force` |
 | `tool check` | Truy cập công cụ | Quét các công cụ đã đăng ký và lưu lại trạng thái present/missing/unknown. | tùy chọn `--name`, `--json` |
 | `tool remove` | Truy cập công cụ | Gỡ bỏ một công cụ bên ngoài đã đăng ký. | `--name` |
@@ -136,9 +147,14 @@ Các bản ghi JSON mang theo `kind`, `capability`, `scan_target`, `status` và 
 | `score-trace` | Khả năng quan sát | Tính điểm chi tiết của trace so với yêu cầu của làn rủi ro. | tùy chọn `--id` |
 | `score-context` | Lựa chọn ngữ cảnh | Tính điểm các file đã đọc của trace so với các quy tắc ngữ cảnh đã biên dịch. | trace id |
 | `audit` | Kiểm toán entropy | Chạy kiểm tra sai lệch và tính điểm entropy. | không có |
-| `propose` | Kiểm toán entropy | Tạo các đề xuất cải tiến từ ma sát, các can thiệp và kết quả kiểm toán. | tùy chọn `--commit` |
-| `query matrix` | Trạng thái nhiệm vụ | Hiển thị ma trận chứng thực story lâu dài. | tùy chọn `--numeric` |
-| `query backlog` | Kiểm toán entropy | Hiển thị backlog cải tiến harness. | tùy chọn `--open`, `--closed` |
+| `propose` | Kiểm toán entropy | Đọc các đề xuất cải tiến xác định, hoặc chấp nhận/từ chối rõ ràng một khóa ổn định. | `--accept <key>` cộng một lịch trình kết quả, hoặc `--reject <key> --reason <text>` |
+| `query matrix` | Trạng thái nhiệm vụ | Hiển thị ma trận chứng thực story lâu dài, tùy chọn tập trung vào active, runnable, hoặc một story chính xác và không có văn bản bằng chứng dài. | tùy chọn `--numeric`, `--active`, `--runnable`, `--story <id>`, `--summary` |
+| `query contract` | Truy cập công cụ | Khám phá giao thức, khả năng, phạm vi schema được hỗ trợ, và trạng thái DB mà không ghi. | bắt buộc `--json` |
+| `query stories` | Trạng thái nhiệm vụ | Trả về bản ghi story điều phối ổn định. | bắt buộc `--json` |
+| `query work-graph` | Trạng thái nhiệm vụ | Trả về một đồ thị story/phụ thuộc/phân cấp nhất quán giao dịch và phiên bản sửa đổi. | bắt buộc `--json` |
+| `query dependencies` | Trạng thái nhiệm vụ | Hiển thị các cạnh phụ thuộc story. | tùy chọn `--story` |
+| `query hierarchy` | Trạng thái nhiệm vụ | Hiển thị các cạnh cha/con xác định. | tùy chọn `--story`, tùy chọn `--json` |
+| `query backlog` | Kiểm toán entropy | Hiển thị backlog cải tiến Harness và, với `--id`, các mối quan hệ của nó. | tùy chọn `--open`, `--closed`, `--id` |
 | `query decisions` | Bộ nhớ dự án | Hiển thị các bản ghi quyết định kỹ thuật lâu dài. | không có |
 | `query intakes` | Đặc tả nhiệm vụ | Hiển thị các bản ghi tiếp nhận gần đây. | không có |
 | `query traces` | Khả năng quan sát | Hiển thị các bản ghi trace gần đây. | không có |
@@ -146,7 +162,13 @@ Các bản ghi JSON mang theo `kind`, `capability`, `scan_target`, `status` và 
 | `query tools` | Truy cập công cụ | Hiển thị các mục công cụ đã biên dịch và đã đăng ký. | tùy chọn `--json`, `--summary`, `--responsibility`, `--capability`, `--status` |
 | `query interventions` | Ghi nhận can thiệp | Hiển thị các bản ghi can thiệp. | tùy chọn `--trace`, `--story`, `--type` |
 | `query stats` | Trạng thái nhiệm vụ | Hiển thị số lượng các bản ghi lâu dài. | không có |
-| `query sql` | Truy cập công cụ | Chạy các câu lệnh SQL tùy ý với `harness.db`. | văn bản lệnh SQL |
+| `query sql` | Truy cập công cụ | Chạy một câu lệnh SQL chỉ đọc (read-only) với `harness.db`. | văn bản lệnh SQL |
+| `db changeset apply` | Trạng thái nhiệm vụ | Áp dụng một changeset ngữ nghĩa một cách bất biến (idempotently). | đường dẫn changeset |
+| `db changeset status` | Trạng thái nhiệm vụ | Phân tích và kiểm tra ID/SHA nội dung/trạng thái đã áp dụng của một changeset mà không ghi. | đường dẫn changeset, bắt buộc `--json` |
+| `db snapshot` | Trạng thái nhiệm vụ | Tạo ảnh chụp online-backup SQLite nguyên tử có kiểm tra tính toàn vẹn. | `--output`, bắt buộc `--json` |
+| `db rebuild` | Trạng thái nhiệm vụ | Xây dựng lại `harness.db` mới từ các changeset ngữ nghĩa. | `--from` thư mục changeset |
+
+Các envelope protocol-v1 chính xác, mã thoát (exit codes), định nghĩa runnable, quy tắc timeout và hủy bỏ, và các JSON schema được chuẩn hóa (normative) trong `harness-docs/contracts/harness-orchestration-v1.md`. Bảng registry chỉ là chỉ mục lệnh cho con người.
 
 ## Các Quy tắc Xác thực (Validation Rules)
 
@@ -157,3 +179,4 @@ Các bản ghi JSON mang theo `kind`, `capability`, `scan_target`, `status` và 
 - Tham số `--capability` phải ở dạng kebab-case (chữ thường, chữ số, dấu gạch ngang đơn); khoảng trắng và dấu gạch dưới được tự động chuẩn hóa thành dấu gạch ngang.
 - Các mục của `--args` phải sử dụng định dạng `name:type:required` hoặc `name:type:required:help`, với trường thứ ba là `required` hoặc `optional`.
 - Đối với `cli`/`binary`, lệnh thực thi phải tồn tại dưới dạng một đường dẫn hoặc trên hệ thống `PATH`, trừ khi cờ `--force` được cung cấp. Các loại `mcp`/`skill`/`http` bỏ qua kiểm tra này.
+

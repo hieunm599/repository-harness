@@ -1,8 +1,12 @@
 # Ma trận Kiểm thử (Test Matrix)
 
-File này ánh xạ các hành vi của sản phẩm với bằng chứng xác thực (proof).
+File này bảo tồn từ vựng bằng chứng (proof vocabulary) và hình thức nhập dữ liệu brownfield được sử dụng bởi các consumer của Harness. Ma trận vận hành chính thức (authoritative operational matrix) được lưu trong SQLite và truy vấn bằng:
 
-Chưa có hành vi sản phẩm nào được định nghĩa hoặc triển khai thực tế. Không được đánh dấu một dòng là `implemented` cho đến khi có các bài kiểm thử hoặc bằng chứng xác thực thực tế.
+```bash
+scripts/bin/harness-cli query matrix --active --summary
+```
+
+Repository Harness upstream có hành vi đã triển khai và bằng chứng thực thi được (executable proof). Một consumer được cài đặt bắt đầu mà không có các hàng sản phẩm consumer và chỉ thêm chúng khi công việc thực tế được chấp nhận. Không được đánh dấu một dòng là `implemented` cho đến khi có các bài kiểm thử hoặc bằng chứng xác thực khác.
 
 ## Các Giá trị Trạng thái (Status Values)
 
@@ -16,9 +20,7 @@ Chưa có hành vi sản phẩm nào được định nghĩa hoặc triển khai
 
 ## Ma trận (Matrix)
 
-| Story | Đặc tả (Contract) | Unit | Integration | E2E | Platform | Trạng thái (Status) | Bằng chứng (Evidence) |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| TBD | Thêm các dòng khi các gói story packet được tạo | no | no | no | no | planned | none |
+Không có các hàng sản phẩm tĩnh nào được cung cấp trong chế độ xem di sản (legacy view) này. Sử dụng `story add` và `story update` cho các bản ghi vận hành (operational records). Các repository brownfield có thể thêm các hàng tại đây trước khi nhập trạng thái hiện có của chúng.
 
 ## Các Quy tắc về Bằng chứng (Evidence Rules)
 

@@ -1,8 +1,8 @@
 # Kiến trúc (Architecture)
 
-Chưa có ngăn xếp ứng dụng (application stack) nào được lựa chọn.
+Sản phẩm Harness upstream được triển khai dưới dạng một Rust workspace với CLI và tầng bền vững SQLite (SQLite durable layer). Mã nguồn chính nằm tại `crates/harness-cli/`, được tổ chức thành các module domain, application, infrastructure và interface. Các migration schema nằm trong `scripts/schema/`, trong khi các trình cài đặt (installers) và script xác thực (validation scripts) tạo thành ranh giới phân phối (distribution boundary).
 
-Chưa có mã nguồn ứng dụng nào tồn tại. Tài liệu này định nghĩa các câu hỏi kiến trúc chung và các quy tắc ranh giới (boundary rules) mà việc triển khai trong tương lai cần điều chỉnh sau khi đã có đặc tả do người dùng cung cấp và quyết định về stack công nghệ.
+Template tái sử dụng không lựa chọn ngăn xếp ứng dụng (application stack) cho dự án consumer. Hướng dẫn khám phá bên dưới dành cho ứng dụng consumer đó sau khi đã có đặc tả do người dùng cung cấp và quyết định về stack công nghệ; nó không mô tả Harness CLI upstream là chưa được triển khai.
 
 ## Khám phá trước khi Định hình (Discovery Before Shape)
 
@@ -26,7 +26,7 @@ domain (miền lõi)
               <- app surfaces (bề mặt ứng dụng)
 ```
 
-## Cấu trúc Ứng viên (Candidate Structure)
+## Cấu trúc Ứng viên Consumer (Consumer Candidate Structure)
 
 ```text
 app/

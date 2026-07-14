@@ -1,6 +1,8 @@
 # Tiếp nhận Tính năng (Feature Intake)
 
-Mỗi prompt triển khai đều phải đi qua cổng tiếp nhận (intake gate) trước khi có bất kỳ sự thay đổi mã nguồn nào. Một đặc tả dự án mới (project spec) cũng đi qua cổng này trước khi trở thành tài liệu sản phẩm, các story hoặc công việc triển khai thực tế.
+Cổng tiếp nhận (intake gate) này áp dụng cho các yêu cầu thay đổi (change), xây dựng (build) và sửa lỗi (fix) trước khi có bất kỳ thay đổi mã nguồn hoặc trạng thái bền vững (durable state) của Harness. Một đặc tả dự án mới (project spec) cũng đi qua cổng này trước khi trở thành tài liệu sản phẩm, các story hoặc công việc triển khai thực tế.
+
+Các yêu cầu trả lời, giải thích, đánh giá, chẩn đoán, lập kế hoạch và báo cáo trạng thái được giữ ở chế độ chỉ đọc (read-only). Chúng không bootstrap hoặc khởi tạo Harness, không ghi nhận intake, không cập nhật story hoặc mục backlog, và không ghi trace. Nếu người dùng sau đó yêu cầu triển khai một thay đổi được đề xuất, yêu cầu thay đổi mới đó sẽ đi qua cổng này.
 
 Con người không cần phải phân loại rủi ro. Hệ thống harness sẽ làm việc đó.
 

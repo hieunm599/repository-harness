@@ -54,7 +54,7 @@ Kết quả khuyến nghị từ lệnh `scripts/bin/harness-cli score-context <
 
 ## Đề xuất cải tiến (Improvement Proposal)
 
-Một khuyến nghị có cấu trúc được tạo ra bởi lệnh `scripts/bin/harness-cli propose` từ các độ ma sát (friction) lặp đi lặp lại, các mẫu intervention và phát hiện kiểm toán. Các đề xuất này mang tính chất tham khảo trừ khi được đưa vào backlog bằng cờ `--commit`.
+Một khuyến nghị có cấu trúc được tạo ra bởi lệnh `scripts/bin/harness-cli propose` từ các độ ma sát (friction) lặp đi lặp lại, các mẫu intervention và phát hiện kiểm toán. Các đề xuất này ở trạng thái chỉ đọc (read-only) cho đến khi con người chấp nhận rõ ràng một khóa ổn định (stable key) với lịch trình kết quả (outcome schedule) hoặc từ chối một khóa ổn định với lý do cụ thể.
 
 ## Giai đoạn ngữ cảnh (Context Phase)
 

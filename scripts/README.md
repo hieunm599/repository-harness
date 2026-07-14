@@ -1,42 +1,111 @@
-# Các Kịch bản Tự động hóa (Scripts)
+# Scripts
 
-Thư mục này chứa các công cụ tự động hóa của harness.
+This directory contains harness automation tools.
 
 ## Harness CLI
 
-Rust Harness CLI là giao diện chính cho lớp lưu trữ bền vững (durable layer). Các dự án đã cài đặt sẽ sử dụng tập phân nhị phân biên dịch sẵn (prebuilt binary) tại `scripts/bin/harness-cli` trên macOS/Linux hoặc `scripts/bin/harness-cli.exe` trên Windows cho các công việc Harness thông thường.
+The Rust Harness CLI is the primary interface for the durable layer. Installed
+projects use the prebuilt binary at `scripts/bin/harness-cli` on macOS/Linux or
+`scripts/bin/harness-cli.exe` on Windows for normal Harness work.
+
+Request authority comes before runtime setup. Answer, explain, review,
+diagnose, plan, and status requests remain read-only: inspect what is already
+present, and do not bootstrap, initialize/migrate, record intake, or trace.
+
+For a change, build, or fix request after a fresh clone or install, bootstrap
+the local ignored runtime before querying or changing state:
 
 ```bash
-scripts/bin/harness-cli init          # Tạo cơ sở dữ liệu
-scripts/bin/harness-cli intake ...    # Ghi nhận phân loại tiếp nhận tính năng (feature intake classification)
-scripts/bin/harness-cli story ...     # Thêm hoặc cập nhật một story (một dòng trong ma trận kiểm thử)
-scripts/bin/harness-cli story update --id US-001 --unit 1 --integration 1 --e2e 0 --platform 0
-scripts/bin/harness-cli story verify US-001  # Chạy lệnh verify_command của story
-scripts/bin/harness-cli decision ...  # Thêm quyết định kỹ thuật hoặc chạy xác thực quyết định đó
-scripts/bin/harness-cli backlog ...   # Thêm hoặc đóng một mục backlog
-scripts/bin/harness-cli trace ...     # Ghi lại và tự động chấm điểm dấu vết thực thi (execution trace) của agent
-scripts/bin/harness-cli score-trace   # Chấm điểm trace theo các cấp độ trong file TRACE_SPEC.md
-scripts/bin/harness-cli query ...     # Truy vấn dữ liệu harness, bao gồm cả backlog --open/--closed
-scripts/bin/harness-cli query matrix --numeric  # Hiển thị các cờ bằng chứng dưới dạng 1/0
-scripts/bin/harness-cli migrate       # Áp dụng các migration lược đồ (schema migration) đang chờ xử lý
-scripts/bin/harness-cli --version     # In ra phiên bản CLI đã cài đặt
+scripts/bootstrap-harness.sh
 ```
 
-Chạy `scripts/bin/harness-cli help` hoặc `scripts/bin/harness-cli query help` để xem hướng dẫn sử dụng đầy đủ. Trên Windows, sử dụng các lệnh tương tự thông qua `.\scripts\bin\harness-cli.exe`.
+```powershell
+.\scripts\bootstrap-harness.ps1
+```
 
-Các cờ bằng chứng (proof flags) trên `story update` là các giá trị boolean dạng số: sử dụng `1` cho "yes" và `0` cho "no". Lệnh `story verify <id>` chạy lệnh `verify_command` được cấu hình; lệnh này không chấp nhận các cờ bằng chứng. Cấu hình lệnh bằng `story add/update --verify`, chạy lệnh `story verify <id>`, sau đó cập nhật các cờ bằng chứng bằng lệnh `story update`.
+In this source repository, bootstrap builds the CLI from the checked-out Rust
+source so code and command behavior cannot drift. It refuses to invent an empty
+replacement when the default core database is missing, and it rejects a
+schema-current database that still contains product-owned state. Restore the
+verified core epoch in that case. In an installed consumer it uses the
+checksum-verified prebuilt binary and safely initializes a missing local
+database. Both modes migrate older supported databases and refuse unsupported
+schemas or CLI/release-pin drift.
 
-Tham số độ rủi ro `--risk` của backlog sử dụng các làn (lane) của Harness, không sử dụng các từ chỉ mức độ nghiêm trọng: sử dụng `tiny`, `normal` hoặc `high-risk`. Sử dụng `tiny` thay vì `low`. Lệnh `query matrix` mặc định hiển thị dạng dễ đọc `yes`/`no`; sử dụng `query matrix --numeric` khi sao chép các giá trị vào lệnh `story update`.
+```bash
+scripts/bin/harness-cli init          # Create the database
+scripts/bin/harness-cli intake ...    # Record a feature intake classification
+scripts/bin/harness-cli story ...     # Add or update a story (test matrix row)
+scripts/bin/harness-cli story update --id US-001 --unit 1 --integration 1 --e2e 0 --platform 0
+scripts/bin/harness-cli story verify US-001  # Run the story's verify_command
+scripts/bin/harness-cli story complete US-001 # Fresh proof plus atomic lifecycle completion
+scripts/bin/harness-cli decision ...  # Add a decision or run its verification
+scripts/bin/harness-cli backlog ...   # Add or close a backlog item
+scripts/bin/harness-cli propose       # Classify new, active, handled, and recurring evidence
+scripts/bin/harness-cli propose --show-suppressed # Explain handled evidence
+scripts/bin/harness-cli trace ...     # Record and auto-score an agent execution trace
+scripts/bin/harness-cli score-trace   # Score a trace against TRACE_SPEC.md tiers
+scripts/bin/harness-cli query ...     # Query harness data, including backlog --open/--closed
+scripts/bin/harness-cli query matrix --numeric  # Show proof flags as 1/0
+scripts/bin/harness-cli query matrix --active --summary  # Focus on unfinished work without evidence text
+scripts/bin/harness-cli query matrix --runnable --summary # Show work ready under protocol-v1 rules
+scripts/bin/harness-cli query matrix --story US-001      # Inspect one exact story
+scripts/bin/harness-cli db changeset apply .harness/changesets/run_123.changeset.jsonl
+scripts/bin/harness-cli db rebuild --from .harness/changesets
+scripts/bin/harness-cli migrate       # Apply pending schema migrations
+scripts/bin/harness-cli --version     # Print the installed CLI version
+```
 
-Lược đồ cơ sở dữ liệu (schema) nằm trong thư mục `scripts/schema/` và được quản lý phiên bản. Tập tin cơ sở dữ liệu (`harness.db`) đã được đưa vào `.gitignore`.
+Run `scripts/bin/harness-cli help` or `scripts/bin/harness-cli query help` for
+full usage. On Windows, use the same commands through
+`.\scripts\bin\harness-cli.exe`.
 
-Yêu cầu: Có sẵn Rust CLI được biên dịch sẵn tại `scripts/bin/harness-cli` trên macOS/Linux hoặc `scripts/bin/harness-cli.exe` trên Windows.
+Proof flags on `story update` are numeric booleans: use `1` for yes and `0` for
+no. `story verify <id>` runs the configured `verify_command`; it does not accept
+proof flags. Configure the command with `story add/update --verify`, run
+`story verify <id>`, then update proof flags with `story update`.
 
-Việc kiểm tra cơ sở dữ liệu trực tiếp vẫn có thể sử dụng các công cụ SQLite, nhưng việc sử dụng Harness thông thường nên đi qua Rust CLI.
+`story update --status implemented` is rejected in both human-readable and
+JSON/CAS modes. Move active work to `in_progress` or `changed`, then use `story
+complete <id>` so fresh proof and the implemented transition happen together.
 
-### Các Lệnh của Rust CLI
+Backlog `--risk` uses Harness lanes, not severity words: use `tiny`, `normal`,
+or `high-risk`. Use `tiny` instead of `low`. `query matrix` defaults to
+human-readable `yes`/`no`; use `query matrix --numeric` when copying values into
+`story update`. Matrix filters combine with AND semantics: `--active` keeps
+`planned`, `in_progress`, and `changed` stories; `--runnable` uses the same rule
+as protocol story discovery; `--story <id>` selects one exact ID. `--summary`
+omits the potentially long evidence column while keeping lane and runnable
+state. With none of these flags, the existing full matrix output is unchanged.
 
-Các lệnh đã được migrate hiện tại:
+The schema lives in `scripts/schema/` and is version-controlled. The database
+file (`harness.db`) is `.gitignore`d.
+
+Repository maintainers can run `scripts/verify-revision-coherence.sh` to prove
+that crate, lockfile, pinned-release, migration, protocol, bootstrap, replay,
+and public-command contracts describe the same revision.
+
+Set `HARNESS_DB_PATH=/path/to/harness.db` when a workflow needs `harness-cli`
+to operate on an isolated copied database. `HARNESS_DB_PATH` takes precedence
+over the legacy `HARNESS_DB` override; if neither is set, the CLI uses
+`harness.db` in the repository root.
+
+Set `HARNESS_RUN_ID=<run-id>` during an isolated run to append semantic
+operation records to `.harness/changesets/<run-id>.changeset.jsonl` under the
+resolved repository root. The first write records a `changeset.header`; durable
+write commands append operation records such as `story.update`, `trace.add`,
+and `decision.add`. Normal CLI use without `HARNESS_RUN_ID` writes no
+changeset.
+
+Requires: the prebuilt Rust CLI at `scripts/bin/harness-cli` on macOS/Linux or
+`scripts/bin/harness-cli.exe` on Windows.
+
+Direct database inspection may still use SQLite tools, but normal Harness use
+should go through the Rust CLI.
+
+### Rust CLI Commands
+
+Current migrated commands:
 
 ```bash
 scripts/bin/harness-cli init
@@ -46,6 +115,7 @@ scripts/bin/harness-cli intake ...
 scripts/bin/harness-cli story add ...
 scripts/bin/harness-cli story update ...
 scripts/bin/harness-cli story verify ...
+scripts/bin/harness-cli story complete ...
 scripts/bin/harness-cli decision add ...
 scripts/bin/harness-cli decision verify ...
 scripts/bin/harness-cli backlog add ...
@@ -60,84 +130,163 @@ scripts/bin/harness-cli query traces
 scripts/bin/harness-cli query friction
 scripts/bin/harness-cli query stats
 scripts/bin/harness-cli query sql ...
+scripts/bin/harness-cli db changeset apply ...
+scripts/bin/harness-cli db rebuild --from ...
 ```
 
-Lệnh `scripts/bin/harness-cli import brownfield` gieo mầm (seed) hoặc làm mới cơ sở dữ liệu bền vững từ các tài liệu Markdown Harness v0 hiện có trong `harness-docs/TEST_MATRIX.md`, `harness-docs/decisions/` và `harness-docs/HARNESS_BACKLOG.md`. Điều này giúp các kho lưu trữ đã cài đặt Harness tiếp tục sử dụng Rust CLI mà không làm mất các tài liệu vận hành đã có.
+`query sql` accepts one read-only SQLite statement. The CLI enforces read-only
+access at the database connection, including for CTEs, pragmas, and statements
+with `RETURNING`; use typed Harness mutation commands, migrations, or semantic
+changesets for writes.
 
-## Trình cài đặt (Installer)
+`scripts/bin/harness-cli import brownfield` seeds or refreshes the durable database
+from existing Harness v0 markdown in `docs/TEST_MATRIX.md`,
+`docs/decisions/`, and `docs/HARNESS_BACKLOG.md`. This keeps already-installed
+Harness repos on the Rust CLI path without losing their populated operating
+docs.
 
-Trình cài đặt thượng nguồn áp dụng các file vận hành và cấu trúc thư mục Harness v0 cho một thư mục dự án mục tiêu. Nó mặc định là thư mục hiện tại, chấp nhận một đường dẫn đích và hỏi người dùng tương tác xem có muốn thực hiện `1. Merge`, `2. Override` hoặc `3. Stop` khi thư mục đích đã chứa `AGENTS.md`, `harness-docs/` hoặc `scripts/`.
+## Installer
 
-Các bản cài đặt không tương tác (non-interactive) sẽ dừng lại ở các đường dẫn được bảo vệ đó trừ khi tùy chọn `--merge` hoặc `--override` được cung cấp. Sử dụng `--merge` như một đường dẫn cập nhật an toàn cho các kho lưu trữ đã có Harness: nó giữ nguyên các file hiện tại và chỉ tạo các file Harness còn thiếu. Thêm `--refresh-agent-shim` khi bản cài đặt cũ có tài liệu hướng dẫn Harness đầy đủ trong file `AGENTS.md` và cần chuyển sang shim nhỏ ổn định. Chỉ sử dụng `--override` khi việc thay thế bề mặt Harness được bảo vệ là có chủ ý.
+The upstream installer applies the Harness v0 operating files and folder
+structure to a target project directory. It defaults to the current directory,
+accepts a target path, and asks interactive users whether to `1. Merge`,
+`2. Override`, or `3. Stop` when the target already contains `AGENTS.md`,
+`docs/`, or `scripts/`.
+Non-interactive installs stop on those protected paths unless `--merge` or
+`--override` is provided. Use `--merge` as the safe update path for repositories
+that already have Harness: it keeps existing files in place and creates only
+missing Harness files. Add `--refresh-agent-shim` when an older install has the
+full generated Harness guide in `AGENTS.md` and should move to the small stable
+shim. Use `--override` only when replacing the protected Harness surface is
+intentional.
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --yes
+curl -fsSL "https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.sh?$(date +%s)" | bash -s -- --yes
 ```
 
 ```powershell
-& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.ps1"))) -Yes
+& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.ps1"))) -Yes
 ```
 
 ```bash
-# Cập nhật một repo Harness hiện tại mà không di chuyển các file hiện có
-curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --merge --yes
+curl -fsSL "https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.sh?$(date +%s)" | bash -s -- --merge --yes
 ```
 
 ```powershell
-# Cập nhật một repo Harness hiện tại mà không di chuyển các file hiện có
-& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.ps1"))) -Merge -Yes
+& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.ps1"))) -Merge -Yes
 ```
 
 ```bash
-# Cập nhật repo và làm mới agent shim
-curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --merge --refresh-agent-shim --yes
+curl -fsSL "https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.sh?$(date +%s)" | bash -s -- --merge --refresh-agent-shim --yes
 ```
 
 ```powershell
-# Cập nhật repo và làm mới agent shim
-& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.ps1"))) -Merge -RefreshAgentShim -Yes
+& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.ps1"))) -Merge -RefreshAgentShim -Yes
 ```
 
-Tùy chọn `--refresh-agent-shim` sẽ sao lưu file `AGENTS.md` trước khi thay đổi nó. Nếu file hiện tại được nhận diện là tài liệu hướng dẫn cũ do Harness tạo ra, trình cài đặt sẽ thay thế nó bằng shim hiện tại. Ngược lại, nó chỉ thêm hoặc thay thế khối `<!-- HARNESS:BEGIN -->` được đánh dấu để các hướng dẫn cụ thể của dự án được giữ nguyên.
+`--refresh-agent-shim` backs up `AGENTS.md` before changing it. If the existing
+file is recognized as the old Harness-generated operating guide, the installer
+replaces it with the current shim. Otherwise it appends or replaces only the
+marked `<!-- HARNESS:BEGIN -->` block so project-specific instructions remain
+in place. Both installers read that block from
+`scripts/agent-harness-block.md`; the Bash `--claude` path reads
+`scripts/claude-harness-block.md`, whose only import is `AGENTS.md`. This keeps
+root, fresh-install, and refresh behavior on the same authority text.
 
-Trình cài đặt phải được giới hạn trong phạm vi các file harness. Không sử dụng nó để dựng cấu trúc (scaffold) các thư mục mã nguồn ứng dụng, package script, cấu hình CI, kiểm thử, shell nền tảng hoặc các lệnh xác thực giả. Kịch bản cài đặt không phải là một phần của gói tải trọng (payload) được cài đặt trong dự án.
+`--upgrade-cli` (PowerShell: `-UpgradeCli`) also refreshes the marked
+`AGENTS.md` Harness block. This prevents a new binary from retaining stale
+request authority while preserving text outside the marked block and creating
+the normal backup. It does not overwrite arbitrary custom documentation.
 
-Theo mặc định, trình cài đặt cũng tải xuống Rust Harness CLI biên dịch sẵn cho nền tảng hiện tại vào `scripts/bin/harness-cli` trên macOS/Linux hoặc `scripts/bin/harness-cli.exe` trên Windows, sau đó kiểm tra mã checksum `.sha256` của nó. Một nhánh nguồn có thể ghim (pin) phiên bản phát hành được trình cài đặt sử dụng thông qua `scripts/harness-cli-release-tag`; Phase 3 ghim phiên bản `harness-cli-v0.1.4` để các lượt cài đặt từ nhánh này nhận được CLI được build từ Phase 3. Thiết lập biến môi trường `HARNESS_CLI_RELEASE_TAG` để ghi đè thẻ đó hoặc thiết lập `HARNESS_CLI_BASE_URL` để trỏ đến một thư mục artifact thay thế, ví dụ như thư mục cục bộ `file:///.../dist` được tạo bởi kịch bản `scripts/build-harness-cli-release.sh`.
+The installer must stay limited to harness files. Do not use it to scaffold
+application source folders, package scripts, CI, tests, platform shells, or fake
+validation commands. The installer script is not part of the installed project
+payload.
 
-## Di chuyển Lược đồ Cơ sở Dữ liệu (Schema Migrations)
+The file payload is declared once in `scripts/harness-install-files.txt` and is
+read by both the Bash and PowerShell installers. Add new Harness docs,
+templates, or decisions there instead of duplicating file lists in each
+installer. Schema migrations are different: both installers discover
+`scripts/schema/*.sql` automatically from the source repository, so adding a
+new migration only requires committing the SQL file.
 
-Các file migration nằm trong thư mục `scripts/schema/` và được đặt tên theo định dạng `NNN-description.sql` với `NNN` là số phiên bản được điền thêm số 0 ở trước. Chạy lệnh `scripts/bin/harness-cli migrate` để áp dụng các migration đang chờ xử lý.
+By default the installer also downloads the prebuilt Rust Harness CLI for the
+current platform into `scripts/bin/harness-cli` on macOS/Linux or
+`scripts/bin/harness-cli.exe` on Windows, then verifies its `.sha256` checksum.
+A source branch can pin the release used by the installer through
+`scripts/harness-cli-release-tag`; Phase 3 pins `harness-cli-v0.1.4` so branch
+installs receive a Phase 3-built CLI. Set `HARNESS_CLI_RELEASE_TAG` to override
+that tag, or set `HARNESS_CLI_BASE_URL` to point at an alternate artifact
+directory, such as a local `file:///.../dist` directory created by
+`scripts/build-harness-cli-release.sh`.
 
-## Ràng buộc Lệnh trong Tương lai (Future Command Contract)
+`--merge` (PowerShell: `-Merge`) deliberately does not replace an existing CLI.
+To upgrade a CLI explicitly, pin one immutable tag for both the template files
+and release artifact:
 
-Các kiểm tra dự kiến trong tương lai:
-
-```text
-validate:quick
-  format, lint, typecheck, unit tests, kiểm tra kiến trúc (architecture check)
-
-test:integration
-  kiểm tra tích hợp và ràng buộc backend (backend contract)
-
-test:e2e
-  các luồng end-to-end hiển thị với người dùng
-
-test:platform
-  kiểm tra nhanh (smoke check) shell nền tảng, nếu dự án có native shell
-
-test:release
-  toàn bộ suite kiểm thử, kiểm tra log và đo hiệu năng sơ bộ (performance smoke)
+```bash
+curl -fsSL "https://raw.githubusercontent.com/hoangnb24/repository-harness/harness-cli-v0.1.14/scripts/install-harness.sh" |
+  bash -s -- --merge --upgrade-cli --ref harness-cli-v0.1.14 --yes
 ```
 
-## Đóng gói Phát hành (Release Packaging)
+```powershell
+& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hoangnb24/repository-harness/harness-cli-v0.1.14/scripts/install-harness.ps1"))) `
+  -Merge -UpgradeCli -Ref harness-cli-v0.1.14 -Yes
+```
 
-Biên dịch artifact phát hành Rust CLI cho nền tảng hiện tại từ repo nguồn:
+The installer rejects branch names and `latest`, downloads the tagged template
+and matching platform artifact, verifies the published SHA-256, backs up the
+old executable, then atomically replaces it. A download/checksum failure leaves
+the old CLI in place. Run `scripts/test-install-harness-cli-upgrade.sh` for the
+merge/upgrade/checksum-preservation regression.
+
+The external process protocol, including JSON envelopes, capability discovery,
+timeouts, and snapshot semantics, is documented in
+`docs/contracts/harness-orchestration-v1.md`.
+
+## Schema Migrations
+
+Migration files live under `scripts/schema/` and are named `NNN-description.sql`
+where `NNN` is a zero-padded version number. Run `scripts/bin/harness-cli migrate` to
+apply pending migrations.
+
+## Pre-Merge Validation Contract
+
+Repository maintainers and pull-request CI run the same release-relevant gate:
+
+```bash
+scripts/validate-premerge.sh
+```
+
+It checks Rust formatting, tests, and linting; revision/schema/command
+coherence; bootstrap, protocol, installer, documentation, and representative
+task-effect contracts; release workflow structure; and whitespace errors.
+Installed consumer projects keep their own stack-specific validation commands;
+the template does not impose this repository's Rust gate on them.
+
+## Changeset Rebuild Validation
+
+Run the durable repository rebuild and its validator contract regressions:
+
+```bash
+scripts/validate-changeset-rebuild.sh
+scripts/test-validate-changeset-rebuild.sh
+```
+
+The validator builds the current workspace CLI unless `HARNESS_CLI` is set
+explicitly. `HARNESS_CHANGESET_DIR` can point validation at a copied fixture
+history without changing the repository changesets.
+
+## Release Packaging
+
+Build the current-platform Rust CLI release artifact from the source repo:
 
 ```bash
 scripts/build-harness-cli-release.sh
 ```
 
-Kịch bản này sẽ ghi kết quả vào thư mục `dist/harness-cli-<platform>` kèm theo checksum `.sha256`. Artifact của Windows bao gồm hậu tố `.exe`. Các nhãn nền tảng được hỗ trợ là:
+The script writes `dist/harness-cli-<platform>` plus `.sha256` checksums. The
+Windows artifact includes the `.exe` suffix. Supported labels are:
 
 - `macos-arm64`
 - `macos-x64`
@@ -145,13 +294,19 @@ Kịch bản này sẽ ghi kết quả vào thư mục `dist/harness-cli-<platfo
 - `linux-arm64`
 - `windows-x64`
 
-Để biên dịch chéo (cross-compilation), truyền thêm một Cargo target triple:
+For cross-compilation, pass a Cargo target triple:
 
 ```bash
 scripts/build-harness-cli-release.sh --target x86_64-unknown-linux-gnu
 ```
 
-Các bản phát hành GitHub được tạo bởi workflow `.github/workflows/harness-cli-release.yml`. Đẩy một tag khớp với `v*` hoặc `harness-cli-v*` để chạy job xác thực, build tất cả các target được hỗ trợ trên các hosted runner native và tải lên các release asset này:
+GitHub releases are produced by
+`.github/workflows/harness-cli-release.yml`. Post-merge automation or an
+explicit manual dispatch supplies a desired `harness-cli-v*` tag and an exact
+main-branch source ref. The workflow verifies the untagged candidate, builds all
+supported targets on native hosted runners, and creates the annotated tag only
+after every platform and upgrade-transition check passes. It then publishes
+these release assets without overwriting an existing release:
 
 - `harness-cli-macos-arm64`
 - `harness-cli-macos-arm64.sha256`
@@ -164,4 +319,12 @@ Các bản phát hành GitHub được tạo bởi workflow `.github/workflows/h
 - `harness-cli-windows-x64.exe`
 - `harness-cli-windows-x64.exe.sha256`
 
-Các PR đã merge được xử lý bởi workflow `.github/workflows/post-merge-maintenance.yml`. Workflow này luôn thêm tóm tắt PR vào file `CHANGELOG.md`. Nếu PR được merge có thay đổi thư mục `crates/harness-cli/`, `scripts/schema/`, Cargo metadata hoặc kịch bản `scripts/build-harness-cli-release.sh`, nó cũng sẽ tăng phiên bản patch của CLI, cập nhật `scripts/harness-cli-release-tag`, tạo một tag `harness-cli-v*` tương ứng và gọi workflow phát hành Harness CLI có thể tái sử dụng cho ref được gắn tag đó.
+Merged PRs are handled by `.github/workflows/post-merge-maintenance.yml`. The
+workflow always prepends a PR summary to `CHANGELOG.md`. If the merged PR
+changed CLI source, schema, Cargo metadata, or release proof/promotion
+packaging, it also increments the CLI patch version, updates
+`scripts/harness-cli-release-tag`, and calls the reusable workflow with the
+exact maintenance commit. The old `v0.1.14` upgrade source is checked against a
+frozen historical contract; the built and installed candidate are checked
+against the current strict contract. A failed tag is consumed and immutable,
+so recovery advances to a later patch version.

@@ -40,10 +40,18 @@ tmpdir=$(mktemp -d)
 HARNESS_DB="$tmpdir/harness.db" scripts/bin/harness-cli init
 HARNESS_DB="$tmpdir/harness.db" scripts/bin/harness-cli migrate
 HARNESS_DB="$tmpdir/harness.db" scripts/bin/harness-cli import brownfield
+<<<<<<< HEAD:harness-docs/stories/epics/E01-durable-layer/US-002-rust-harness-cli/validation.md
 HARNESS_DB="$tmpdir/harness.db" scripts/bin/harness-cli intake --type "Harness improvement" --summary "Rust CLI intake smoke" --lane high-risk --flags "public contracts" --docs "harness-docs/decisions/0005-prebuilt-rust-harness-cli" --story US-002
 HARNESS_DB="$tmpdir/harness.db" scripts/bin/harness-cli story add --id US-SMOKE --title "Rust CLI smoke story" --lane high-risk --contract harness-docs/decisions/0005-prebuilt-rust-harness-cli
 HARNESS_DB="$tmpdir/harness.db" scripts/bin/harness-cli story update --id US-SMOKE --status implemented --evidence "rust smoke" --unit 1 --integration 1
 HARNESS_DB="$tmpdir/harness.db" scripts/bin/harness-cli decision add --id 9999-smoke --title "Smoke Decision" --status accepted --doc harness-docs/decisions/0005-prebuilt-rust-harness-cli --verify "true"
+=======
+HARNESS_DB="$tmpdir/harness.db" scripts/bin/harness-cli intake --type "Harness improvement" --summary "Rust CLI intake smoke" --lane high-risk --flags "public contracts" --docs "docs/decisions/0005-prebuilt-rust-harness-cli" --story US-002
+HARNESS_DB="$tmpdir/harness.db" scripts/bin/harness-cli story add --id US-SMOKE --title "Rust CLI smoke story" --lane high-risk --contract docs/decisions/0005-prebuilt-rust-harness-cli --verify true
+HARNESS_DB="$tmpdir/harness.db" scripts/bin/harness-cli story update --id US-SMOKE --status in_progress --evidence "rust smoke" --unit 1 --integration 1
+HARNESS_DB="$tmpdir/harness.db" scripts/bin/harness-cli story complete US-SMOKE
+HARNESS_DB="$tmpdir/harness.db" scripts/bin/harness-cli decision add --id 9999-smoke --title "Smoke Decision" --status accepted --doc docs/decisions/0005-prebuilt-rust-harness-cli --verify "true"
+>>>>>>> main:docs/stories/epics/E01-durable-layer/US-002-rust-harness-cli/validation.md
 HARNESS_DB="$tmpdir/harness.db" scripts/bin/harness-cli decision verify 9999-smoke
 HARNESS_DB="$tmpdir/harness.db" scripts/bin/harness-cli backlog add --title "Smoke backlog" --pain "Need proof" --risk normal --predicted "Proof exists"
 HARNESS_DB="$tmpdir/harness.db" scripts/bin/harness-cli backlog close --id 1 --status implemented --outcome "closed"
@@ -94,7 +102,7 @@ Remove-Item -Recurse -Force $target
   `dist/harness-cli-macos-arm64` plus checksum.
 - Temporary database smoke passed through the Rust delegated command paths:
   `init`, `migrate`, `import brownfield`, `intake`, `story add`, `story
-  update`, `decision add`, `decision verify`, `backlog add`, `backlog close`,
+  update`, `story complete`, `decision add`, `decision verify`, `backlog add`, `backlog close`,
   `trace`, `query matrix`, `query backlog`, `query decisions`, `query
   intakes`, `query traces`, `query friction`, `query stats`, and `query sql`.
 - Brownfield import fixture test passed: existing Harness v0 markdown seeded a

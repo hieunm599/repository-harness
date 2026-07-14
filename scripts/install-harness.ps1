@@ -4,6 +4,8 @@ param(
     [Alias("y")]
     [switch]$Yes,
     [switch]$Merge,
+    [switch]$UpgradeCli,
+    [string]$Ref,
     [switch]$RefreshAgentShim,
     [switch]$Override,
     [switch]$Force,
@@ -38,7 +40,7 @@ function Resolve-TargetPath([string]$PathValue) {
 function Get-SourceMode {
     if ($PSScriptRoot) {
         $candidate = Split-Path -Parent $PSScriptRoot
-        if ((Test-Path (Join-Path $candidate "AGENTS.md")) -and (Test-Path (Join-Path $candidate "harness-docs/HARNESS.md"))) {
+        if ((Test-Path (Join-Path $candidate "AGENTS.md")) -and (Test-Path (Join-Path $candidate "docs/HARNESS.md"))) {
             return @{ Mode = "local"; Root = $candidate }
         }
     }
@@ -46,6 +48,9 @@ function Get-SourceMode {
 }
 
 function Read-RemoteText([string]$Url) {
+    if ($Url.StartsWith("file://")) {
+        return Get-Content -LiteralPath ([uri]$Url).LocalPath -Raw
+    }
     return (Invoke-WebRequest -UseBasicParsing -Uri $Url).Content
 }
 
@@ -60,7 +65,97 @@ function Write-SourceFile([string]$Relative, [string]$Target) {
     }
 
     $url = "$script:SourceBaseUrl/$($Relative -replace '\\','/')"
-    Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $Target
+    if ($url.StartsWith("file://")) {
+        Copy-Item -LiteralPath ([uri]$url).LocalPath -Destination $Target -Force
+    } else {
+        Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $Target
+    }
+}
+
+function Read-SourceText([string]$Relative) {
+    if ($script:Source.Mode -eq "local") {
+        $source = Join-Path $script:Source.Root $Relative
+        if (!(Test-Path $source)) {
+            Fail "Source file missing: $source"
+        }
+        return Get-Content -LiteralPath $source -Raw
+    }
+
+    $url = "$script:SourceBaseUrl/$($Relative -replace '\\','/')"
+    return Read-RemoteText $url
+}
+
+function Read-PayloadManifest {
+    if ($script:Source.Mode -eq "local") {
+        $path = Join-Path $script:Source.Root $script:PayloadManifest
+        if (!(Test-Path $path)) {
+            Fail "Payload manifest missing: $path"
+        }
+        return Get-Content -LiteralPath $path
+    }
+
+    $url = "$script:SourceBaseUrl/$script:PayloadManifest"
+    try {
+        return ((Read-RemoteText $url) -split "\r?\n")
+    } catch {
+        Fail "Could not download $url"
+    }
+}
+
+function Get-PayloadFiles {
+    foreach ($line in (Read-PayloadManifest)) {
+        $relative = $line.Trim()
+        if ([string]::IsNullOrWhiteSpace($relative) -or $relative.StartsWith("#")) {
+            continue
+        }
+        $relative
+    }
+}
+
+function Get-SchemaFiles {
+    if ($script:Source.Mode -eq "local") {
+        $schemaRoot = Join-Path $script:Source.Root $script:SchemaDir
+        if (!(Test-Path $schemaRoot)) {
+            Fail "Schema directory missing: $schemaRoot"
+        }
+        return Get-ChildItem -LiteralPath $schemaRoot -Filter "*.sql" -File |
+            Sort-Object Name |
+            ForEach-Object { "$script:SchemaDir/$($_.Name)" }
+    }
+
+    if ($script:SourceBaseUrl.StartsWith("file://")) {
+        $sourceRoot = ([uri]$script:SourceBaseUrl).LocalPath
+        $schemaRoot = Join-Path $sourceRoot $script:SchemaDir
+        if (!(Test-Path $schemaRoot)) {
+            Fail "Schema directory missing: $schemaRoot"
+        }
+        return Get-ChildItem -LiteralPath $schemaRoot -Filter "*.sql" -File |
+            Sort-Object Name |
+            ForEach-Object { "$script:SchemaDir/$($_.Name)" }
+    }
+
+    if ($script:SourceBaseUrl.StartsWith("https://raw.githubusercontent.com/")) {
+        $uri = [uri]$script:SourceBaseUrl
+        $parts = $uri.AbsolutePath.Trim("/").Split("/")
+        if ($parts.Count -lt 3) {
+            Fail "Cannot infer GitHub repository from $script:SourceBaseUrl"
+        }
+        $owner = $parts[0]
+        $repo = $parts[1]
+        $ref = $parts[2]
+        $apiUrl = "https://api.github.com/repos/$owner/$repo/git/trees/$ref`?recursive=1"
+        try {
+            $tree = Read-RemoteText $apiUrl | ConvertFrom-Json
+        } catch {
+            Fail "Could not download $apiUrl"
+        }
+        return $tree.tree |
+            Where-Object { $_.type -eq "blob" -and $_.path -like "$script:SchemaDir/*.sql" } |
+            Sort-Object path |
+            ForEach-Object { $_.path }
+    }
+
+    Fail "Cannot discover remote schema files from $script:SourceBaseUrl. Use a local source, file:// source, or raw.githubusercontent.com source."
 }
 
 function Merge-Gitignore([string]$Target) {
@@ -132,23 +227,21 @@ function Copy-HarnessFile([string]$Relative) {
 }
 
 function Get-AgentShimBlock {
-@'
-<!-- HARNESS:BEGIN -->
-## Harness
+    return (Read-SourceText "scripts/agent-harness-block.md").TrimEnd("`r", "`n")
+}
 
-This repo uses Harness. Before work, read:
-
-- `README.md`
-- `harness-docs/HARNESS.md`
-- `harness-docs/FEATURE_INTAKE.md`
-- `harness-docs/ARCHITECTURE.md`
-- `harness-docs/CONTEXT_RULES.md`
-- `scripts/bin/harness-cli query matrix` on macOS/Linux, or `.\scripts\bin\harness-cli.exe query matrix` on Windows
-
-Use the Rust Harness CLI at `scripts/bin/harness-cli` on macOS/Linux or
-`scripts/bin/harness-cli.exe` on Windows as the main operational tool.
-<!-- HARNESS:END -->
-'@
+function Assert-HarnessMarkers([string]$Content, [string]$Label) {
+    $begin = [regex]::Matches($Content, '<!-- HARNESS:BEGIN -->')
+    $end = [regex]::Matches($Content, '<!-- HARNESS:END -->')
+    if ($begin.Count -eq 0 -and $end.Count -eq 0) {
+        return
+    }
+    if ($begin.Count -ne 1 -or $end.Count -ne 1) {
+        Fail "$Label must contain exactly one complete Harness marker pair"
+    }
+    if ($begin[0].Index -ge $end[0].Index) {
+        Fail "$Label Harness markers are out of order"
+    }
 }
 
 function Refresh-AgentShimFile {
@@ -159,6 +252,9 @@ function Refresh-AgentShimFile {
     if (!(Test-Path $target)) {
         return
     }
+
+    $content = Get-Content -LiteralPath $target -Raw
+    Assert-HarnessMarkers $content "AGENTS.md"
 
     if ($DryRun) {
         Write-Step "refresh  AGENTS.md (replace marked Harness block, backup first)"
@@ -172,7 +268,6 @@ function Refresh-AgentShimFile {
         Copy-Item -LiteralPath $target -Destination $backup
     }
 
-    $content = Get-Content -LiteralPath $target -Raw
     $block = Get-AgentShimBlock
     if ($content -match "(?s)<!-- HARNESS:BEGIN -->.*?<!-- HARNESS:END -->") {
         $content = [regex]::Replace($content, "(?s)<!-- HARNESS:BEGIN -->.*?<!-- HARNESS:END -->", [System.Text.RegularExpressions.MatchEvaluator]{ param($m) $block })
@@ -208,9 +303,9 @@ function Get-DefaultCliBaseUrl {
         $tag = Read-CliReleaseTag
     }
     if (![string]::IsNullOrWhiteSpace($tag) -and $tag -ne "latest") {
-        return "https://github.com/hieunm599/repository-harness/releases/download/$tag"
+        return "https://github.com/hoangnb24/repository-harness/releases/download/$tag"
     }
-    return "https://github.com/hieunm599/repository-harness/releases/latest/download"
+    return "https://github.com/hoangnb24/repository-harness/releases/latest/download"
 }
 
 function Install-HarnessCliBinary {
@@ -224,7 +319,7 @@ function Install-HarnessCliBinary {
     $checksumUrl = "$binaryUrl.sha256"
     $target = Join-Path $script:TargetDir "scripts/bin/harness-cli.exe"
 
-    if ((Test-Path $target) -and $script:ConflictAction -eq "merge" -and !$Force) {
+    if ((Test-Path $target) -and $script:ConflictAction -eq "merge" -and !$Force -and !$UpgradeCli) {
         Write-Step "skip     scripts/bin/harness-cli.exe (merge keeps existing file)"
         $script:Skipped++
         return
@@ -237,13 +332,20 @@ function Install-HarnessCliBinary {
         return
     }
 
-    $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) ("harness-cli-" + [guid]::NewGuid().ToString("N"))
+    $targetDir = Split-Path -Parent $target
+    New-Item -ItemType Directory -Force -Path $targetDir | Out-Null
+    $tmpDir = Join-Path $targetDir (".harness-cli-upgrade." + [guid]::NewGuid().ToString("N"))
     New-Item -ItemType Directory -Force -Path $tmpDir | Out-Null
     try {
         $binaryTmp = Join-Path $tmpDir $binaryName
         $checksumTmp = Join-Path $tmpDir "$binaryName.sha256"
-        Invoke-WebRequest -UseBasicParsing -Uri $binaryUrl -OutFile $binaryTmp
-        Invoke-WebRequest -UseBasicParsing -Uri $checksumUrl -OutFile $checksumTmp
+        if ($binaryUrl.StartsWith("file://")) {
+            Copy-Item -LiteralPath ([uri]$binaryUrl).LocalPath -Destination $binaryTmp
+            Copy-Item -LiteralPath ([uri]$checksumUrl).LocalPath -Destination $checksumTmp
+        } else {
+            Invoke-WebRequest -UseBasicParsing -Uri $binaryUrl -OutFile $binaryTmp
+            Invoke-WebRequest -UseBasicParsing -Uri $checksumUrl -OutFile $checksumTmp
+        }
 
         $expected = ((Get-Content -LiteralPath $checksumTmp -Raw) -split "\s+")[0].ToLowerInvariant()
         if ([string]::IsNullOrWhiteSpace($expected)) {
@@ -254,9 +356,8 @@ function Install-HarnessCliBinary {
             Fail "Checksum mismatch for $binaryName`: expected $expected, got $actual"
         }
 
-        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $target) | Out-Null
         if (Test-Path $target) {
-            if ($Force) {
+            if ($Force -or $UpgradeCli) {
                 $backup = Join-Path $script:BackupDir "scripts/bin/harness-cli.exe"
                 New-Item -ItemType Directory -Force -Path (Split-Path -Parent $backup) | Out-Null
                 Copy-Item -LiteralPath $target -Destination $backup -Force
@@ -267,7 +368,12 @@ function Install-HarnessCliBinary {
             $script:Created++
             Write-Step "created  scripts/bin/harness-cli.exe"
         }
-        Copy-Item -LiteralPath $binaryTmp -Destination $target -Force
+        if (Test-Path $target) {
+            $replacementBackup = Join-Path $tmpDir "replaced-harness-cli.exe"
+            [System.IO.File]::Replace($binaryTmp, $target, $replacementBackup)
+        } else {
+            Move-Item -LiteralPath $binaryTmp -Destination $target
+        }
         Write-Step "verified scripts/bin/harness-cli.exe ($platform)"
     } finally {
         Remove-Item -LiteralPath $tmpDir -Recurse -Force -ErrorAction SilentlyContinue
@@ -278,8 +384,27 @@ $script:Created = 0
 $script:Updated = 0
 $script:Skipped = 0
 $script:Source = Get-SourceMode
-$script:SourceBaseUrl = if ($env:HARNESS_SOURCE_BASE_URL) { $env:HARNESS_SOURCE_BASE_URL.TrimEnd("/") } else { "https://raw.githubusercontent.com/hieunm599/repository-harness/vi" }
+$script:SourceBaseUrl = if ($env:HARNESS_SOURCE_BASE_URL) { $env:HARNESS_SOURCE_BASE_URL.TrimEnd("/") } else { "https://raw.githubusercontent.com/hoangnb24/repository-harness/main" }
+$script:PayloadManifest = "scripts/harness-install-files.txt"
+$script:SchemaDir = "scripts/schema"
 $script:CliBaseUrl = if ($env:HARNESS_CLI_BASE_URL) { $env:HARNESS_CLI_BASE_URL.TrimEnd("/") } else { Get-DefaultCliBaseUrl }
+
+if (!$UpgradeCli -and ![string]::IsNullOrWhiteSpace($Ref)) {
+    Fail "-Ref is valid only with -UpgradeCli"
+}
+
+if ($UpgradeCli) {
+    if ([string]::IsNullOrWhiteSpace($Ref)) {
+        Fail "-UpgradeCli requires -Ref <harness-cli-vX.Y.Z>"
+    }
+    if ($Ref -notmatch '^harness-cli-v[0-9]+\.[0-9]+\.[0-9]+(?:[-.][A-Za-z0-9]+)*$') {
+        Fail "-Ref must be an immutable Harness CLI release tag such as harness-cli-v0.1.14"
+    }
+    $script:Source = @{ Mode = "remote"; Root = "" }
+    $script:SourceBaseUrl = if ($env:HARNESS_SOURCE_BASE_URL) { $env:HARNESS_SOURCE_BASE_URL.TrimEnd("/") } else { "https://raw.githubusercontent.com/hoangnb24/repository-harness/$Ref" }
+    $script:CliBaseUrl = if ($env:HARNESS_CLI_BASE_URL) { $env:HARNESS_CLI_BASE_URL.TrimEnd("/") } else { "https://github.com/hoangnb24/repository-harness/releases/download/$Ref" }
+    $RefreshAgentShim = $true
+}
 $script:TargetDir = Resolve-TargetPath $Directory
 $script:BackupDir = Join-Path $script:TargetDir (".harness-backup/" + (Get-Date -Format "yyyyMMddHHmmss"))
 $script:ConflictAction = "install"
@@ -292,14 +417,14 @@ if (!$DryRun -and !(Test-Path $script:TargetDir)) {
     New-Item -ItemType Directory -Force -Path $script:TargetDir | Out-Null
 }
 
-$conflicts = @("AGENTS.md", "harness-docs", "scripts") | Where-Object { Test-Path (Join-Path $script:TargetDir $_) }
+$conflicts = @("AGENTS.md", "docs", "scripts") | Where-Object { Test-Path (Join-Path $script:TargetDir $_) }
 if ($conflicts.Count -gt 0) {
     if ($Merge) {
         $script:ConflictAction = "merge"
         Write-Step "Continuing with merge. Existing files will be skipped."
     } elseif ($Override) {
         $script:ConflictAction = "override"
-        foreach ($protected in @("AGENTS.md", "harness-docs", "scripts")) {
+        foreach ($protected in @("AGENTS.md", "docs", "scripts")) {
             $path = Join-Path $script:TargetDir $protected
             if (!(Test-Path $path)) { continue }
             if ($DryRun) {
@@ -319,7 +444,7 @@ if ($conflicts.Count -gt 0) {
             "^(m|merge)$" { $script:ConflictAction = "merge"; Write-Step "Continuing with merge. Existing files will be skipped." }
             "^(o|override)$" {
                 $script:ConflictAction = "override"
-                foreach ($protected in @("AGENTS.md", "harness-docs", "scripts")) {
+                foreach ($protected in @("AGENTS.md", "docs", "scripts")) {
                     $path = Join-Path $script:TargetDir $protected
                     if (Test-Path $path) {
                         New-Item -ItemType Directory -Force -Path $script:BackupDir | Out-Null
@@ -340,50 +465,13 @@ if ($script:Source.Mode -eq "local") {
 Write-Step "Harness CLI source: $script:CliBaseUrl"
 Write-Step "Target project: $script:TargetDir"
 
-$files = @(
-    "AGENTS.md",
-    "README.md",
-    "harness-docs/ARCHITECTURE.md",
-    "harness-docs/CONTEXT_RULES.md",
-    "harness-docs/FEATURE_INTAKE.md",
-    "harness-docs/GLOSSARY.md",
-    "harness-docs/HARNESS.md",
-    "harness-docs/HARNESS_AUDIT.md",
-    "harness-docs/HARNESS_BACKLOG.md",
-    "harness-docs/HARNESS_COMPONENTS.md",
-    "harness-docs/HARNESS_MATURITY.md",
-    "harness-docs/IMPROVEMENT_PROTOCOL.md",
-    "harness-docs/README.md",
-    "harness-docs/TEST_MATRIX.md",
-    "harness-docs/TOOL_REGISTRY.md",
-    "harness-docs/TRACE_SPEC.md",
-    "harness-docs/decisions/0001-harness-first-development.md",
-    "harness-docs/decisions/0002-post-spec-product-lifecycle.md",
-    "harness-docs/decisions/0003-generic-spec-intake-harness.md",
-    "harness-docs/decisions/0004-sqlite-durable-layer.md",
-    "harness-docs/decisions/0005-prebuilt-rust-harness-cli.md",
-    "harness-docs/decisions/0006-phase-4-benchmark-triage.md",
-    "harness-docs/decisions/0007-improvement-proposal-rules.md",
-    "harness-docs/decisions/README.md",
-    "harness-docs/product/README.md",
-    "harness-docs/stories/README.md",
-    "harness-docs/stories/backlog.md",
-    "harness-docs/templates/decision.md",
-    "harness-docs/templates/spec-intake.md",
-    "harness-docs/templates/story.md",
-    "harness-docs/templates/validation-report.md",
-    "harness-docs/templates/high-risk-story/design.md",
-    "harness-docs/templates/high-risk-story/execplan.md",
-    "harness-docs/templates/high-risk-story/overview.md",
-    "harness-docs/templates/high-risk-story/validation.md",
-    "scripts/README.md",
-    "scripts/schema/001-init.sql",
-    "scripts/schema/002-story-verify.sql",
-    "scripts/schema/003-tool-registry.sql",
-    "scripts/schema/004-intervention.sql",
-    "scripts/schema/005-tool-extensions.sql",
-    ".gitignore"
-)
+$files = @()
+$files += Get-PayloadFiles
+$files += Get-SchemaFiles
+$files = $files | Select-Object -Unique
+if (($files | Where-Object { $_ -like "$script:SchemaDir/*.sql" }).Count -eq 0) {
+    Fail "No schema migrations found in $script:SchemaDir"
+}
 
 foreach ($file in $files) {
     Copy-HarnessFile $file

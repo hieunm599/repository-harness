@@ -92,7 +92,7 @@ curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/sc
 
 Quá trình làm mới sẽ sao lưu file hiện tại. Nếu phát hiện hướng dẫn cũ do Harness tạo ra, nó sẽ thay thế bằng shim. Nếu file được tùy biến (custom), nó sẽ thêm hoặc cập nhật khối Harness được đánh dấu thay vì ghi đè các hướng dẫn cục bộ của dự án.
 
-Nếu dự án được chạy bằng Claude Code, hãy thêm `--claude`. Claude Code không bao giờ tự động tải `AGENTS.md`, vì vậy nếu không có cờ này, harness được cài đặt sẽ vô hình đối với các phiên làm việc (session) mới. Cờ này cài đặt (hoặc làm mới) file `CLAUDE.md` có khối Harness được đánh dấu nhằm `@`-import `AGENTS.md` và `harness-docs/FEATURE_INTAKE.md` vào ngữ cảnh (context) của mỗi session. File `CLAUDE.md` hiện tại sẽ được thêm khối này sau khi sao lưu; việc cài đặt thông thường không có cờ này sẽ không bao giờ chạm vào `CLAUDE.md`:
+Nếu dự án được chạy bằng Claude Code, hãy thêm `--claude`. Claude Code không bao giờ tự động tải `AGENTS.md`, vì vậy nếu không có cờ này, harness được cài đặt sẽ vô hình đối với các phiên làm việc (session) mới. Cờ này cài đặt (hoặc làm mới) file `CLAUDE.md` có khối Harness được đánh dấu chỉ import `AGENTS.md`, nguồn chỉ dẫn yêu cầu chính thức (canonical request-authority) và điểm vào truy xuất (retrieval entrypoint). File `CLAUDE.md` hiện tại sẽ được thêm khối này sau khi sao lưu; việc cài đặt thông thường không có cờ này sẽ không bao giờ chạm vào `CLAUDE.md`:
 
 ```bash
 curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --claude --yes
@@ -112,9 +112,19 @@ Sử dụng cờ `--dry-run` trên Bash hoặc `-DryRun` trên PowerShell để 
 
 Trình cài đặt cũng tải xuống Harness CLI được biên dịch sẵn cho nền tảng hiện tại, kiểm tra mã checksum `.sha256` của nó và cài đặt tại `scripts/bin/harness-cli` trên macOS/Linux hoặc `scripts/bin/harness-cli.exe` trên Windows. Rust CLI là công cụ Harness chính và là đường dẫn lệnh ổn định.
 
-Các bản phát hành (release asset) của Harness CLI được xuất bản từ các thẻ (tag) bởi workflow GitHub Actions `Harness CLI Release`. Trình cài đặt yêu cầu mỗi phiên bản phát hành phải bao gồm các file `harness-cli-<platform>` và `harness-cli-<platform>.sha256` cho macOS arm64, macOS x64, Linux x64, Linux arm64 và Windows x64. File cho Windows là `harness-cli-windows-x64.exe` kèm theo `harness-cli-windows-x64.exe.sha256`.
+Sau đó bootstrap database cục bộ (được gitignore). Một bản checkout mã nguồn Harness sẽ build CLI từ checkout đó và xác thực epoch trạng thái lõi (core-state epoch) đã phục hồi; nó từ chối tạo ra một bản thay thế trống cho trạng thái repository bị thiếu. Một dự án được cài đặt sẽ tái sử dụng binary phát hành đã được xác thực và khởi tạo trạng thái cục bộ trống riêng:
 
-Các pull request đã merge được ghi nhận vào `CHANGELOG.md` bởi workflow `Post-Merge Maintenance`. Khi một PR được merge có thay đổi mã nguồn Rust CLI, schema, Cargo metadata hoặc đóng gói phát hành CLI, workflow đó sẽ tăng phiên bản patch của CLI, cập nhật `scripts/harness-cli-release-tag`, tạo tag `harness-cli-v*` và chạy bản build phát hành Harness CLI cho tag đó.
+```bash
+scripts/bootstrap-harness.sh
+```
+
+```powershell
+.\scripts\bootstrap-harness.ps1
+```
+
+Các bản phát hành (release asset) của Harness CLI được build và chứng minh (proven) trước khi promote tag bởi workflow GitHub Actions `Harness CLI Release`. Trình cài đặt yêu cầu mỗi phiên bản phát hành đã xuất bản phải bao gồm các file `harness-cli-<platform>` và `harness-cli-<platform>.sha256` cho macOS arm64, macOS x64, Linux x64, Linux arm64 và Windows x64. File cho Windows là `harness-cli-windows-x64.exe` kèm theo `harness-cli-windows-x64.exe.sha256`.
+
+Các pull request đã merge được ghi nhận vào `CHANGELOG.md` bởi workflow `Post-Merge Maintenance`. Khi một PR được merge có thay đổi mã nguồn Rust CLI, schema, Cargo metadata hoặc đóng gói phát hành CLI, workflow đó sẽ tăng phiên bản patch của CLI, cập nhật `scripts/harness-cli-release-tag`, và gửi commit bảo trì chính xác dưới dạng ứng viên phát hành (release candidate). Workflow tái sử dụng (reusable workflow) sẽ build và kiểm thử tất cả năm nền tảng, xác thực quá trình nâng cấp `v0.1.14` được ghim (pinned), sau đó tạo tag `harness-cli-v*` có chú thích (annotated) và xuất bản mười file binary và checksum. Các tag thất bại không bao giờ được di chuyển hoặc tái sử dụng.
 
 ## Trải nghiệm Luồng công việc (Try The Flow)
 
@@ -135,6 +145,8 @@ Một luồng công việc điển hình sẽ như thế này:
 ```
 
 Các prompt triển khai không đi thẳng vào code. Đầu tiên chúng đi qua quy trình tiếp nhận tính năng (feature intake), trở thành công việc có kích thước phù hợp với story khi cần thiết, sau đó mang theo cả kỳ vọng xác thực sản phẩm lẫn kỳ vọng bảo trì harness.
+
+Harness cung cấp một contract điều phối (orchestration contract) có phiên bản dành cho các runner bên ngoài. Một consumer độc lập là [Symphony](https://github.com/hoangnb24/symphony); nó không phải là một phần của repository này hoặc trình cài đặt Harness.
 
 ## Hệ thống Đăng ký Công cụ (Tool Registry)
 
@@ -157,13 +169,13 @@ Các loại công cụ (`cli`, `binary`, `mcp`, `skill`, `http`) giúp nó có t
 
 ## Trạng thái Hiện tại (Current State)
 
-Repository này hiện đang ở phiên bản Harness v0.
+Repository này triển khai sản phẩm Harness v0: một Rust CLI, tầng bền vững SQLite (SQLite durable layer), các trình cài đặt (installers), tài liệu vận hành (operating documents), kiểm thử contract (contract tests) và tự động hóa phát hành (release automation). Các thành phần upstream này là hành vi sản phẩm thực thi được (executable product behavior), không phải các placeholder.
 
-Vẫn chưa có phần triển khai ứng dụng (application implementation) và chưa tích hợp đặc tả sản phẩm (product specification). Công việc hiện tại là phần harness dự án có thể tái sử dụng: cấu trúc file, mô hình vận hành của agent, quy trình tiếp nhận tính năng, các story template và kỳ vọng xác thực giúp con người và agent biến một tài liệu spec trong tương lai do người dùng cung cấp thành công việc triển khai thực tế.
+Việc cài đặt Harness vào một repository khác không tạo ra hoặc chọn ứng dụng, stack công nghệ, hoặc đặc tả sản phẩm cho consumer đó. Nó thêm tầng kỹ thuật tái sử dụng (reusable engineering layer) giúp con người và agent chuyển đổi ý định của consumer thành công việc đã được xác thực (validated work).
 
 ## Nguồn Sản phẩm (Product Sources)
 
-Hiện tại chưa có đặc tả sản phẩm (product contract) nào được định nghĩa.
+Contract Harness upstream nằm trong file README này, các tài liệu vận hành, contract điều phối có phiên bản (versioned orchestration contract), các story packet và các bài kiểm thử thực thi được (executable tests). Thư mục `harness-docs/product/` chung được dành riêng cho contract sản phẩm của dự án consumer; Harness cố tình không điền vào nó bằng một mô hình domain giả.
 
 Khi người dùng cung cấp một tài liệu spec dự án, hãy thêm hoặc tham chiếu nó như là spec đầu vào cho đợt xây dựng đầu tiên, sau đó rút trích các tài liệu sống (living artifacts) nhỏ hơn từ đó:
 

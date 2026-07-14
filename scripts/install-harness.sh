@@ -12,6 +12,11 @@ Options:
   -y, --yes              Accept defaults and skip prompts.
       --merge            On protected-path conflict, keep existing files in
                          place and install only missing Harness files.
+      --upgrade-cli      Replace the installed Harness CLI after checksum
+                         verification and refresh the marked AGENTS.md
+                         authority block. Requires --ref.
+      --ref <tag>        Immutable Harness release tag used for both template
+                         files and the CLI artifact (harness-cli-vX.Y.Z).
       --refresh-agent-shim
                          Refresh an existing AGENTS.md into the small Harness
                          shim after backing it up. Old Harness-generated files
@@ -19,17 +24,17 @@ Options:
       --claude           Also install or refresh CLAUDE.md so Claude Code
                          auto-loads the harness context. Claude Code never
                          auto-loads AGENTS.md; the shim @-imports AGENTS.md
-                         and harness-docs/FEATURE_INTAKE.md inside a marked block.
+                         as its single policy source inside a marked block.
                          Existing CLAUDE.md files get the block appended
                          after a backup; a stale block is refreshed in place.
       --override         On protected-path conflict, back up and replace
-                         AGENTS.md, harness-docs/, and scripts/.
+                         AGENTS.md, docs/, and scripts/.
       --force            Overwrite existing files after backing them up.
       --dry-run          Show what would change without writing files.
   -h, --help             Show this help.
 
 Safety:
-  If AGENTS.md, harness-docs/, or scripts/ already exist, interactive installs ask
+  If AGENTS.md, docs/, or scripts/ already exist, interactive installs ask
   whether to merge missing files, override after backup, or stop. Merge is the
   safe update path for repositories that already have Harness: existing files
   stay in place and new Harness files are appended by path. Non-
@@ -41,10 +46,11 @@ Examples:
   scripts/install-harness.sh
   scripts/install-harness.sh --directory /path/to/project --yes
   scripts/install-harness.sh ./my-project --force
-  curl -fsSL https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh | bash -s -- --yes
-  curl -fsSL https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh | bash -s -- --merge --yes
-  curl -fsSL https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh | bash -s -- --merge --refresh-agent-shim --yes
-  curl -fsSL https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh | bash -s -- --claude --yes
+  curl -fsSL https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.sh | bash -s -- --yes
+  curl -fsSL https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.sh | bash -s -- --merge --yes
+  curl -fsSL https://raw.githubusercontent.com/hoangnb24/repository-harness/harness-cli-v0.1.14/scripts/install-harness.sh | bash -s -- --merge --upgrade-cli --ref harness-cli-v0.1.14 --yes
+  curl -fsSL https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.sh | bash -s -- --merge --refresh-agent-shim --yes
+  curl -fsSL https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.sh | bash -s -- --claude --yes
 EOF
 }
 
@@ -194,50 +200,109 @@ write_source_file() {
   curl -fsSL "$url" -o "$target" || fail "Could not download $url"
 }
 
-agent_shim_block() {
-  cat <<'EOF'
-<!-- HARNESS:BEGIN -->
-## Harness
+read_source_text() {
+  local relative="$1"
 
-This repo uses Harness. Before work, read:
+  if [ "$SOURCE_MODE" = "local" ]; then
+    local source="$SOURCE_ROOT/$relative"
+    [ -f "$source" ] || fail "Source file missing: $source"
+    cat "$source"
+    return
+  fi
 
-- `README.md`
-- `harness-docs/HARNESS.md`
-- `harness-docs/FEATURE_INTAKE.md`
-- `harness-docs/ARCHITECTURE.md`
-- `harness-docs/CONTEXT_RULES.md`
-- `harness-docs/TOOL_REGISTRY.md`
-- `scripts/bin/harness-cli query matrix`
+  local url="$SOURCE_BASE_URL/$relative"
+  curl -fsSL "$url" || fail "Could not download $url"
+}
 
-Use the Rust Harness CLI at `scripts/bin/harness-cli` as the main operational
-tool. Before a step that could use an external tool, run
-`scripts/bin/harness-cli query tools --capability <name> --status present` to
-see what is equipped; an absent capability is a clean skip.
-<!-- HARNESS:END -->
+read_payload_manifest() {
+  if [ "$SOURCE_MODE" = "local" ]; then
+    local manifest="$SOURCE_ROOT/$PAYLOAD_MANIFEST"
+    [ -f "$manifest" ] || fail "Payload manifest missing: $manifest"
+    cat "$manifest"
+    return
+  fi
+
+  local url="$SOURCE_BASE_URL/$PAYLOAD_MANIFEST"
+  curl -fsSL "$url" || fail "Could not download $url"
+}
+
+discover_schema_files() {
+  if [ "$SOURCE_MODE" = "local" ]; then
+    local schema_root="$SOURCE_ROOT/$SCHEMA_DIR"
+    [ -d "$schema_root" ] || fail "Schema directory missing: $schema_root"
+    find "$schema_root" -maxdepth 1 -type f -name '*.sql' -print |
+      while IFS= read -r path; do
+        printf '%s/%s\n' "$SCHEMA_DIR" "$(basename "$path")"
+      done |
+      sort
+    return
+  fi
+
+  case "$SOURCE_BASE_URL" in
+    file://*)
+      local source_root="${SOURCE_BASE_URL#file://}"
+      local schema_root="$source_root/$SCHEMA_DIR"
+      [ -d "$schema_root" ] || fail "Schema directory missing: $schema_root"
+      find "$schema_root" -maxdepth 1 -type f -name '*.sql' -print |
+        while IFS= read -r path; do
+          printf '%s/%s\n' "$SCHEMA_DIR" "$(basename "$path")"
+        done |
+        sort
+      ;;
+    https://raw.githubusercontent.com/*)
+      local raw_path="${SOURCE_BASE_URL#https://raw.githubusercontent.com/}"
+      local owner repo ref api_url
+      IFS=/ read -r owner repo ref _rest <<EOF
+$raw_path
 EOF
+      [ -n "${owner:-}" ] && [ -n "${repo:-}" ] && [ -n "${ref:-}" ] ||
+        fail "Cannot infer GitHub repository from $SOURCE_BASE_URL"
+      api_url="https://api.github.com/repos/$owner/$repo/git/trees/$ref?recursive=1"
+      curl -fsSL "$api_url" |
+        sed -n "s#.*\"path\": \"\\($SCHEMA_DIR/[^\"]*\\.sql\\)\".*#\\1#p" |
+        sort
+      ;;
+    *)
+      fail "Cannot discover remote schema files from $SOURCE_BASE_URL. Use a local source, file:// source, or raw.githubusercontent.com source."
+      ;;
+  esac
+}
+
+copy_payload_files() {
+  local manifest
+  local relative
+  local copied_schema=0
+
+  manifest="$(read_payload_manifest)"
+  while IFS= read -r relative || [ -n "$relative" ]; do
+    relative="${relative%$'\r'}"
+    case "$relative" in
+      ""|\#*)
+        continue
+        ;;
+    esac
+    copy_file "$relative"
+  done <<EOF
+$manifest
+EOF
+
+  while IFS= read -r relative || [ -n "$relative" ]; do
+    [ -n "$relative" ] || continue
+    copy_file "$relative"
+    copied_schema=$((copied_schema + 1))
+  done <<EOF
+$(discover_schema_files)
+EOF
+
+  [ "$copied_schema" -gt 0 ] || fail "No schema migrations found in $SCHEMA_DIR"
+}
+
+agent_shim_block() {
+  read_source_text "scripts/agent-harness-block.md"
 }
 
 claude_shim_block() {
-  cat <<'EOF'
-<!-- HARNESS:BEGIN -->
-## Harness
-
-Claude Code loads this file into every session, but it does not auto-load
-`AGENTS.md`. The bare `@` lines below import the always-required harness
-context (the "Must in all lanes" set from `harness-docs/CONTEXT_RULES.md`) at
-context-load time. Never wrap them in backticks; that disables the import.
-
-@AGENTS.md
-
-@harness-docs/FEATURE_INTAKE.md
-
-Also run `scripts/bin/harness-cli query matrix` before starting work.
-
-Lane-dependent context (`README.md`, `harness-docs/HARNESS.md`, `harness-docs/ARCHITECTURE.md`,
-`harness-docs/CONTEXT_RULES.md`, product docs, stories, decisions) is intentionally not
-imported — read it per lane, as `harness-docs/CONTEXT_RULES.md` prescribes.
-<!-- HARNESS:END -->
-EOF
+  read_source_text "scripts/claude-harness-block.md"
 }
 
 is_old_harness_agent_file() {
@@ -290,17 +355,29 @@ insert_agent_custom_section() {
       while ((getline line < custom_file) > 0) {
         print line
       }
+      inserted = 1
       next
     }
     { print }
+    END {
+      if (!inserted) {
+        print ""
+        while ((getline line < custom_file) > 0) {
+          print line
+        }
+      }
+    }
   ' custom_file="$custom" "$target" > "$tmp"
   mv "$tmp" "$target"
 }
 
 append_or_replace_agent_harness_block() {
   local target="$TARGET_DIR/AGENTS.md"
-  local tmp
+  local block_tmp tmp
 
+  block_tmp="$(mktemp)"
+  agent_shim_block >"$block_tmp"
+  [ -s "$block_tmp" ] || fail "canonical AGENTS.md Harness block is empty"
   tmp="$(mktemp)"
   if grep -Fq "<!-- HARNESS:BEGIN -->" "$target" &&
      grep -Fq "<!-- HARNESS:END -->" "$target"; then
@@ -317,7 +394,7 @@ append_or_replace_agent_harness_block() {
         next
       }
       !in_block { print }
-    ' block_file=<(agent_shim_block) "$target" > "$tmp"
+    ' block_file="$block_tmp" "$target" > "$tmp"
   else
     {
       cat "$target"
@@ -326,6 +403,23 @@ append_or_replace_agent_harness_block() {
     } > "$tmp"
   fi
   mv "$tmp" "$target"
+  rm -f "$block_tmp"
+}
+
+validate_harness_markers() {
+  local target="$1" label="$2"
+  local begin_count end_count begin_line end_line
+  begin_count=$(grep -Fc '<!-- HARNESS:BEGIN -->' "$target" || true)
+  end_count=$(grep -Fc '<!-- HARNESS:END -->' "$target" || true)
+  if [ "$begin_count" -eq 0 ] && [ "$end_count" -eq 0 ]; then
+    return 0
+  fi
+  if [ "$begin_count" -ne 1 ] || [ "$end_count" -ne 1 ]; then
+    fail "$label must contain exactly one complete Harness marker pair"
+  fi
+  begin_line=$(grep -Fn '<!-- HARNESS:BEGIN -->' "$target" | cut -d: -f1)
+  end_line=$(grep -Fn '<!-- HARNESS:END -->' "$target" | cut -d: -f1)
+  [ "$begin_line" -lt "$end_line" ] || fail "$label Harness markers are out of order"
 }
 
 refresh_agent_shim() {
@@ -338,6 +432,8 @@ refresh_agent_shim() {
     log "skip     AGENTS.md (source file)"
     return 0
   fi
+
+  validate_harness_markers "$target" "AGENTS.md"
 
   if [ "$DRY_RUN" -eq 1 ]; then
     if is_old_harness_agent_file "$target"; then
@@ -385,6 +481,10 @@ write_claude_shim() {
     log "skip     CLAUDE.md (source file)"
     SKIPPED=$((SKIPPED + 1))
     return 0
+  fi
+
+  if [ -e "$target" ]; then
+    validate_harness_markers "$target" "CLAUDE.md"
   fi
 
   block_tmp="$(mktemp)"
@@ -519,23 +619,23 @@ default_cli_base_url() {
   fi
 
   if [ -n "$release_tag" ] && [ "$release_tag" != "latest" ]; then
-    printf 'https://github.com/hieunm599/repository-harness/releases/download/%s\n' "$release_tag"
+    printf 'https://github.com/hoangnb24/repository-harness/releases/download/%s\n' "$release_tag"
   else
-    printf 'https://github.com/hieunm599/repository-harness/releases/latest/download\n'
+    printf 'https://github.com/hoangnb24/repository-harness/releases/latest/download\n'
   fi
 }
 
 install_harness_cli_binary() {
   [ "$INSTALL_RUST_CLI" -eq 1 ] || return 0
 
-  local platform binary_name binary_url checksum_url target tmp_dir binary_tmp checksum_tmp expected actual
+  local platform binary_name binary_url checksum_url target target_dir tmp_dir binary_tmp checksum_tmp expected actual
   platform="${HARNESS_CLI_PLATFORM:-$(detect_cli_platform)}"
   binary_name="harness-cli-$platform"
   binary_url="$CLI_BASE_URL/$binary_name"
   checksum_url="$binary_url.sha256"
   target="$TARGET_DIR/scripts/bin/harness-cli"
 
-  if [ -e "$target" ] && [ "$CONFLICT_ACTION" = "merge" ] && [ "$FORCE" -eq 0 ]; then
+  if [ -e "$target" ] && [ "$CONFLICT_ACTION" = "merge" ] && [ "$FORCE" -eq 0 ] && [ "$UPGRADE_CLI" -eq 0 ]; then
     log "skip     scripts/bin/harness-cli (merge keeps existing file)"
     SKIPPED=$((SKIPPED + 1))
     return 0
@@ -550,7 +650,9 @@ install_harness_cli_binary() {
 
   command -v curl >/dev/null 2>&1 || fail "curl is required to download the Harness CLI"
 
-  tmp_dir="$(mktemp -d)"
+  target_dir="$(dirname "$target")"
+  mkdir -p "$target_dir"
+  tmp_dir="$(mktemp -d "$target_dir/.harness-cli-upgrade.XXXXXX")"
   binary_tmp="$tmp_dir/$binary_name"
   checksum_tmp="$tmp_dir/$binary_name.sha256"
 
@@ -565,9 +667,8 @@ install_harness_cli_binary() {
     fail "Checksum mismatch for $binary_name: expected $expected, got $actual"
   fi
 
-  mkdir -p "$(dirname "$target")"
   if [ -e "$target" ]; then
-    if [ "$FORCE" -eq 1 ]; then
+    if [ "$FORCE" -eq 1 ] || [ "$UPGRADE_CLI" -eq 1 ]; then
       mkdir -p "$BACKUP_DIR/scripts/bin"
       cp -p "$target" "$BACKUP_DIR/scripts/bin/harness-cli"
     fi
@@ -578,8 +679,8 @@ install_harness_cli_binary() {
     log "created  scripts/bin/harness-cli"
   fi
 
-  cp "$binary_tmp" "$target"
-  chmod 755 "$target"
+  chmod 755 "$binary_tmp"
+  mv -f "$binary_tmp" "$target"
   rm -rf "$tmp_dir"
   log "verified scripts/bin/harness-cli ($platform)"
 }
@@ -588,7 +689,7 @@ check_protected_target_paths() {
   local conflicts=()
 
   [ -e "$TARGET_DIR/AGENTS.md" ] && conflicts+=("AGENTS.md")
-  [ -e "$TARGET_DIR/harness-docs" ] && conflicts+=("harness-docs/")
+  [ -e "$TARGET_DIR/docs" ] && conflicts+=("docs/")
   [ -e "$TARGET_DIR/scripts" ] && conflicts+=("scripts/")
 
   [ "${#conflicts[@]}" -gt 0 ] || return 0
@@ -627,7 +728,7 @@ check_protected_target_paths() {
     printf 'Warning: target already contains protected Harness paths: %s\n' "$joined"
     printf 'Choose how to continue:\n'
     printf '  1. Merge    Copy missing Harness files and skip existing files\n'
-    printf '  2. Override Back up and replace AGENTS.md, harness-docs/, and scripts/\n'
+    printf '  2. Override Back up and replace AGENTS.md, docs/, and scripts/\n'
     printf '  3. Stop     Exit without writing files (recommended)\n'
   } > /dev/tty
   prompt_tty 'Choice [1/2/3, default 3]: '
@@ -655,7 +756,7 @@ check_protected_target_paths() {
 override_protected_target_paths() {
   local protected
 
-  for protected in AGENTS.md harness-docs scripts; do
+  for protected in AGENTS.md docs scripts; do
     [ -e "$TARGET_DIR/$protected" ] || continue
 
     if [ "$DRY_RUN" -eq 1 ]; then
@@ -676,6 +777,8 @@ DRY_RUN=0
 INSTALL_RUST_CLI=1
 REFRESH_AGENT_SHIM=0
 INSTALL_CLAUDE_SHIM=0
+UPGRADE_CLI=0
+REQUESTED_REF=""
 REQUESTED_CONFLICT_ACTION=""
 POSITIONAL_TARGET=""
 
@@ -697,6 +800,15 @@ while [ "$#" -gt 0 ]; do
     --merge)
       REQUESTED_CONFLICT_ACTION="merge"
       shift
+      ;;
+    --upgrade-cli)
+      UPGRADE_CLI=1
+      shift
+      ;;
+    --ref)
+      [ "$#" -ge 2 ] || fail "$1 requires an immutable Harness release tag"
+      REQUESTED_REF="$2"
+      shift 2
       ;;
     --refresh-agent-shim)
       REFRESH_AGENT_SHIM=1
@@ -753,12 +865,31 @@ SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
 SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" 2>/dev/null && pwd -P || printf '')"
 SOURCE_ROOT=""
 SOURCE_MODE="remote"
-SOURCE_BASE_URL="${HARNESS_SOURCE_BASE_URL:-https://raw.githubusercontent.com/hieunm599/repository-harness/vi}"
+SOURCE_BASE_URL="${HARNESS_SOURCE_BASE_URL:-https://raw.githubusercontent.com/hoangnb24/repository-harness/main}"
 SOURCE_BASE_URL="${SOURCE_BASE_URL%/}"
+PAYLOAD_MANIFEST="scripts/harness-install-files.txt"
+SCHEMA_DIR="scripts/schema"
 CLI_BASE_URL="${HARNESS_CLI_BASE_URL:-}"
 CLI_BASE_URL="${CLI_BASE_URL%/}"
 
-if [ -n "$SCRIPT_DIR" ] && [ -f "$SCRIPT_DIR/../AGENTS.md" ] && [ -f "$SCRIPT_DIR/../harness-docs/HARNESS.md" ]; then
+if [ "$UPGRADE_CLI" -eq 0 ] && [ -n "$REQUESTED_REF" ]; then
+  fail "--ref is valid only with --upgrade-cli"
+fi
+
+if [ "$UPGRADE_CLI" -eq 1 ]; then
+  [ -n "$REQUESTED_REF" ] || fail "--upgrade-cli requires --ref <harness-cli-vX.Y.Z>"
+  [[ "$REQUESTED_REF" =~ ^harness-cli-v[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9]+)*$ ]] ||
+    fail "--ref must be an immutable Harness CLI release tag such as harness-cli-v0.1.14"
+  SOURCE_MODE="remote"
+  SOURCE_ROOT=""
+  SOURCE_BASE_URL="${HARNESS_SOURCE_BASE_URL:-https://raw.githubusercontent.com/hoangnb24/repository-harness/$REQUESTED_REF}"
+  SOURCE_BASE_URL="${SOURCE_BASE_URL%/}"
+  CLI_BASE_URL="${HARNESS_CLI_BASE_URL:-https://github.com/hoangnb24/repository-harness/releases/download/$REQUESTED_REF}"
+  CLI_BASE_URL="${CLI_BASE_URL%/}"
+  REFRESH_AGENT_SHIM=1
+fi
+
+if [ "$UPGRADE_CLI" -eq 0 ] && [ -n "$SCRIPT_DIR" ] && [ -f "$SCRIPT_DIR/../AGENTS.md" ] && [ -f "$SCRIPT_DIR/../docs/HARNESS.md" ]; then
   SOURCE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd -P)"
   SOURCE_MODE="local"
 fi
@@ -816,52 +947,11 @@ else
 fi
 log "Target project: $TARGET_DIR"
 
-while IFS= read -r relative; do
-  copy_file "$relative"
-done <<'EOF'
-AGENTS.md
-README.md
-harness-docs/ARCHITECTURE.md
-harness-docs/CONTEXT_RULES.md
-harness-docs/FEATURE_INTAKE.md
-harness-docs/GLOSSARY.md
-harness-docs/HARNESS.md
-harness-docs/HARNESS_AUDIT.md
-harness-docs/HARNESS_BACKLOG.md
-harness-docs/HARNESS_COMPONENTS.md
-harness-docs/HARNESS_MATURITY.md
-harness-docs/IMPROVEMENT_PROTOCOL.md
-harness-docs/README.md
-harness-docs/TEST_MATRIX.md
-harness-docs/TOOL_REGISTRY.md
-harness-docs/TRACE_SPEC.md
-harness-docs/decisions/0001-harness-first-development.md
-harness-docs/decisions/0002-post-spec-product-lifecycle.md
-harness-docs/decisions/0003-generic-spec-intake-harness.md
-harness-docs/decisions/0004-sqlite-durable-layer.md
-harness-docs/decisions/0005-prebuilt-rust-harness-cli.md
-harness-docs/decisions/0006-phase-4-benchmark-triage.md
-harness-docs/decisions/0007-improvement-proposal-rules.md
-harness-docs/decisions/README.md
-harness-docs/product/README.md
-harness-docs/stories/README.md
-harness-docs/stories/backlog.md
-harness-docs/templates/decision.md
-harness-docs/templates/spec-intake.md
-harness-docs/templates/story.md
-harness-docs/templates/validation-report.md
-harness-docs/templates/high-risk-story/design.md
-harness-docs/templates/high-risk-story/execplan.md
-harness-docs/templates/high-risk-story/overview.md
-harness-docs/templates/high-risk-story/validation.md
-scripts/README.md
-scripts/schema/001-init.sql
-scripts/schema/002-story-verify.sql
-scripts/schema/003-tool-registry.sql
-scripts/schema/004-intervention.sql
-scripts/schema/005-tool-extensions.sql
-.gitignore
-EOF
+copy_payload_files
+
+if [ "$DRY_RUN" -eq 0 ] && [ -f "$TARGET_DIR/scripts/bootstrap-harness.sh" ]; then
+  chmod 755 "$TARGET_DIR/scripts/bootstrap-harness.sh"
+fi
 
 refresh_agent_shim
 write_claude_shim

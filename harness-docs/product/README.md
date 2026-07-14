@@ -10,6 +10,13 @@ domains that actually exist in that spec, for example `overview.md`,
 Do not create domain files before the spec just to fill the folder. Empty
 structure is healthier than fake product truth.
 
+## Current Product Contracts
+
+No consumer-project-specific product contract is shipped in this generic
+directory. The upstream `repository-harness` product contract lives in the
+root README, Harness operating documents, versioned orchestration contract,
+story packets, and executable tests.
+
 ## Update Rule
 
 When behavior changes:

@@ -41,14 +41,16 @@ jobs:
 
           git pull --ff-only origin vi
 
-          pr_json="$(gh pr view "$PR_NUMBER" --json number,title,author,files,mergeCommit)"
+          pr_json="$(gh pr view "$PR_NUMBER" --json number,title,author,mergeCommit)"
           pr_title="$(jq -r '.title' <<<"$pr_json")"
           pr_author="$(jq -r '.author.login // "unknown"' <<<"$pr_json")"
           merge_sha="$(jq -r '.mergeCommit.oid // empty' <<<"$pr_json")"
-          changed_files="$(jq -r '.files[].path' <<<"$pr_json")"
+          changed_files_json="$(gh api --paginate --slurp \
+            "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files?per_page=100")"
+          changed_files="$(jq -r '.[][] | .filename' <<<"$changed_files_json")"
 
           cli_changed=false
-          if grep -Eq '^(crates/harness-cli/|scripts/schema/|scripts/build-harness-cli-release\.sh$|Cargo\.toml$|Cargo\.lock$)' <<<"$changed_files"; then
+          if scripts/harness-cli-release-changed.sh <<<"$changed_files"; then
             cli_changed=true
           fi
 
@@ -80,12 +82,12 @@ jobs:
               printf -- '- Merge commit: `%s`\n' "$merge_sha"
             fi
             if [ "$cli_changed" = true ]; then
-              printf -- '- Harness CLI release: `%s`\n' "$release_tag"
+              printf -- '- Harness CLI candidate: `%s` (publication requires platform proof)\n' "$release_tag"
             else
               printf -- '- Harness CLI release: not required\n'
             fi
-            printf -- '- Changed files:\n'
-            sed 's/^/  - `/' <<<"$changed_files" | sed 's/$/`/'
+            python3 scripts/render-changelog-files.py --limit 20 \
+              <<<"$changed_files_json"
             printf '\n'
           } > "$entry"
 
@@ -110,15 +112,6 @@ jobs:
             maintenance_ref="$(git rev-parse HEAD)"
           fi
 
-          if [ "$cli_changed" = true ]; then
-            if git ls-remote --exit-code --tags origin "refs/tags/$release_tag" >/dev/null 2>&1; then
-              echo "Tag $release_tag already exists."
-            else
-              git tag -a "$release_tag" -m "Harness CLI $release_tag"
-              git push origin "$release_tag"
-            fi
-          fi
-
           {
             echo "cli_changed=$cli_changed"
             echo "release_tag=$release_tag"
@@ -134,4 +127,4 @@ jobs:
       contents: write
     with:
       release_tag: ${{ needs.prepare.outputs.release_tag }}
-      checkout_ref: ${{ needs.prepare.outputs.release_tag }}
+      checkout_ref: ${{ needs.prepare.outputs.maintenance_ref }}

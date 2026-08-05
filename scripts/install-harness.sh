@@ -634,9 +634,9 @@ default_cli_base_url() {
   fi
 
   if [ -n "$release_tag" ] && [ "$release_tag" != "latest" ]; then
-    printf 'https://github.com/hoangnb24/repository-harness/releases/download/%s\n' "$release_tag"
+    printf 'https://github.com/hieunm599/repository-harness/releases/download/%s\n' "$release_tag"
   else
-    printf 'https://github.com/hoangnb24/repository-harness/releases/latest/download\n'
+    printf 'https://github.com/hieunm599/repository-harness/releases/latest/download\n'
   fi
 }
 
@@ -707,7 +707,7 @@ stage_harness_core_cli() {
     fi
     [[ "$release_tag" =~ ^harness-v[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9]+)*$ ]] ||
       fail "invalid Harness core release tag: $release_tag"
-    base_url="${HARNESS_CORE_CLI_BASE_URL:-https://github.com/hoangnb24/repository-harness/releases/download/$release_tag}"
+    base_url="${HARNESS_CORE_CLI_BASE_URL:-https://github.com/hieunm599/repository-harness/releases/download/$release_tag}"
     binary_url="${base_url%/}/$CORE_BINARY_NAME"
     checksum_url="$binary_url.sha256"
     checksum_tmp="$CORE_STAGE_ROOT/$CORE_BINARY_NAME.sha256"
@@ -1231,7 +1231,7 @@ if [ "$UPGRADE_CLI" -eq 1 ]; then
   SOURCE_ROOT=""
   SOURCE_BASE_URL="${HARNESS_SOURCE_BASE_URL:-https://raw.githubusercontent.com/hieunm599/repository-harness/$REQUESTED_REF}"
   SOURCE_BASE_URL="${SOURCE_BASE_URL%/}"
-  CLI_BASE_URL="${HARNESS_CLI_BASE_URL:-https://github.com/hoangnb24/repository-harness/releases/download/$REQUESTED_REF}"
+  CLI_BASE_URL="${HARNESS_CLI_BASE_URL:-https://github.com/hieunm599/repository-harness/releases/download/$REQUESTED_REF}"
   CLI_BASE_URL="${CLI_BASE_URL%/}"
   REFRESH_AGENT_SHIM=1
 fi

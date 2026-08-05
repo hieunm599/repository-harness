@@ -70,7 +70,7 @@ grep -Fq 'allow_implicit_invocation: false' \
 grep -Fq 'allow_implicit_invocation: false' \
   "$fresh/.agents/skills/improve-harness/agents/openai.yaml"
 [[ ! -e "$fresh/.agents/skills/engineering-wisdom" ]]
-grep -Fq 'No control-plane operation is required.' "$fresh/AGENTS.md"
+grep -Fq 'Không yêu cầu thao tác control-plane.' "$fresh/AGENTS.md"
 ! grep -Fq 'Current Upstream Goal' "$fresh/AGENTS.md"
 ! grep -Fq 'query matrix --active --summary' "$fresh/AGENTS.md"
 for core_file in $(sed -e '/^\s*#/d' -e '/^\s*$/d' "$root/scripts/harness-install-files.txt"); do
@@ -116,7 +116,7 @@ grep -Fq 'Keep this Claude-only rule.' "$claude/CLAUDE.md"
 cmp -s <(extract_block "$claude/CLAUDE.md") "$root/scripts/claude-harness-block.md"
 [[ "$(grep -Fc '@AGENTS.md' "$claude/CLAUDE.md")" == 1 ]]
 ! grep -Fq '@harness-docs/FEATURE_INTAKE.md' "$claude/CLAUDE.md"
-grep -Fq 'No control-plane operation is required.' "$claude/AGENTS.md"
+grep -Fq 'Không yêu cầu thao tác control-plane.' "$claude/AGENTS.md"
 
 # Merge preserves existing project material byte-for-byte while filling gaps.
 merge="$temp/merge"

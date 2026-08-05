@@ -311,9 +311,9 @@ function Get-DefaultCliBaseUrl {
         $tag = Read-CliReleaseTag
     }
     if (![string]::IsNullOrWhiteSpace($tag) -and $tag -ne "latest") {
-        return "https://github.com/hoangnb24/repository-harness/releases/download/$tag"
+        return "https://github.com/hieunm599/repository-harness/releases/download/$tag"
     }
-    return "https://github.com/hoangnb24/repository-harness/releases/latest/download"
+    return "https://github.com/hieunm599/repository-harness/releases/latest/download"
 }
 
 function Get-HarnessReleaseTag {
@@ -379,7 +379,7 @@ function Install-HarnessCore {
         } else {
             $releaseTag = if ($pendingVersion) { "harness-v$pendingVersion" } else { Get-HarnessReleaseTag }
             if ($releaseTag -notmatch '^harness-v[0-9]+\.[0-9]+\.[0-9]+(?:[-.][A-Za-z0-9]+)*$') { Fail "invalid Harness core release tag: $releaseTag" }
-            $baseUrl = if ($env:HARNESS_CORE_CLI_BASE_URL) { $env:HARNESS_CORE_CLI_BASE_URL.TrimEnd("/") } else { "https://github.com/hoangnb24/repository-harness/releases/download/$releaseTag" }
+            $baseUrl = if ($env:HARNESS_CORE_CLI_BASE_URL) { $env:HARNESS_CORE_CLI_BASE_URL.TrimEnd("/") } else { "https://github.com/hieunm599/repository-harness/releases/download/$releaseTag" }
             $binaryUrl = "$baseUrl/harness-windows-x64.exe"
             $checksumUrl = "$binaryUrl.sha256"
             $checksum = "$staged.sha256"
@@ -646,7 +646,7 @@ if ($UpgradeCli) {
     }
     $script:Source = @{ Mode = "remote"; Root = "" }
     $script:SourceBaseUrl = if ($env:HARNESS_SOURCE_BASE_URL) { $env:HARNESS_SOURCE_BASE_URL.TrimEnd("/") } else { "https://raw.githubusercontent.com/hieunm599/repository-harness/$Ref" }
-    $script:CliBaseUrl = if ($env:HARNESS_CLI_BASE_URL) { $env:HARNESS_CLI_BASE_URL.TrimEnd("/") } else { "https://github.com/hoangnb24/repository-harness/releases/download/$Ref" }
+    $script:CliBaseUrl = if ($env:HARNESS_CLI_BASE_URL) { $env:HARNESS_CLI_BASE_URL.TrimEnd("/") } else { "https://github.com/hieunm599/repository-harness/releases/download/$Ref" }
     $RefreshAgentShim = $true
 }
 if ($script:InstallCli -and [string]::IsNullOrWhiteSpace($script:CliBaseUrl)) {

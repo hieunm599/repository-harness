@@ -1,18 +1,29 @@
 <!-- HARNESS:BEGIN -->
 ## Harness
 
-Choose the request class before any Harness operation.
+Start with the requested outcome, then use the repository as the system of
+record. Read `harness-docs/WORKFLOW.md` and only relevant product, design, plan, code,
+and validation material.
 
-- When the requested outcome is only an answer, explanation, review, diagnosis,
-  plan, or status report: inspect only the material needed to respond. Keep the
-  task read-only. Do not bootstrap, initialize or migrate a database, record
-  intake, or record a trace.
-- When the user explicitly asks to change, build, fix, or write repository
-  artifacts: first run `scripts/bootstrap-harness.sh`
-  on macOS/Linux or `.\scripts\bootstrap-harness.ps1` on Windows. Then use
-  `docs/FEATURE_INTAKE.md` to classify and record the request, query
-  `scripts/bin/harness-cli query matrix --active --summary` on macOS/Linux or
-  `.\scripts\bin\harness-cli.exe query matrix --active --summary` on Windows,
-  and retrieve only the lane- and task-specific context described in
-  `docs/CONTEXT_RULES.md`.
+- Answers, explanations, reviews, diagnoses, plans, and status reports are
+  read-only. Inspect only what is needed and do not mutate repository or Harness
+  state.
+- For a bounded change, use an ephemeral plan: inspect the affected behavior and
+  proof, implement, and validate. No control-plane operation is required.
+- Create or update one file under `harness-docs/plans/active/` when work spans sessions,
+  needs coordination, has meaningful dependencies, or requires recovery steps.
+  Move it to `harness-docs/plans/completed/` only after validation.
+- Before editing, identify repository authority for each new externally
+  observable policy. If materially different choices remain open, stop before
+  edits; configurable defaults are not authority.
+- Report reusable agent friction. Change guidance, tools, runbooks, or validation
+  for that purpose only when explicitly asked to use `$improve-harness`.
+- Also pause when product intent remains ambiguous, recovery is difficult,
+  validation is weakened, or authority is insufficient.
+- Claim completion only with relevant executable or observable evidence. Report
+  the outcome, important changes, validation, and unresolved risks.
+
+SQLite intake, story, trace, scoring, audit, and proposal commands are optional
+compatibility features. Use them only when explicitly requested or required by
+an external orchestrator.
 <!-- HARNESS:END -->

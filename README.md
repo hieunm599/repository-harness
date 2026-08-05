@@ -1,58 +1,71 @@
 # repository-harness
 
-Biến bất kỳ repo phần mềm nào thành một không gian làm việc sẵn sàng cho agent (agent-ready workspace).
+Biến bất kỳ repo phần mềm nào thành một không gian làm việc dễ đọc và sẵn sàng cho agent (agent-ready workspace).
 
-`repository-harness` là một harness (khung vận hành) cấp độ repository dành cho Claude Code, Codex, Cursor và các coding agent khác. Nó cung cấp cho các agent ngữ cảnh dự án (project context) còn thiếu trước khi thay đổi mã nguồn: bắt đầu từ đâu, đặc tả sản phẩm (product contract) yêu cầu gì, mức độ rủi ro của công việc ra sao, cần những bằng chứng xác thực (proof) nào và những quyết định kỹ thuật nào mà các agent trong tương lai cần kế thừa.
+`repository-harness` cung cấp cho các coding agent một điểm vào nhỏ (small entrypoint), tri thức repository có cấu trúc, các kế hoạch thực thi lâu dài khi công việc thực sự cần đến chúng, và cơ chế xác thực tự động. Repository — chứ không phải một database workflow ẩn — là hệ thống lưu trữ nguồn mặc định (default system of record).
 
-Ứng dụng (app) là thứ người dùng tương tác. Harness là thứ agent tương tác.
+Ứng dụng (app) là thứ người dùng tương tác. Harness là thứ giúp ứng dụng và các quy tắc của nó trở nên dễ hiểu đối với các agent và con người.
 
-## Tại sao nên Star Repo này
+## Tại sao điều này tồn tại
 
-Hãy star repo này nếu bạn muốn tìm kiếm các mẫu thiết kế (pattern) thực tế, có thể tái sử dụng để giúp việc phát triển phần mềm được hỗ trợ bởi AI trở nên đáng tin cậy hơn, dễ kiểm tra (inspectable) và dễ điều hướng hơn đối với con người.
+Các coding agent thường thất bại vì những lý do kỹ thuật thông thường:
 
-Dự án này đang khám phá một ý tưởng đơn giản:
+- Các ràng buộc quan trọng chỉ nằm trong lịch sử chat hoặc trong đầu của ai đó;
+- Repository không nêu rõ tài liệu nào là chính thức (authoritative);
+- Các thay đổi nhỏ bị bao bọc trong quy trình phức tạp làm che khuất công việc thực sự;
+- Các thay đổi lớn làm thất lạc các quyết định và tiến độ giữa các phiên làm việc;
+- Mức độ xác thực mơ hồ, muộn màng hoặc bị tách rời khỏi hành vi mà người dùng nhìn thấy.
 
-> Các coding agent không chỉ cần những prompt tốt hơn. Chúng cần những repository tốt hơn.
+Câu trả lời không phải là một quy trình bắt buộc dài hơn. Đó là một repository hiển thị đúng ngữ cảnh vào đúng thời điểm và thực thi các bất biến quan trọng bằng các bài kiểm thử và script.
 
-## Vấn đề
+Hướng đi này được định hình dựa trên bài viết [Harness engineering](https://openai.com/index/harness-engineering/) của OpenAI: giữ điểm vào của agent nhỏ gọn, làm cho tri thức repository dễ điều hướng, lưu trữ các kế hoạch thực thi phức tạp một cách lâu dài, làm cho hành vi ứng dụng có thể kiểm tra trực tiếp và thực thi các quy tắc kiến trúc một cách tự động.
 
-Hầu hết các repo được xây dựng cho con người đọc mã nguồn trong một codebase quen thuộc. Các coding agent thường bắt đầu chỉ với một chat prompt và một bản chụp nhanh (snapshot) nông của các file. Điều đó dẫn đến các lỗi phổ biến (failure modes):
+## Luồng công việc Mặc định (The Default Workflow)
 
-- Agent chỉnh sửa code trước khi hiểu rõ mục đích sản phẩm (product intent).
-- Các ràng buộc quan trọng chỉ nằm trong lịch sử chat hoặc trong đầu của ai đó.
-- Kỳ vọng xác thực (validation expectations) mơ hồ hoặc được phát hiện quá muộn.
-- Các đánh đổi về mặt kiến trúc (architecture tradeoffs) bị lặp lại thay vì được kế thừa.
-- Các yêu cầu lớn không được chia nhỏ thành các phần việc có kích thước phù hợp với story (story-sized work).
+Bắt đầu với [`AGENTS.md`](AGENTS.md), sau đó làm theo bản đồ trong [`harness-docs/WORKFLOW.md`](harness-docs/WORKFLOW.md). Kích thước của yêu cầu sẽ quyết định mức độ của quy trình:
 
-## Cách tiếp cận bằng Harness
+```text
+câu hỏi chỉ đọc (read-only)
+  -> kiểm tra bề mặt tài liệu chính thức nhỏ nhất
+  -> trả lời kèm theo bằng chứng
 
-Một repository bắt đầu có một harness khi nó giúp một agent trả lời các câu hỏi kỹ thuật thực tế mà không cần chỉ phụ thuộc vào lịch sử chat:
+thay đổi có giới hạn (bounded change)
+  -> kiểm tra cục bộ
+  -> thay đổi code hoặc tài liệu
+  -> chạy kiểm thử/bằng chứng liên quan
+  -> báo cáo kết quả
 
-- Tôi nên đọc tài liệu nào trước?
-- Đây là loại công việc gì?
-- Nó ảnh hưởng đến đặc tả sản phẩm (product contract) nào?
-- Thay đổi này rủi ro như thế nào?
-- Bằng chứng xác thực (proof) nào sẽ chứng minh công việc đã hoàn thành?
-- Quyết định kỹ thuật hoặc bài học nào mà các agent tương lai cần kế thừa?
+thay đổi qua nhiều phiên hoặc cần nhiều sự phối hợp
+  -> tạo harness-docs/plans/active/<plan>.md
+  -> ghi lại tiến độ, quyết định và xác thực trong Git
+  -> di chuyển kế hoạch hoàn thành sang harness-docs/plans/completed/
 
-Trong repo này, các câu trả lời đó nằm ở:
+khi sự mơ hồ có hệ quả quan trọng
+  -> tạm dừng trước khi chỉnh sửa
+  -> trình bày lựa chọn cụ thể và tác động của nó
+  -> tiếp tục sau khi quyền thẩm quyền (authority) đã rõ ràng
+```
 
-- `AGENTS.md` — shim cho agent ổn định chứa các ghi chú dự án cục bộ và các liên kết tài liệu Harness.
-- `harness-docs/HARNESS.md` — mô hình cộng tác giữa con người và agent.
-- `harness-docs/FEATURE_INTAKE.md` — phân loại công việc theo mức độ rủi ro nhỏ (tiny), bình thường (normal) và rủi ro cao (high-risk).
-- `harness-docs/ARCHITECTURE.md` — khám phá kiến trúc và các quy tắc ranh giới (boundary rules).
-- `harness-docs/TEST_MATRIX.md` — bảng điều khiển mối liên hệ giữa hành vi và bằng chứng xác thực (behavior-to-proof).
-- `harness-docs/stories/` — các story packet và danh sách backlog.
-- `harness-docs/decisions/` — các quyết định lâu dài (durable decisions) và sự đánh đổi (tradeoffs).
-- `harness-docs/templates/` — các template có thể tái sử dụng cho đặc tả (spec), story, quyết định kỹ thuật (decision) và xác thực (validation).
+Một sửa lỗi chính tả không cần intake, story row hay trace. Một đợt chuyển đổi (migration) kéo dài qua nhiều phiên làm việc thì cần một kế hoạch lâu dài. Một yêu cầu "đơn giản hóa quyền truy cập" mà không nói rõ các quyền hiện tại có bị thu hồi hay không thì cần sự quyết định của con người trước khi sửa code. Đó là các quyết định độc lập, không phải các mức độ rủi ro trên một thang quy trình đơn lẻ.
 
-OpenAI mô tả sự chuyển dịch này như một thế giới ưu tiên agent (agent-first world), nơi con người điều hướng và agent thực thi:
+## Tri thức Repository (Repository Knowledge)
 
-https://openai.com/index/harness-engineering/
+- [`AGENTS.md`](AGENTS.md) — điểm vào nhỏ gọn, ổn định cho agent.
+- [`harness-docs/WORKFLOW.md`](harness-docs/WORKFLOW.md) — luồng thực thi và yêu cầu chuẩn mực.
+- [`harness-docs/HARNESS.md`](harness-docs/HARNESS.md) — các nguyên tắc thiết kế và mô hình hệ thống.
+- [`harness-docs/ARCHITECTURE.md`](harness-docs/ARCHITECTURE.md) — ranh giới và hướng phụ thuộc.
+- [`harness-docs/product/`](harness-docs/product/) — hành vi sản phẩm hiện tại và các ràng buộc.
+- [`harness-docs/plans/`](harness-docs/plans/) — các kế hoạch thực thi lâu dài đang hoạt động và đã hoàn thành.
+- [`harness-docs/decisions/`](harness-docs/decisions/) — các quyết định kiến trúc lâu dài.
+- [`harness-docs/templates/exec-plan.md`](harness-docs/templates/exec-plan.md) — template cho kế hoạch.
+- [`harness-docs/README.md`](harness-docs/README.md) — bản đồ tài liệu đầy đủ, bao gồm các bề mặt tương thích tùy chọn.
+- [`tests/README.md`](tests/README.md) — quyền sở hữu hành vi, điểm vào xác thực và ranh giới xóa bỏ đối với các bộ kiểm thử.
+
+Đường dẫn mặc định không yêu cầu database cục bộ. Tài liệu sản phẩm, mã nguồn, bài kiểm thử, kế hoạch, quyết định và lịch sử Git tạo thành một nguồn sự thật (source of truth) có thể kiểm tra được.
 
 ## Cài đặt Harness vào một Dự án
 
-Từ thư mục của dự án mục tiêu, chạy lệnh sau:
+Từ thư mục của dự án mục tiêu, chạy lệnh Bash:
 
 ```bash
 curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --yes
@@ -64,55 +77,80 @@ Trên Windows PowerShell, chạy:
 & ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.ps1"))) -Yes
 ```
 
-Nếu mục tiêu đã có `AGENTS.md`, `harness-docs/` hoặc `scripts/`, hãy chọn một trong hai cách:
+Sử dụng `--merge` / `-Merge` để thêm các file Harness còn thiếu mà không thay thế các file dự án hiện tại. Chỉ sử dụng `--override` / `-Override` khi việc thay thế là cố ý. Sử dụng `--dry-run` / `-DryRun` để xem trước các thay đổi.
+
+Bản cài đặt mặc định tải xuống binary Rust đã được kiểm tra mã checksum có tên `harness`, sau đó dùng nó để cài đặt phần core nhỏ tập trung vào repository. Nó không cài đặt CLI tương thích SQLite tùy chọn, không phát hiện schema, không cài đặt script bootstrap database, và không thêm các quy tắc gitignore cho database. Core bao gồm các skill `$onboard-repository` và `$audit-onboarding-proposal` (chỉ chạy khi được gọi rõ ràng).
+
+Để ánh xạ một repository hiện có (brownfield) sau khi cài đặt, hãy yêu cầu agent chạy:
+
+```text
+$onboard-repository
+```
+
+Lượt chạy đầu tiên là chỉ đọc (read-only) và trả về các đề xuất dựa trên bằng chứng. Cần có sự đồng ý chính xác của người dùng trước khi lượt chạy sau áp dụng các hướng dẫn đã chọn.
+
+## Gói Tri thức Kỹ thuật Tùy chọn (Optional Engineering Wisdom)
+
+Cài đặt mặc định trung lập không đi kèm triết lý kỹ thuật. Để thêm gói tư vấn `engineering-wisdom` (chỉ chạy khi gọi rõ ràng) vào một dự án mới:
 
 ```bash
-# Cập nhật một repo Harness hiện có mà không di chuyển các file hiện tại
-curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --merge --yes
-
-# Sao lưu và ghi đè AGENTS.md, harness-docs/, và scripts/
-curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --override --yes
+curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --with-engineering-wisdom --yes /path/to/project
 ```
 
 ```powershell
-# Cập nhật một repo Harness hiện có mà không di chuyển các file hiện tại
-& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.ps1"))) -Merge -Yes
-
-# Sao lưu và ghi đè AGENTS.md, harness-docs/, và scripts/
-& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.ps1"))) -Override -Yes
+& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.ps1"))) -WithEngineeringWisdom -Yes -Directory C:\path\to\project
 ```
 
-Sử dụng tùy chọn `--merge` khi một dự án đã có Harness và bạn muốn thêm các file Harness mới mà không đưa các đường dẫn `AGENTS.md`, `harness-docs/` hoặc `scripts/` hiện tại vào thư mục sao lưu (backup). Các file hiện tại sẽ được giữ nguyên; chỉ các file Harness còn thiếu mới được tạo.
-
-Đối với các bản cài đặt Harness cũ hơn mà file `AGENTS.md` vẫn chứa hướng dẫn vận hành đầy đủ, hãy chuyển đổi nó thành một shim nhỏ ổn định:
+Đối với dự án đã có Harness, thêm `--merge` / `-Merge`:
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --merge --refresh-agent-shim --yes
+curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --merge --with-engineering-wisdom --yes
 ```
 
-Quá trình làm mới sẽ sao lưu file hiện tại. Nếu phát hiện hướng dẫn cũ do Harness tạo ra, nó sẽ thay thế bằng shim. Nếu file được tùy biến (custom), nó sẽ thêm hoặc cập nhật khối Harness được đánh dấu thay vì ghi đè các hướng dẫn cục bộ của dự án.
+Việc cài đặt không chạy hoặc kích hoạt skill. Gọi nó một cách rõ ràng khi cần:
 
-Nếu dự án được chạy bằng Claude Code, hãy thêm `--claude`. Claude Code không bao giờ tự động tải `AGENTS.md`, vì vậy nếu không có cờ này, harness được cài đặt sẽ vô hình đối với các phiên làm việc (session) mới. Cờ này cài đặt (hoặc làm mới) file `CLAUDE.md` có khối Harness được đánh dấu chỉ import `AGENTS.md`, nguồn chỉ dẫn yêu cầu chính thức (canonical request-authority) và điểm vào truy xuất (retrieval entrypoint). File `CLAUDE.md` hiện tại sẽ được thêm khối này sau khi sao lưu; việc cài đặt thông thường không có cờ này sẽ không bao giờ chạm vào `CLAUDE.md`:
-
-```bash
-curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --claude --yes
+```text
+$engineering-wisdom đánh giá thay đổi thanh toán này
 ```
 
-Hoặc cài đặt vào một đường dẫn cụ thể:
+Sau khi cài đặt, xem trước và áp dụng các bản nâng cấp core trong tương lai với:
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --directory /path/to/project --yes
+scripts/bin/harness update --dry-run
+scripts/bin/harness update
+scripts/bin/harness status
+scripts/bin/harness doctor
+```
+
+Trên Windows, sử dụng `scripts\bin\harness.exe`.
+
+Nếu bạn sử dụng Claude Code, hãy thêm `--claude` (PowerShell: `-Claude`). Cờ này tạo hoặc cập nhật một khối được đánh dấu trong `CLAUDE.md` giúp import `AGENTS.md`.
+
+## Trải nghiệm Luồng công việc (Try The Flow)
+
+[`harness-docs/demo/README.md`](harness-docs/demo/README.md) cung cấp các ví dụ cụ thể qua bốn trường hợp luồng công việc:
+
+- điểm vào nhỏ → ít tải lại hướng dẫn và ít bị lệch hướng;
+- bản đồ repository chính thức → agent chỉ truy xuất ngữ cảnh liên quan;
+- kế hoạch chỉ cho công việc thực sự lâu dài → các thay đổi nhỏ giữ chi phí thấp trong khi công việc dài hạn tồn tại qua các phiên;
+- bài kiểm thử nguyên bản trong repo → sự hoàn thành được chứng minh bằng hành vi chứ không phải bằng ghi chép quy trình;
+- điều kiện tạm dừng rõ ràng → các lựa chọn sản phẩm có hệ quả vẫn do con người làm chủ.
+
+## Tầng Điều khiển Tương thích Tùy chọn (Optional Compatibility Control Plane)
+
+Rust CLI, schema SQLite, tiếp nhận tính năng (feature intake), story matrix, trace scoring, đề xuất cải tiến và contract điều phối tiếp tục được hỗ trợ cho các runner bên ngoài hoặc đội ngũ lựa chọn chúng.
+
+Cài đặt gói tương thích đầy đủ này một cách rõ ràng:
+
+```bash
+curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --with-cli --yes /path/to/project
 ```
 
 ```powershell
-& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.ps1"))) -Directory C:\path\to\project -Yes
+& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.ps1"))) -WithCli -Yes -Directory C:\path\to\project
 ```
 
-Sử dụng cờ `--dry-run` trên Bash hoặc `-DryRun` trên PowerShell để xem trước các thay đổi trước khi ghi file thật.
-
-Trình cài đặt cũng tải xuống Harness CLI được biên dịch sẵn cho nền tảng hiện tại, kiểm tra mã checksum `.sha256` của nó và cài đặt tại `scripts/bin/harness-cli` trên macOS/Linux hoặc `scripts/bin/harness-cli.exe` trên Windows. Rust CLI là công cụ Harness chính và là đường dẫn lệnh ổn định.
-
-Sau đó bootstrap database cục bộ (được gitignore). Một bản checkout mã nguồn Harness sẽ build CLI từ checkout đó và xác thực epoch trạng thái lõi (core-state epoch) đã phục hồi; nó từ chối tạo ra một bản thay thế trống cho trạng thái repository bị thiếu. Một dự án được cài đặt sẽ tái sử dụng binary phát hành đã được xác thực và khởi tạo trạng thái cục bộ trống riêng:
+Sau đó bootstrap database cục bộ:
 
 ```bash
 scripts/bootstrap-harness.sh
@@ -122,107 +160,38 @@ scripts/bootstrap-harness.sh
 .\scripts\bootstrap-harness.ps1
 ```
 
-Các bản phát hành (release asset) của Harness CLI được build và chứng minh (proven) trước khi promote tag bởi workflow GitHub Actions `Harness CLI Release`. Trình cài đặt yêu cầu mỗi phiên bản phát hành đã xuất bản phải bao gồm các file `harness-cli-<platform>` và `harness-cli-<platform>.sha256` cho macOS arm64, macOS x64, Linux x64, Linux arm64 và Windows x64. File cho Windows là `harness-cli-windows-x64.exe` kèm theo `harness-cli-windows-x64.exe.sha256`.
-
-Các pull request đã merge được ghi nhận vào `CHANGELOG.md` bởi workflow `Post-Merge Maintenance`. Khi một PR được merge có thay đổi mã nguồn Rust CLI, schema, Cargo metadata hoặc đóng gói phát hành CLI, workflow đó sẽ tăng phiên bản patch của CLI, cập nhật `scripts/harness-cli-release-tag`, và gửi commit bảo trì chính xác dưới dạng ứng viên phát hành (release candidate). Workflow tái sử dụng (reusable workflow) sẽ build và kiểm thử tất cả năm nền tảng, xác thực quá trình nâng cấp `v0.1.14` được ghim (pinned), sau đó tạo tag `harness-cli-v*` có chú thích (annotated) và xuất bản mười file binary và checksum. Các tag thất bại không bao giờ được di chuyển hoặc tái sử dụng.
-
-## Trải nghiệm Luồng công việc (Try The Flow)
-
-Cách nhanh nhất để hiểu harness là kiểm tra bản demo nhỏ sau:
-
-- `harness-docs/demo/README.md`: chỉ ra cách một ý tưởng sản phẩm đơn giản trở thành tài liệu sản phẩm, các story, kỳ vọng xác thực và quyết định kỹ thuật trước khi quá trình triển khai (implementation) bắt đầu.
-
-Một luồng công việc điển hình sẽ như thế này:
-
-```text
-ý tưởng của con người hoặc đặc tả sản phẩm (product spec)
-  -> đặc tả sản phẩm (product contract)
-  -> tiếp nhận tính năng (feature intake)
-  -> câu chuyện người dùng (story packet)
-  -> kỳ vọng xác thực (validation expectations)
-  -> công việc triển khai thực tế (implementation work)
-  -> quyết định kỹ thuật hoặc bài học được ghi lại cho các agent tương lai
-```
-
-Các prompt triển khai không đi thẳng vào code. Đầu tiên chúng đi qua quy trình tiếp nhận tính năng (feature intake), trở thành công việc có kích thước phù hợp với story khi cần thiết, sau đó mang theo cả kỳ vọng xác thực sản phẩm lẫn kỳ vọng bảo trì harness.
-
-Harness cung cấp một contract điều phối (orchestration contract) có phiên bản dành cho các runner bên ngoài. Một consumer độc lập là [Symphony](https://github.com/hoangnb24/symphony); nó không phải là một phần của repository này hoặc trình cài đặt Harness.
-
-## Hệ thống Đăng ký Công cụ (Tool Registry)
-
-Harness có thể sử dụng các công cụ bên ngoài tùy chọn (linter, code-graph server, kiểm tra deploy) mà không bị phụ thuộc vào bất kỳ công cụ nào trong số chúng. Bạn đăng ký một công cụ như một nhà cung cấp của một khả năng (capability), harness quét xem công cụ đó có thực sự hiện diện hay không, và một bước workflow sẽ sử dụng bất cứ thứ gì được trang bị — công cụ vắng mặt sẽ được bỏ qua một cách sạch sẽ, không bao giờ gây lỗi.
-
-```bash
-# đăng ký một công cụ làm nhà cung cấp cho một capability
-scripts/bin/harness-cli tool register --name deploy-check --kind cli \
-  --capability deploy-verification --command ./scripts/deploy-check.sh \
-  --responsibility Verification --description "Verify deploy health before release"
-
-# quét sự hiện diện (ghi nhận present/missing/unknown)
-scripts/bin/harness-cli tool check
-
-# một bước tìm kiếm xem công cụ nào được trang bị cho mục đích cụ thể
-scripts/bin/harness-cli query tools --capability deploy-verification --status present
-```
-
-Các loại công cụ (`cli`, `binary`, `mcp`, `skill`, `http`) giúp nó có tính độc lập với agent (agent-generic): mỗi môi trường chạy của agent sẽ sử dụng những gì nó có thể điều phối. Xem `harness-docs/TOOL_REGISTRY.md` để biết mô hình đầy đủ, các nấc hạ cấp tự động (degrade ladder) và cách kết nối một công cụ vào một bước luồng công việc.
-
-## Trạng thái Hiện tại (Current State)
-
-Repository này triển khai sản phẩm Harness v0: một Rust CLI, tầng bền vững SQLite (SQLite durable layer), các trình cài đặt (installers), tài liệu vận hành (operating documents), kiểm thử contract (contract tests) và tự động hóa phát hành (release automation). Các thành phần upstream này là hành vi sản phẩm thực thi được (executable product behavior), không phải các placeholder.
-
-Việc cài đặt Harness vào một repository khác không tạo ra hoặc chọn ứng dụng, stack công nghệ, hoặc đặc tả sản phẩm cho consumer đó. Nó thêm tầng kỹ thuật tái sử dụng (reusable engineering layer) giúp con người và agent chuyển đổi ý định của consumer thành công việc đã được xác thực (validated work).
-
-## Nguồn Sản phẩm (Product Sources)
-
-Contract Harness upstream nằm trong file README này, các tài liệu vận hành, contract điều phối có phiên bản (versioned orchestration contract), các story packet và các bài kiểm thử thực thi được (executable tests). Thư mục `harness-docs/product/` chung được dành riêng cho contract sản phẩm của dự án consumer; Harness cố tình không điền vào nó bằng một mô hình domain giả.
-
-Khi người dùng cung cấp một tài liệu spec dự án, hãy thêm hoặc tham chiếu nó như là spec đầu vào cho đợt xây dựng đầu tiên, sau đó rút trích các tài liệu sống (living artifacts) nhỏ hơn từ đó:
-
-- `harness-docs/product/`: các file đặc tả sản phẩm hiện tại, được tạo từ spec đầu vào.
-- `harness-docs/stories/`: các story packet và backlog được tạo từ các công việc được chọn.
-- `harness-docs/TEST_MATRIX.md`: bảng điều khiển liên kết giữa hành vi và bằng chứng xác thực (behavior-to-proof).
-- `harness-docs/decisions/`: các quyết định kỹ thuật lâu dài và sự đánh đổi.
-
-Không giữ spec riêng biệt của dự án hoặc bảng phân rã sản phẩm trong harness này cho đến khi có một dự án thực tế cung cấp.
+Một consumer độc lập là [Symphony](https://github.com/hoangnb24/symphony); nó không được cài đặt như một phần của repository này.
 
 ## Cấu trúc Kho lưu trữ (Repository Structure)
 
 ```text
 project/
+  .agents/
+    skills/
+      onboard-repository/
+      audit-onboarding-proposal/
   AGENTS.md
   README.md
   harness-docs/
+    WORKFLOW.md
     HARNESS.md
-    FEATURE_INTAKE.md
     ARCHITECTURE.md
-    TEST_MATRIX.md
-    HARNESS_BACKLOG.md
     product/
-    stories/
+    plans/
+      active/
+      completed/
     decisions/
-    demo/
     templates/
   scripts/
-    README.md
+  tests/
 ```
 
 ## Đóng góp (Contributing)
 
-Dự án này đang ở giai đoạn đầu và được hưởng lợi nhiều nhất từ các trường hợp lỗi thực tế của agent, các bản cài đặt harness mẫu, các cải tiến tài liệu và các mẫu luồng công việc tái sử dụng được. Xem `CONTRIBUTING.md` để biết thêm ý tưởng đóng góp.
-
-Các đóng góp hữu ích bao gồm:
-
-- Chỉ ra cách harness hoạt động trong một dự án thực tế.
-- Thêm các template còn thiếu hoặc cải thiện các template hiện có.
-- Đề xuất các mẫu xác thực (validation patterns) cho các stack công nghệ khác nhau.
-- Chia sẻ các trường hợp lỗi mà agent thực hiện sai thay đổi vì repo thiếu ngữ cảnh.
-- So sánh hành vi của harness trên Claude Code, Codex, Cursor và các công cụ khác.
+Xem [hướng dẫn đóng góp](https://github.com/hieunm599/repository-harness/blob/vi/CONTRIBUTING.md). Các đóng góp đặc biệt hữu ích bao gồm các trường hợp lỗi thực tế của agent, ví dụ về tính dễ đọc của ứng dụng (application legibility), kiểm tra kiến trúc tự động, hướng dẫn mặc định nhỏ hơn và xác thực chứng minh hành vi người dùng nhìn thấy.
 
 ## Chia sẻ (Share)
 
-Nếu ý tưởng này hữu ích với bạn, vui lòng star repo và chia sẻ nó với những ai đang xây dựng phần mềm bằng các coding agent.
-
 Mô tả ngắn:
 
-> Một repo harness sẵn sàng cho agent dành cho Claude Code, Codex, Cursor và các coding agent khác: AGENTS.md, product contracts, story packets, validation matrix, và các bản ghi quyết định kỹ thuật (decision records).
+> Một harness kỹ thuật tập trung vào repository dành cho các coding agent: hướng dẫn nhỏ gọn, ngữ cảnh dễ điều hướng, kế hoạch lâu dài khi cần, các quyết định và cơ chế xác thực thực thi được.

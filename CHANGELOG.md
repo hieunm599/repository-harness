@@ -5,7 +5,7 @@
 - feat(skills): install repository onboarding workflow (@hoangnb24)
 - Merge commit: `ed6be08a8407fc000db7fe2ef34fcfab8d39605c`
 - Harness CLI release: not required
-- Harness core candidate: `harness-v0.1.7` (publication requires platform proof)
+- Harness core candidate: `harness-v0.1.8` (publication requires platform proof)
 - Changed files: 27 total (first 20 shown)
   - `.agents/skills/audit-onboarding-proposal/SKILL.md`
   - `.agents/skills/audit-onboarding-proposal/agents/openai.yaml`

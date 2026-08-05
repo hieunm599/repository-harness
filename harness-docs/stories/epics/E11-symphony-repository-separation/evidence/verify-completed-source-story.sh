@@ -5,7 +5,7 @@ story=$1
 root=$(git -C "$(dirname "$0")" rev-parse --show-toplevel)
 case "$story" in
   US-089)
-    file="docs/stories/epics/E11-symphony-repository-separation/US-089-separation-boundary-and-frozen-baselines/evidence/source.json"
+    file="harness-docs/stories/epics/E11-symphony-repository-separation/US-089-separation-boundary-and-frozen-baselines/evidence/source.json"
     marker="6e8243f2a5cb6a32cf0a7a0ecebdb257a429bdd9" ;;
   US-090)
     file="docs/stories/epics/E11-symphony-repository-separation/US-090-provenance-preserving-symphony-bootstrap/validation.md"

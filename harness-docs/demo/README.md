@@ -2,6 +2,8 @@
 
 Tài liệu hướng dẫn này chỉ ra cách cùng một repository xử lý bốn loại yêu cầu khác nhau mà không bắt buộc tất cả phải đi qua một quy trình đơn lẻ.
 
+## Đặc tả sản phẩm mẫu
+
 Giả sử một ứng dụng theo dõi nhiệm vụ nhỏ với quy tắc sản phẩm trong `harness-docs/product/tasks.md`:
 
 ```text

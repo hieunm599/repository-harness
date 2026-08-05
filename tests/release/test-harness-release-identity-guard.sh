@@ -24,14 +24,14 @@ version = "1.2.3"
 EOF
 printf 'harness-v1.2.3\n' >"$repo/scripts/harness-release-tag"
 
-git -C "$repo" init -q -b main
+git -C "$repo" init -q -b vi
 git -C "$repo" config user.name "Harness release test"
 git -C "$repo" config user.email "harness-release@example.invalid"
 git -C "$repo" add .
 git -C "$repo" commit -q -m initial
 git init -q --bare "$remote"
 git -C "$repo" remote add origin "$remote"
-git -C "$repo" push -q -u origin main
+git -C "$repo" push -q -u origin vi
 source_sha=$(git -C "$repo" rev-parse HEAD)
 
 (cd "$repo" && scripts/verify-harness-release-identity.sh pretag harness-v1.2.3 "$source_sha" run-123) >/dev/null
@@ -58,7 +58,7 @@ expect_failure scripts/promote-harness-release-tag.sh harness-v1.2.3 "$source_sh
 
 git -C "$repo" commit --allow-empty -q -m later
 later_sha=$(git -C "$repo" rev-parse HEAD)
-git -C "$repo" push -q origin main
+git -C "$repo" push -q origin vi
 expect_failure scripts/promote-harness-release-tag.sh harness-v1.2.3 "$later_sha" run-789
 [[ "$(git -C "$repo" ls-remote origin 'refs/tags/harness-v1.2.3^{}' | awk '{print $1}')" == "$source_sha" ]]
 

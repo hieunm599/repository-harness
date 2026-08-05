@@ -4,7 +4,7 @@ set -euo pipefail
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cli=${HARNESS_CLI:-$root/target/debug/harness-cli}
 db=${HARNESS_SOURCE_DB:-$root/harness.db}
-ownership="$root/docs/stories/epics/E11-symphony-repository-separation/US-089-separation-boundary-and-frozen-baselines/evidence/durable-ownership-map.json"
+ownership="$root/harness-docs/stories/epics/E11-symphony-repository-separation/US-089-separation-boundary-and-frozen-baselines/evidence/durable-ownership-map.json"
 
 fail() {
   printf 'core state ownership failed: %s\n' "$*" >&2

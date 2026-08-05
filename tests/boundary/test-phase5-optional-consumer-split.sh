@@ -20,15 +20,15 @@ grep -Fq 'Harness profile: core' "$temp/install.out"
 # onboarding skill pair is core workflow guidance; no orchestrator, benchmark,
 # generic evaluation suite, or legacy control-plane surface may appear.
 for path in \
-  docs/contracts \
+  harness-docs/contracts \
   scripts/bin/harness-cli \
   scripts/bin/harness-cli.exe \
   scripts/schema \
   scripts/bootstrap-harness.sh \
-  docs/TRACE_SPEC.md \
-  docs/HARNESS_AUDIT.md \
-  docs/HARNESS_MATURITY.md \
-  docs/IMPROVEMENT_PROTOCOL.md \
+  harness-docs/TRACE_SPEC.md \
+  harness-docs/HARNESS_AUDIT.md \
+  harness-docs/HARNESS_MATURITY.md \
+  harness-docs/IMPROVEMENT_PROTOCOL.md \
   .harness \
   harness.db; do
   [[ ! -e "$installed/$path" ]] || {
@@ -61,9 +61,9 @@ fi
 
 # The source repository keeps protocol primitives only in the explicitly
 # selected compatibility profile. Symphony product/policy paths remain absent.
-grep -Fxq 'docs/contracts/harness-orchestration-v1.md' \
+grep -Fxq 'harness-docs/contracts/harness-orchestration-v1.md' \
   "$root/scripts/harness-cli-install-files.txt"
-grep -Fxq 'docs/TRACE_SPEC.md' "$root/scripts/harness-cli-install-files.txt"
+grep -Fxq 'harness-docs/TRACE_SPEC.md' "$root/scripts/harness-cli-install-files.txt"
 ! grep -Eiq 'symphony|benchmark|trace-score' "$root/scripts/harness-install-files.txt"
 
 if [[ -d "$root/tests/evals" ]] && \
@@ -82,9 +82,9 @@ done
 
 for symphony_path in \
   crates/harness-symphony \
-  docs/SYMPHONY_SCOPE.md \
-  docs/SYMPHONY_QUICKSTART.md \
-  docs/product/symphony-web-ui-controller.md; do
+  harness-docs/SYMPHONY_SCOPE.md \
+  harness-docs/SYMPHONY_QUICKSTART.md \
+  harness-docs/product/symphony-web-ui-controller.md; do
   [[ ! -e "$root/$symphony_path" ]] || {
     echo "Symphony-owned product path remains in Harness: $symphony_path" >&2
     exit 1

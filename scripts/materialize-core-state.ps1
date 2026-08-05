@@ -89,7 +89,7 @@ try {
         throw "Core-state materialization failed: materialized schema differs from the manifest"
     }
     $stories = (& $Cli query stories --json | ConvertFrom-Json).result.stories
-    $ownershipPath = Join-Path $root "docs/stories/epics/E11-symphony-repository-separation/US-089-separation-boundary-and-frozen-baselines/evidence/durable-ownership-map.json"
+    $ownershipPath = Join-Path $root "harness-docs/stories/epics/E11-symphony-repository-separation/US-089-separation-boundary-and-frozen-baselines/evidence/durable-ownership-map.json"
     $forbidden = (Get-Content -LiteralPath $ownershipPath -Raw | ConvertFrom-Json).records |
         Where-Object { $_.table -eq "story" -and $_.owner -eq "symphony" } | ForEach-Object { $_.identity }
     if ($stories | Where-Object { $forbidden -contains $_.id }) {

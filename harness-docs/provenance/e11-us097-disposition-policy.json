@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "baseline_ownership_map": "docs/stories/epics/E11-symphony-repository-separation/US-089-separation-boundary-and-frozen-baselines/evidence/durable-ownership-map.json",
+  "baseline_ownership_map": "harness-docs/stories/epics/E11-symphony-repository-separation/US-089-separation-boundary-and-frozen-baselines/evidence/durable-ownership-map.json",
   "post_baseline_core": [
     ["intake", "ink_2b667f32383c553aa0644bf87cabec94"],
     ["intake", "ink_01bd6192a4988c8a0f2429a663d06f4e"],

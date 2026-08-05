@@ -11,9 +11,9 @@ printf '%s\n' \
   .agents/skills/onboard-repository/SKILL.md \
   .agents/skills/audit-onboarding-proposal/scripts/validate_evidence_capsule.py \
   .agents/skills/improve-harness/SKILL.md \
-  docs/WORKFLOW.md \
-  docs/templates/application-runbook.md \
-  docs/templates/harness-improvement.md \
+  harness-docs/WORKFLOW.md \
+  harness-docs/templates/application-runbook.md \
+  harness-docs/templates/harness-improvement.md \
   scripts/agent-harness-block.md \
   scripts/install-harness.sh \
   scripts/install-harness.ps1 \
@@ -26,7 +26,7 @@ printf '%s\n' \
   .github/workflows/post-merge-maintenance.yml \
   Cargo.toml Cargo.lock | "$classifier"
 
-for unrelated in crates/harness-cli/src/main.rs docs/HARNESS.md README.md; do
+for unrelated in crates/harness-cli/src/main.rs harness-docs/HARNESS.md README.md; do
   if printf '%s\n' "$unrelated" | "$classifier"; then
     echo "unrelated path triggered Harness core publication: $unrelated" >&2
     exit 1

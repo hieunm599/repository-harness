@@ -4,8 +4,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 CLI="${HARNESS_CLI:-$ROOT_DIR/target/debug/harness-cli}"
 SOURCE_DB="${HARNESS_SOURCE_DB:-$ROOT_DIR/harness.db}"
-OWNERSHIP="$ROOT_DIR/docs/stories/epics/E11-symphony-repository-separation/US-089-separation-boundary-and-frozen-baselines/evidence/durable-ownership-map.json"
-POLICY="$ROOT_DIR/docs/provenance/e11-us097-disposition-policy.json"
+OWNERSHIP="$ROOT_DIR/harness-docs/stories/epics/E11-symphony-repository-separation/US-089-separation-boundary-and-frozen-baselines/evidence/durable-ownership-map.json"
+POLICY="$ROOT_DIR/harness-docs/provenance/e11-us097-disposition-policy.json"
 EVIDENCE_DIR="${US099_EVIDENCE_DIR:-}"
 
 [[ -x "$CLI" ]] || CLI="$ROOT_DIR/scripts/bin/harness-cli"

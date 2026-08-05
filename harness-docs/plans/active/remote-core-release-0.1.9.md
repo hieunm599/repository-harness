@@ -57,6 +57,10 @@ the exact proven commit, then dispatch and observe the release workflow.
 - [x] Align release provenance and prepare 0.1.9.
 - [x] Run focused core and installer validation; the full repository gate is
   deferred to release CI because this host lacks its required `sqlite3`.
+- [x] Diagnose the first CI run and repair stale executable ownership-map
+  references left by the `docs/` to `harness-docs/` relocation.
+- [x] Repair the related installer, classifier, documentation, workflow, and
+  release-test expectations exposed by the clean-checkout repository contract.
 - [ ] Push the proven candidate and publish the GitHub release.
 - [ ] Verify the release asset and remote installer.
 

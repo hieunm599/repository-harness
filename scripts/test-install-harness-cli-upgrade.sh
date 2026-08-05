@@ -12,11 +12,11 @@ TARGET="$TMP/target"
 PLATFORM="test-platform"
 cargo build --quiet --manifest-path "$ROOT/Cargo.toml" -p harness --locked
 HARNESS_CORE_BINARY_PATH="$ROOT/target/debug/harness"
-mkdir -p "$SOURCE/scripts/schema" "$SOURCE/docs" "$ASSETS" "$TARGET/scripts/bin"
+mkdir -p "$SOURCE/scripts/schema" "$SOURCE/harness-docs" "$ASSETS" "$TARGET/scripts/bin"
 
-printf '%s\n' 'docs/HARNESS.md' > "$SOURCE/scripts/harness-install-files.txt"
-printf '%s\n' '# fixture compatibility files' > "$SOURCE/scripts/harness-cli-install-files.txt"
-printf '%s\n' 'tagged template' > "$SOURCE/docs/HARNESS.md"
+printf '%s\n' '# fixture core files are embedded in the maintenance binary' > "$SOURCE/scripts/harness-install-files.txt"
+printf '%s\n' 'harness-docs/HARNESS.md' > "$SOURCE/scripts/harness-cli-install-files.txt"
+printf '%s\n' 'tagged template' > "$SOURCE/harness-docs/HARNESS.md"
 printf '%s\n' 'SELECT 1;' > "$SOURCE/scripts/schema/001-fixture.sql"
 cp "$ROOT/scripts/agent-harness-block.md" "$SOURCE/scripts/agent-harness-block.md"
 printf '%s\n' 'old-cli' > "$TARGET/scripts/bin/harness-cli"
@@ -38,7 +38,7 @@ HARNESS_CLI_PLATFORM="$PLATFORM" \
   "$ROOT/scripts/install-harness.sh" --directory "$TARGET" --merge \
     --upgrade-cli --ref "$REF" --yes >/dev/null
 grep -Fxq 'new-cli' "$TARGET/scripts/bin/harness-cli"
-test -f "$TARGET/docs/HARNESS.md"
+test -f "$TARGET/harness-docs/HARNESS.md"
 test -f "$TARGET/scripts/schema/001-fixture.sql"
 
 printf '%s\n' 'old-cli-again' > "$TARGET/scripts/bin/harness-cli"

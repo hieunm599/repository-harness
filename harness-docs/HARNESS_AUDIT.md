@@ -1,5 +1,7 @@
 # Kiểm toán Harness (Harness Audit)
 
+> **Tài liệu tương thích (Compatibility reference) — không thuộc luồng công việc mặc định.** Điểm số này kiểm toán các bản ghi tầng điều khiển tùy chọn, không phải chất lượng sản phẩm. Bảo trì theo đường dẫn mặc định sử dụng các kiểm tra cơ học cụ thể của repository và dọn dẹp có mục tiêu được mô tả trong `harness-docs/WORKFLOW.md`.
+
 Lệnh `scripts/bin/harness-cli audit` phát hiện sự sai lệch (drift) trong trạng thái bền vững của Harness và in ra điểm entropy. Điểm số càng thấp càng tốt.
 
 ## Các Hạng mục Kiểm tra (Checks)

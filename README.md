@@ -118,6 +118,7 @@ Sau khi cài đặt, xem trước và áp dụng các bản nâng cấp core tro
 ```bash
 scripts/bin/harness update --dry-run
 scripts/bin/harness update
+scripts/bin/harness update --continue
 scripts/bin/harness status
 scripts/bin/harness doctor
 ```
@@ -160,7 +161,7 @@ scripts/bootstrap-harness.sh
 .\scripts\bootstrap-harness.ps1
 ```
 
-Một consumer độc lập là [Symphony](https://github.com/hoangnb24/symphony); nó không được cài đặt như một phần của repository này.
+Một consumer độc lập là [Symphony](https://github.com/hoangnb24/symphony); nó không được cài đặt như một phần của repository này. Symphony owns work selection, agent runs, worktrees.
 
 ## Cấu trúc Kho lưu trữ (Repository Structure)
 

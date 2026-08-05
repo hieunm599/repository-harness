@@ -1,4 +1,6 @@
-# Đăng ký Công cụ (Tool Registry)
+# Hệ thống Đăng ký Công cụ (Tool Registry)
+
+> **Tài liệu tương thích (Compatibility reference) — không bắt buộc để sử dụng công cụ.** Các agent nên gọi trực tiếp script, skill, công cụ MCP và khả năng của ứng dụng trong repository. Trình đăng ký này vẫn khả dụng cho CLI tương thích và người dùng điều phối.
 
 Hệ thống harness làm việc với hai loại "công cụ" riêng biệt. Hãy phân biệt rõ chúng:
 

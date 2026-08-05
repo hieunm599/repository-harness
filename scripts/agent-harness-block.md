@@ -1,29 +1,15 @@
 <!-- HARNESS:BEGIN -->
 ## Harness
 
-Start with the requested outcome, then use the repository as the system of
-record. Read `harness-docs/WORKFLOW.md` and only relevant product, design, plan, code,
-and validation material.
+Bắt đầu với kết quả được yêu cầu, sau đó sử dụng repository làm hệ thống lưu trữ nguồn (system of record). Đọc `harness-docs/WORKFLOW.md` và chỉ các tài liệu sản phẩm, thiết kế, kế hoạch, mã nguồn và xác thực liên quan.
 
-- Answers, explanations, reviews, diagnoses, plans, and status reports are
-  read-only. Inspect only what is needed and do not mutate repository or Harness
-  state.
-- For a bounded change, use an ephemeral plan: inspect the affected behavior and
-  proof, implement, and validate. No control-plane operation is required.
-- Create or update one file under `harness-docs/plans/active/` when work spans sessions,
-  needs coordination, has meaningful dependencies, or requires recovery steps.
-  Move it to `harness-docs/plans/completed/` only after validation.
-- Before editing, identify repository authority for each new externally
-  observable policy. If materially different choices remain open, stop before
-  edits; configurable defaults are not authority.
-- Report reusable agent friction. Change guidance, tools, runbooks, or validation
-  for that purpose only when explicitly asked to use `$improve-harness`.
-- Also pause when product intent remains ambiguous, recovery is difficult,
-  validation is weakened, or authority is insufficient.
-- Claim completion only with relevant executable or observable evidence. Report
-  the outcome, important changes, validation, and unresolved risks.
+- Các câu trả lời, giải thích, đánh giá, chẩn đoán, kế hoạch và báo cáo trạng thái là chế độ chỉ đọc (read-only). Chỉ kiểm tra những gì cần thiết và không làm thay đổi trạng thái của repository hoặc Harness.
+- Đối với thay đổi có phạm vi giới hạn, sử dụng kế hoạch ngắn hạn (ephemeral plan): kiểm tra hành vi và bằng chứng bị ảnh hưởng, triển khai và xác thực. Không yêu cầu thao tác control-plane.
+- Tạo hoặc cập nhật một file trong `harness-docs/plans/active/` khi công việc trải dài qua nhiều phiên, cần sự phối hợp, có các phụ thuộc quan trọng hoặc yêu cầu các bước phục hồi. Chỉ di chuyển nó sang `harness-docs/plans/completed/` sau khi đã xác thực xong.
+- Trước khi chỉnh sửa, hãy xác định quyền thẩm quyền (authority) của repository cho mỗi chính sách mới có thể quan sát từ bên ngoài. Nếu các lựa chọn khác nhau về cơ bản vẫn còn mở, hãy dừng lại trước khi chỉnh sửa; các tùy chọn mặc định có thể cấu hình không phải là quyền thẩm quyền.
+- Báo cáo ma sát phát sinh từ agent có tính tái sử dụng. Chỉ thay đổi hướng dẫn, công cụ, runbook hoặc xác thực cho mục đích đó khi được yêu cầu rõ ràng bằng `$improve-harness`.
+- Đồng thời tạm dừng khi mục đích sản phẩm vẫn mơ hồ, việc phục hồi khó khăn, xác thực bị suy yếu hoặc quyền thẩm quyền không đủ.
+- Chỉ tuyên bố hoàn thành khi có bằng chứng thực thi hoặc quan sát được liên quan. Báo cáo kết quả, các thay đổi quan trọng, xác thực và các rủi ro chưa giải quyết.
 
-SQLite intake, story, trace, scoring, audit, and proposal commands are optional
-compatibility features. Use them only when explicitly requested or required by
-an external orchestrator.
+Các lệnh SQLite intake, story, trace, scoring, audit và proposal là các tính năng tương thích tùy chọn. Chỉ sử dụng chúng khi được yêu cầu rõ ràng hoặc bắt buộc bởi runner điều phối bên ngoài.
 <!-- HARNESS:END -->

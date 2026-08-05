@@ -1,4 +1,6 @@
-# Đặc tả Dấu vết thực thi (Trace Specification)
+# Đặc tả Dấu vết (Trace Specification)
+
+> **Tài liệu tương thích (Compatibility reference) — không thuộc luồng công việc mặc định.** Các trace thủ công và điểm trace tiếp tục được hỗ trợ cho trạng thái lịch sử và các người dùng đánh giá hoặc điều phối rõ ràng. Công việc thông thường sử dụng Git, tiến độ kế hoạch, kiểm tra thực thi được và bằng chứng ứng dụng có thể quan sát như được mô tả trong `harness-docs/WORKFLOW.md`.
 
 Bảng `trace` ghi lại những gì đã xảy ra trong một nhiệm vụ của Harness. Tài liệu này định nghĩa độ sâu và định dạng kỳ vọng cho từng trường dữ liệu để các trace hữu ích cho việc đánh giá, tính điểm benchmark, quy trách nhiệm lỗi và sự phát triển của harness trong tương lai.
 

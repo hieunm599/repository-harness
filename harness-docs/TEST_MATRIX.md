@@ -1,4 +1,6 @@
-# Ma trận Kiểm thử (Test Matrix)
+# Ma trận Kiểm chứng (Test Matrix)
+
+> **Tài liệu tương thích (Compatibility reference) — không thuộc luồng công việc mặc định.** Ma trận SQLite vẫn khả dụng cho người dùng lịch sử và điều phối. Các thay đổi thông thường chọn và chạy bằng chứng từ hành vi bị ảnh hưởng như được mô tả trong `harness-docs/WORKFLOW.md`; chúng không yêu cầu một hàng trong ma trận hoặc cờ chứng thực.
 
 File này bảo tồn từ vựng bằng chứng (proof vocabulary) và hình thức nhập dữ liệu brownfield được sử dụng bởi các consumer của Harness. Ma trận vận hành chính thức (authoritative operational matrix) được lưu trong SQLite và truy vấn bằng:
 

@@ -80,58 +80,58 @@ impl CoreDistributionPort for EmbeddedCoreDistribution {
         )?;
         add(
             &mut files,
-            "docs/WORKFLOW.md",
-            include_bytes!("../../../../docs/WORKFLOW.md"),
+            "harness-docs/WORKFLOW.md",
+            include_bytes!("../../../../harness-docs/WORKFLOW.md"),
         )?;
         add(
             &mut files,
-            "docs/README.md",
-            include_bytes!("../../../../docs/README.md"),
+            "harness-docs/README.md",
+            include_bytes!("../../../../harness-docs/README.md"),
         )?;
         add(
             &mut files,
-            "docs/product/README.md",
-            include_bytes!("../../../../docs/product/README.md"),
+            "harness-docs/product/README.md",
+            include_bytes!("../../../../harness-docs/product/README.md"),
         )?;
         add(
             &mut files,
-            "docs/plans/README.md",
-            include_bytes!("../../assets/docs/plans/README.md"),
+            "harness-docs/plans/README.md",
+            include_bytes!("../../assets/harness-docs/plans/README.md"),
         )?;
         add(
             &mut files,
-            "docs/plans/active/README.md",
-            include_bytes!("../../../../docs/plans/active/README.md"),
+            "harness-docs/plans/active/README.md",
+            include_bytes!("../../../../harness-docs/plans/active/README.md"),
         )?;
         add(
             &mut files,
-            "docs/plans/completed/README.md",
-            include_bytes!("../../assets/docs/plans/completed/README.md"),
+            "harness-docs/plans/completed/README.md",
+            include_bytes!("../../assets/harness-docs/plans/completed/README.md"),
         )?;
         add(
             &mut files,
-            "docs/decisions/README.md",
-            include_bytes!("../../assets/docs/decisions/README.md"),
+            "harness-docs/decisions/README.md",
+            include_bytes!("../../assets/harness-docs/decisions/README.md"),
         )?;
         add(
             &mut files,
-            "docs/templates/application-runbook.md",
-            include_bytes!("../../../../docs/templates/application-runbook.md"),
+            "harness-docs/templates/application-runbook.md",
+            include_bytes!("../../../../harness-docs/templates/application-runbook.md"),
         )?;
         add(
             &mut files,
-            "docs/templates/decision.md",
-            include_bytes!("../../../../docs/templates/decision.md"),
+            "harness-docs/templates/decision.md",
+            include_bytes!("../../../../harness-docs/templates/decision.md"),
         )?;
         add(
             &mut files,
-            "docs/templates/exec-plan.md",
-            include_bytes!("../../../../docs/templates/exec-plan.md"),
+            "harness-docs/templates/exec-plan.md",
+            include_bytes!("../../../../harness-docs/templates/exec-plan.md"),
         )?;
         add(
             &mut files,
-            "docs/templates/harness-improvement.md",
-            include_bytes!("../../../../docs/templates/harness-improvement.md"),
+            "harness-docs/templates/harness-improvement.md",
+            include_bytes!("../../../../harness-docs/templates/harness-improvement.md"),
         )?;
         Ok(CoreDistribution {
             version: env!("CARGO_PKG_VERSION").to_owned(),
@@ -167,12 +167,12 @@ mod tests {
             .find(|file| file.path.as_str() == "AGENTS.md")
             .unwrap();
         let agents = String::from_utf8(agents.content.clone()).unwrap();
-        assert!(agents.contains("No control-plane operation is required."));
+        assert!(agents.contains("Không yêu cầu thao tác control-plane."));
         assert!(!agents.contains("Current Upstream Goal"));
         let plans = distribution
             .files
             .iter()
-            .find(|file| file.path.as_str() == "docs/plans/README.md")
+            .find(|file| file.path.as_str() == "harness-docs/plans/README.md")
             .unwrap();
         assert!(!String::from_utf8_lossy(&plans.content).contains("rust-harness-core"));
         for skill in [

@@ -1,5 +1,7 @@
 # Các Story (Câu chuyện Người dùng)
 
+> **Tài liệu tương thích và tham chiếu lịch sử (Compatibility and historical reference).** Công việc có giới hạn mới sử dụng kế hoạch ngắn hạn. Công việc phức tạp mới sử dụng một file dưới `harness-docs/plans/active/`. Gói story vẫn được giữ lại cho trạng thái CLI hiện tại, người dùng điều phối và lịch sử triển khai đã lưu giữ.
+
 Các story là các gói công việc. Chúng chuyển đổi ý định sản phẩm thành công việc triển khai và xác thực có giới hạn rõ ràng.
 
 Hiện tại chưa có gói story packet nào đang hoạt động.

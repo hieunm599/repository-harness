@@ -1,5 +1,7 @@
 # Giao thức Cải tiến (Improvement Protocol)
 
+> **Tài liệu tương thích (Compatibility reference) — không thuộc luồng công việc mặc định.** Vòng đời đề xuất tiếp tục được hỗ trợ cho trạng thái tầng điều khiển lịch sử. Công việc cải tiến hiện tại ưu tiên các phát hiện cơ học cụ thể và các thay đổi dọn dẹp có giới hạn được hỗ trợ bởi bằng chứng repository.
+
 Phase 5 bắt đầu vòng lặp tự cải tiến (self-improvement loop):
 
 ```text

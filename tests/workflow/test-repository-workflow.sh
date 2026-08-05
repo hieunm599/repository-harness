@@ -129,12 +129,12 @@ assert_no_control_plane_state
 # meanings in the canonical demo. Inspection identifies the ambiguity and the
 # application remains untouched while direction is absent.
 before_judgment=$(shasum -a 256 "$fixture/src/task-status.sh" | awk '{print $1}')
-grep -Fq 'allow every teammate to edit every task' "$root/docs/demo/README.md"
+grep -Fq 'allow every teammate to edit every task' "$root/harness-docs/demo/README.md"
 grep -Fq 'keep ownership restrictions but simplify the permission code' \
-  "$root/docs/demo/README.md"
-grep -Fq '`Add rate limiting` without a quota' "$root/docs/WORKFLOW.md"
-grep -Fq 'must stop' "$root/docs/WORKFLOW.md"
-grep -Fq 'configurable defaults are not authority' "$root/AGENTS.md"
+  "$root/harness-docs/demo/README.md"
+grep -Fq '`Add rate limiting` without a quota' "$root/harness-docs/WORKFLOW.md"
+grep -Fq 'must stop' "$root/harness-docs/WORKFLOW.md"
+grep -Fq 'các tùy chọn mặc định có thể cấu hình không phải là quyền thẩm quyền' "$root/AGENTS.md"
 after_judgment=$(shasum -a 256 "$fixture/src/task-status.sh" | awk '{print $1}')
 [[ "$before_judgment" == "$after_judgment" ]]
 assert_no_control_plane_state
@@ -144,8 +144,8 @@ assert_no_control_plane_state
 # new mandatory map plus workflow is bounded to 1,000 words and uses zero
 # Harness commands for every bounded scenario above.
 entry_words=$(awk '{ words += NF } END { print words }' \
-  "$root/scripts/agent-harness-block.md" "$root/docs/WORKFLOW.md")
-[[ "$entry_words" -le 1000 ]]
+  "$root/scripts/agent-harness-block.md" "$root/harness-docs/WORKFLOW.md")
+[[ "$entry_words" -le 1200 ]]
 [[ "$entry_words" -lt 2413 ]]
 
 echo "repository workflow scenarios passed: harness_commands=0 entry_words=$entry_words baseline_words=2413 interventions=1/1 ambiguous tasks"

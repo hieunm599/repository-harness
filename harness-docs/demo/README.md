@@ -1,131 +1,96 @@
-# Tài liệu Hướng dẫn Demo Harness (Harness Demo Walkthrough)
+# Hướng dẫn Luồng công việc Tập trung vào Repository (Repository-Centered Workflow Demo)
 
-Tài liệu hướng dẫn này chỉ ra loại hình chuyển đổi mà Harness v0 được thiết kế để hỗ trợ. Đây chỉ là một ví dụ minh họa và không phải là một đặc tả sản phẩm đã được phê duyệt cho kho lưu trữ này.
+Tài liệu hướng dẫn này chỉ ra cách cùng một repository xử lý bốn loại yêu cầu khác nhau mà không bắt buộc tất cả phải đi qua một quy trình đơn lẻ.
 
-## Đầu vào (Input)
-
-Con người đưa ra một ý tưởng sản phẩm nhỏ:
+Giả sử một ứng dụng theo dõi nhiệm vụ nhỏ với quy tắc sản phẩm trong `harness-docs/product/tasks.md`:
 
 ```text
-Xây dựng một công cụ theo dõi nhiệm vụ của đội ngũ (team task tracker) đơn giản, nơi mọi người có thể tạo nhiệm vụ, giao chúng cho đồng đội, thay đổi trạng thái và xem nhiệm vụ nào quá hạn (overdue).
-```
-
-Nếu không có harness, một agent có thể nhảy trực tiếp vào việc lựa chọn framework, thiết kế lược đồ cơ sở dữ liệu, dựng khung giao diện UI và viết các bài kiểm thử cùng một lúc.
-
-Harness v0 yêu cầu agent làm chậm công việc lại một chút để làm cho nó có thể kiểm tra được (inspectable).
-
-## Tiếp nhận (Intake)
-
-Đầu vào được phân loại là một đặc tả mới (new spec) vì nó giới thiệu một ý tưởng sản phẩm mới hoàn toàn mà chưa có đặc tả sản phẩm hiện tại nào.
-
-Đầu ra đầu tiên không nên là mã nguồn ứng dụng. Nó nên là một bản ghi tiếp nhận đặc tả sử dụng mẫu `harness-docs/templates/spec-intake.md`.
-
-Ví dụ về dạng tiếp nhận (intake shape):
-
-```text
-Type (Loại hình): new spec
-Lane (Làn rủi ro): normal
-Reason (Lý do): tạo ra bề mặt sản phẩm mới nhưng chưa chạm đến xác thực (auth), thanh toán, di chuyển dữ liệu hoặc hành vi của nhà cung cấp bên ngoài.
-Candidate product docs (Tài liệu sản phẩm ứng viên):
-- harness-docs/product/overview.md
-- harness-docs/product/tasks.md
-- harness-docs/product/assignment.md
-Candidate epics (Epic ứng viên):
-- E01 Ghi nhận nhiệm vụ và theo dõi trạng thái
-- E02 Giao việc và quyền sở hữu
-- E03 Hiển thị nhiệm vụ quá hạn
-Validation shape (Dạng thức xác thực):
-- Bằng chứng Unit test cho quy tắc trạng thái nhiệm vụ
-- Bằng chứng Integration test cho việc lưu trữ nhiệm vụ
-- Bằng chứng E2E test cho luồng tạo, giao và hoàn thành nhiệm vụ
-```
-
-## Đặc tả sản phẩm (Product Contract)
-
-Sau khi tiếp nhận, agent trích xuất các tài liệu sản phẩm nhỏ thay vì coi prompt ban đầu là nguồn sự thật vĩnh viễn.
-
-Ví dụ về các phân đoạn đặc tả sản phẩm:
-
-```text
-harness-docs/product/tasks.md
-
-Một nhiệm vụ bao gồm tiêu đề, trạng thái, người được giao, ngày hết hạn và nhãn thời gian.
+Một nhiệm vụ có tiêu đề, trạng thái, người được giao và ngày đến hạn tùy chọn.
 Các trạng thái được hỗ trợ là todo, in_progress, done và canceled.
-Chỉ các nhiệm vụ mở (open tasks) mới có thể trở thành quá hạn.
+Chỉ một nhiệm vụ chưa hoàn thành có ngày đến hạn đã qua mới là quá hạn (overdue).
 ```
+
+## 1. Câu hỏi Chỉ đọc (Read-Only Question)
+
+Yêu cầu:
 
 ```text
-harness-docs/product/assignment.md
-
-Một nhiệm vụ có thể được giao cho một đồng đội.
-Các nhiệm vụ chưa được giao vẫn hiển thị trong backlog của đội ngũ.
-Thay đổi người được giao không làm thay đổi trạng thái nhiệm vụ.
+Khi nào một nhiệm vụ trở thành quá hạn?
 ```
 
-## Gói story packet (Story Packet)
+Từng bước thực hiện:
 
-Khi đặc tả sản phẩm đã đủ rõ ràng, agent tạo một gói story packet từ mẫu `harness-docs/templates/story.md`.
+1. Đọc `AGENTS.md`, file chỉ tới bản đồ repository.
+2. Mở đặc tả sản phẩm liên quan, `harness-docs/product/tasks.md`.
+3. Trả lời từ quy tắc đó và trích dẫn file.
+4. Không bootstrap database, không tạo intake, không ghi trace hoặc chỉnh sửa repository.
 
-Ví dụ về một story:
+Nguyên nhân và kết quả: câu hỏi cần bằng chứng, không cần trạng thái quy trình lâu dài. Đường dẫn chỉ đọc giúp câu trả lời nhanh hơn và ngăn một lời giải thích làm thay đổi ngầm dự án.
+
+## 2. Thay đổi Có giới hạn (Bounded Change)
+
+Yêu cầu:
 
 ```text
-Story: US-001 Tạo một nhiệm vụ
-Lane: normal
-Product contract: Một đồng đội có thể tạo một nhiệm vụ với tiêu đề, người được giao tùy chọn, ngày hết hạn tùy chọn và trạng thái mặc định là todo.
-Acceptance criteria (Tiêu chí nghiệm thu):
-- Tạo nhiệm vụ thành công khi có tiêu đề.
-- Tạo nhiệm vụ không có tiêu đề sẽ thất bại kèm theo thông báo lỗi xác thực rõ ràng.
-- Một nhiệm vụ mới bắt đầu ở trạng thái todo.
-- Nhiệm vụ được tạo sẽ xuất hiện trong backlog của đội ngũ.
-Validation (Xác thực):
-- Unit: các quy tắc tạo nhiệm vụ
-- Integration: việc lưu trữ và ranh giới xác thực
-- E2E: tạo nhiệm vụ từ bề mặt nhiệm vụ hiển thị
+Sửa danh sách nhiệm vụ sao cho các nhiệm vụ đã hủy (canceled) không bị đánh dấu là quá hạn.
 ```
 
-## Ma trận Kiểm chứng (Proof Matrix)
+Từng bước thực hiện:
 
-Story sau đó sẽ xuất hiện trong ma trận kiểm chứng lâu dài để hành vi và bằng chứng xác thực luôn được liên kết:
+1. Đọc quy tắc quá hạn và tìm đoạn tính toán danh sách nhiệm vụ.
+2. Kiểm tra các bài kiểm thử và lệnh xác thực repository gần nhất.
+3. Giữ một kế hoạch làm việc ngắn hạn trong phiên hiện tại.
+4. Thay đổi đoạn tính toán để yêu cầu một nhiệm vụ chưa hoàn thành và không phải bị hủy.
+5. Thêm hoặc cập nhật bài kiểm thử hồi quy cho một nhiệm vụ bị hủy có ngày đến hạn đã qua.
+6. Chạy bài kiểm thử tập trung, sau đó là cổng xác thực liên quan của repository.
+7. Báo cáo hành vi đã thay đổi và bằng chứng.
 
-```bash
-scripts/bin/harness-cli story add --id US-001 --title "Create a task" --lane normal --contract harness-docs/product/tasks.md
-scripts/bin/harness-cli query matrix
-```
+Nguyên nhân và kết quả: phạm vi mang tính cục bộ và có thể phục hồi từ diff. Việc tạo một kế hoạch lâu dài hoặc hàng cơ sở dữ liệu sẽ thêm công việc đồng bộ hóa mà không giữ lại thông tin nào mà Git và bài kiểm thử chưa có.
 
-Ví dụ một dòng trong ma trận:
+## 3. Thay đổi Lâu dài (Durable Change)
+
+Yêu cầu:
 
 ```text
-| US-001 Create a task | harness-docs/product/tasks.md | yes | yes | yes | no | planned | none |
+Thay thế xử lý ngày đến hạn cục bộ bằng múi giờ của đội ngũ trên toàn bộ API, worker, UI và dữ liệu lưu trữ.
 ```
 
-Dòng này không được đánh dấu là `implemented` cho đến khi có bằng chứng xác thực thực tế.
+Từng bước thực hiện:
 
-## Bản ghi Quyết định Kỹ thuật (Decision Record)
+1. Kiểm tra các bề mặt sản phẩm, kiến trúc, migration và xác thực.
+2. Sao chép `harness-docs/templates/exec-plan.md` thành một file mô tả dưới `harness-docs/plans/active/`.
+3. Ghi lại mục tiêu, phi mục tiêu, ranh giới bị ảnh hưởng, các giai đoạn, rủi ro, phục hồi và các lệnh kiểm thử.
+4. Commit kế hoạch để một phiên khác có thể tiếp tục từ trạng thái repository.
+5. Triển khai theo từng nhóm có thể review. Sau mỗi nhóm, cập nhật tiến độ và bằng chứng xác thực trong kế hoạch và commit cả công việc lẫn bộ nhớ lâu dài của nó.
+6. Ghi lại một quyết định dưới `harness-docs/decisions/` nếu mô hình múi giờ là một lựa chọn kiến trúc mà công việc trong tương lai phải kế thừa.
+7. Chạy kiểm thử end-to-end trên ranh giới ứng dụng hiển thị.
+8. Đánh dấu kế hoạch hoàn thành và di chuyển nó sang `harness-docs/plans/completed/`.
 
-Nếu đội ngũ chọn một stack công nghệ, hướng đi mô hình dữ liệu hoặc một quy tắc sản phẩm quan trọng, agent sẽ ghi lại quyết định đó dưới thư mục `harness-docs/decisions/`.
+Nguyên nhân và kết quả: thay đổi này trải dài qua các ranh giới và có thể kéo dài hơn một phiên. Một kế hoạch được quản lý phiên bản ngăn lịch sử chat trở thành bản ghi duy nhất về trình tự, sự đánh đổi, phục hồi và công việc còn lại.
 
-Ví dụ về quyết định:
+## 4. Sự Mơ hồ có Hệ quả (Consequential Ambiguity)
+
+Yêu cầu:
 
 ```text
-Quyết định: Nhiệm vụ sử dụng một tập hợp trạng thái rõ ràng thay vì các nhãn tự do.
-
-Lý do: trạng thái điều hướng hành vi quá hạn, bộ lọc và xác thực, vì vậy phiên bản đầu tiên cần một mô hình trạng thái có thể dự đoán được.
+Đơn giản hóa quyền hạn nhiệm vụ (Simplify task permissions).
 ```
 
-## Triển khai thực tế (Implementation)
+Repository tiết lộ ít nhất hai cách hiểu khả thi:
 
-Chỉ sau khi đặc tả, story và dạng xác thực đã rõ ràng thì việc triển khai thực tế mới nên bắt đầu.
+- allow every teammate to edit every task; hoặc
+- keep ownership restrictions but simplify the permission code.
 
-Đối với Harness v0, sự phân biệt đó rất quan trọng. Kho lưu trữ này cố ý không đi kèm với các thư mục ứng dụng, kịch bản package, cấu hình CI hoặc các lệnh kiểm thử. Chúng chỉ nên xuất hiện khi một câu chuyện thực tế lựa chọn một stack công nghệ thực tế và có nhu cầu sử dụng chúng.
+Từng bước thực hiện:
 
-## Thay đổi Harness (Harness Delta)
+1. Kiểm tra contract phân quyền hiện tại và các nơi gọi.
+2. Nhận diện rằng một cách hiểu làm thay đổi người có thể sửa dữ liệu người dùng.
+3. Tạm dừng trước khi sửa code.
+4. Trình bày hai lựa chọn với tác động cụ thể: mở rộng quyền truy cập so với refactor chỉ ở cấp triển khai.
+5. Chỉ tiếp tục khi hành vi sản phẩm được yêu cầu có thẩm quyền rõ ràng.
 
-Mỗi nhiệm vụ cũng đặt câu hỏi liệu bản thân harness có cần cải tiến hay không.
+Nguyên nhân và kết quả: sự không chắc chắn không được giải quyết bằng cách thêm nhiều bản ghi quy trình. Nó được giải quyết bằng cách giữ một quyết định sản phẩm có hệ quả với con người làm chủ nó.
 
-Nếu bản demo này chỉ ra rằng nhiều dự án cần cùng một ví dụ tiếp nhận (intake example), hành động theo dõi phù hợp có thể là:
+## Những gì Cố ý Vắng mặt (What Is Deliberately Absent)
 
-```text
-Thêm một tài liệu hướng dẫn spec ví dụ có thể tái sử dụng hoặc cấu hình khởi đầu.
-```
-
-Các cải tiến nhỏ có thể được thực hiện trực tiếp. Các thay đổi quy trình lớn hơn nên được ghi lại bằng lệnh `scripts/bin/harness-cli backlog add`.
+Không có luồng mặc định nào ở trên yêu cầu hàng story, ma trận kiểm chứng, điểm trace, bản ghi kiểm toán, đề xuất hoặc cơ sở dữ liệu SQLite cục bộ. Chúng tiếp tục khả dụng như một tầng điều khiển tương thích khi một runner điều phối bên ngoài cần rõ ràng; chúng không đứng giữa một yêu cầu thông thường và công việc repository.

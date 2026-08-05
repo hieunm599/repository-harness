@@ -1,5 +1,7 @@
 # Nấc thang Độ hoàn thiện Harness (Harness Maturity Ladder)
 
+> **Tài liệu tương thích (Compatibility reference) — không phải là tuyên bố về mức độ trưởng thành của sản phẩm hiện tại.** H0-H5 mô tả chương trình tầng điều khiển lịch sử. Luồng công việc mặc định giờ đây đánh giá tính dễ đọc cụ thể của repository, các ràng buộc thực thi được, xác thực có thể quan sát và sự chú ý của con người thay vì thăng tiến qua thang đo này.
+
 Nấc thang này định nghĩa cách `repository-harness` nên phát triển từ các hướng dẫn agent tĩnh sang các cải tiến harness có thể đo lường được.
 
 Các cấp độ này được thiết kế để có thể xác thực một cách có chủ ý. Một cấp độ chỉ được coi là đạt được khi các tiêu chí của nó có thể được kiểm tra trong các file kho lưu trữ, các bản ghi Harness lâu dài hoặc kết quả đầu ra benchmark.

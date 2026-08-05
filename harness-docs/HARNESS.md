@@ -193,16 +193,15 @@ Ví dụ, một yêu cầu chẩn đoán tại sao bài kiểm thử installer t
 
 ### Yêu cầu Thay đổi (Change Requests)
 
-Các yêu cầu thay đổi, xây dựng và sửa lỗi ủy quyền vòng lặp thay đổi (mutation loop) Harness thông thường:
+Các yêu cầu thay đổi, xây dựng và sửa lỗi thực hiện theo luồng Git-native mặc định (xem `harness-docs/WORKFLOW.md`):
 
-1. Bootstrap runtime cục bộ được gitignore bằng `scripts/bootstrap-harness.sh` trên macOS/Linux hoặc `.\scripts\bootstrap-harness.ps1` trên Windows.
-2. Phân loại yêu cầu bằng file `harness-docs/FEATURE_INTAKE.md` và ghi lại phân loại bằng lệnh `scripts/bin/harness-cli intake`.
-3. Kiểm tra trạng thái chứng thực tập trung bằng `scripts/bin/harness-cli query matrix --active --summary`, sau đó sử dụng `scripts/bin/harness-cli query matrix --story <id>` nếu một story được chọn.
-4. Chỉ truy xuất các file sản phẩm, story, quyết định kỹ thuật và triển khai bị ảnh hưởng theo yêu cầu của làn rủi ro được chọn trong `harness-docs/CONTEXT_RULES.md`.
-5. Triển khai và xác thực trong làn rủi ro đó: nhỏ (tiny), bình thường (normal) hoặc rủi ro cao (high-risk).
-6. Trước khi hoàn thành, tự hỏi xem đặc tả sản phẩm, kỳ vọng xác thực, quy tắc kiến trúc, mẫu lỗi lặp lại hoặc hướng dẫn cho agent tiếp theo có thay đổi hay không.
-7. Ghi lại một trace bằng lệnh `scripts/bin/harness-cli trace`, sử dụng file `harness-docs/TRACE_SPEC.md` để biết cấp độ trace và độ sâu trường dữ liệu kỳ vọng, và xem xét điểm được in ra.
-8. Nếu phát hiện ma sát Harness, sửa trực tiếp trong phạm vi hoặc ghi lại nó bằng lệnh `scripts/bin/harness-cli backlog add`.
+1. Đọc `AGENTS.md` và `harness-docs/WORKFLOW.md` để xác định ngữ cảnh và ranh giới làm việc.
+2. Kiểm tra mã nguồn, kế hoạch thực thi (nếu có) và bài kiểm thử bị ảnh hưởng.
+3. Thực hiện thay đổi trên mã nguồn hoặc tài liệu.
+4. Chạy các bài kiểm thử hoặc bằng chứng xác thực liên quan.
+5. Báo cáo kết quả và xác thực.
+
+Đối với đội ngũ sử dụng Tầng Điều khiển Tương thích Tùy chọn (Optional Compatibility Control Plane), có thể bootstrap database bằng `scripts/bootstrap-harness.sh`, phân loại qua `harness-docs/FEATURE_INTAKE.md` và truy vấn ma trận câu chuyện bằng `scripts/bin/harness-cli query matrix`.
 
 ## Xác thực Story (Story Verification)
 

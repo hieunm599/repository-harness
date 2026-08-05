@@ -52,12 +52,12 @@ grep -Fxq 'scripts/bin/harness' "$fresh/.gitignore"
 [[ ! -e "$fresh/harness.db" ]]
 [[ -f "$fresh/.harness-core/manifest.json" ]]
 cmp -s <(extract_block "$fresh/AGENTS.md") "$root/scripts/agent-harness-block.md"
-[[ -f "$fresh/docs/WORKFLOW.md" ]]
-[[ -f "$fresh/docs/plans/active/README.md" ]]
-[[ -f "$fresh/docs/plans/completed/README.md" ]]
-[[ -f "$fresh/docs/templates/exec-plan.md" ]]
-[[ -f "$fresh/docs/templates/application-runbook.md" ]]
-[[ -f "$fresh/docs/templates/harness-improvement.md" ]]
+[[ -f "$fresh/harness-docs/WORKFLOW.md" ]]
+[[ -f "$fresh/harness-docs/plans/active/README.md" ]]
+[[ -f "$fresh/harness-docs/plans/completed/README.md" ]]
+[[ -f "$fresh/harness-docs/templates/exec-plan.md" ]]
+[[ -f "$fresh/harness-docs/templates/application-runbook.md" ]]
+[[ -f "$fresh/harness-docs/templates/harness-improvement.md" ]]
 [[ -f "$fresh/.agents/skills/improve-harness/SKILL.md" ]]
 [[ -f "$fresh/.agents/skills/onboard-repository/SKILL.md" ]]
 [[ -f "$fresh/.agents/skills/onboard-repository/scripts/render_patch.py" ]]
@@ -99,7 +99,7 @@ grep -Fq 'Harness profile: core+cli' "$temp/full.out"
 [[ -x "$full/scripts/bootstrap-harness.sh" ]]
 [[ -f "$full/scripts/bootstrap-harness.ps1" ]]
 [[ -f "$full/scripts/harness-cli-release-tag" ]]
-[[ -f "$full/docs/contracts/harness-orchestration-v1.md" ]]
+[[ -f "$full/harness-docs/contracts/harness-orchestration-v1.md" ]]
 [[ "$(find "$full/scripts/schema" -type f -name '*.sql' | wc -l | tr -d ' ')" == \
     "$(find "$root/scripts/schema" -type f -name '*.sql' | wc -l | tr -d ' ')" ]]
 git -C "$full" init -q
@@ -115,48 +115,48 @@ install --directory "$claude" --claude --yes >"$temp/claude.out"
 grep -Fq 'Keep this Claude-only rule.' "$claude/CLAUDE.md"
 cmp -s <(extract_block "$claude/CLAUDE.md") "$root/scripts/claude-harness-block.md"
 [[ "$(grep -Fc '@AGENTS.md' "$claude/CLAUDE.md")" == 1 ]]
-! grep -Fq '@docs/FEATURE_INTAKE.md' "$claude/CLAUDE.md"
+! grep -Fq '@harness-docs/FEATURE_INTAKE.md' "$claude/CLAUDE.md"
 grep -Fq 'No control-plane operation is required.' "$claude/AGENTS.md"
 
 # Merge preserves existing project material byte-for-byte while filling gaps.
 merge="$temp/merge"
-mkdir -p "$merge/docs" "$merge/scripts/custom" "$merge/scripts/bin"
+mkdir -p "$merge/harness-docs" "$merge/scripts/custom" "$merge/scripts/bin"
 printf 'project agents\n' >"$merge/AGENTS.md"
-printf 'project harness doc\n' >"$merge/docs/HARNESS.md"
+printf 'project harness doc\n' >"$merge/harness-docs/HARNESS.md"
 printf 'custom script\n' >"$merge/scripts/custom/keep.txt"
 printf 'existing cli\n' >"$merge/scripts/bin/harness-cli"
 printf 'existing database\n' >"$merge/harness.db"
 before_agents=$(shasum -a 256 "$merge/AGENTS.md" | awk '{print $1}')
-before_doc=$(shasum -a 256 "$merge/docs/HARNESS.md" | awk '{print $1}')
+before_doc=$(shasum -a 256 "$merge/harness-docs/HARNESS.md" | awk '{print $1}')
 before_cli=$(shasum -a 256 "$merge/scripts/bin/harness-cli" | awk '{print $1}')
 before_db=$(shasum -a 256 "$merge/harness.db" | awk '{print $1}')
 install --directory "$merge" --merge --yes >"$temp/merge.out"
 [[ "$(shasum -a 256 "$merge/AGENTS.md" | awk '{print $1}')" == "$before_agents" ]]
-[[ "$(shasum -a 256 "$merge/docs/HARNESS.md" | awk '{print $1}')" == "$before_doc" ]]
+[[ "$(shasum -a 256 "$merge/harness-docs/HARNESS.md" | awk '{print $1}')" == "$before_doc" ]]
 grep -Fxq 'custom script' "$merge/scripts/custom/keep.txt"
 [[ "$(shasum -a 256 "$merge/scripts/bin/harness-cli" | awk '{print $1}')" == "$before_cli" ]]
 [[ "$(shasum -a 256 "$merge/harness.db" | awk '{print $1}')" == "$before_db" ]]
 grep -Fxq 'scripts/bin/harness' "$merge/.gitignore"
 ! grep -Fxq 'harness.db' "$merge/.gitignore"
-[[ -f "$merge/docs/WORKFLOW.md" ]]
+[[ -f "$merge/harness-docs/WORKFLOW.md" ]]
 [[ -f "$merge/.agents/skills/improve-harness/SKILL.md" ]]
 [[ -f "$merge/.agents/skills/onboard-repository/SKILL.md" ]]
 [[ -f "$merge/.agents/skills/audit-onboarding-proposal/SKILL.md" ]]
-[[ ! -e "$merge/docs/ARCHITECTURE.md" ]]
+[[ ! -e "$merge/harness-docs/ARCHITECTURE.md" ]]
 
 # Core override moves only the paths it owns; an existing scripts tree remains
 # untouched when CLI compatibility was not selected.
 override="$temp/override"
-mkdir -p "$override/docs" "$override/scripts"
+mkdir -p "$override/harness-docs" "$override/scripts"
 printf 'old agents\n' >"$override/AGENTS.md"
-printf 'old docs\n' >"$override/docs/private.md"
+printf 'old docs\n' >"$override/harness-docs/private.md"
 printf 'old scripts\n' >"$override/scripts/private.sh"
 install --directory "$override" --override --yes >"$temp/override.out"
 backup=$(find "$override/.harness-backup" -mindepth 1 -maxdepth 1 -type d | head -n 1)
 grep -Fxq 'old agents' "$backup/AGENTS.md"
-grep -Fxq 'old docs' "$backup/docs/private.md"
-[[ ! -e "$override/docs/private.md" ]]
-[[ -f "$override/docs/WORKFLOW.md" && ! -e "$override/docs/HARNESS.md" ]]
+grep -Fxq 'old docs' "$backup/harness-docs/private.md"
+[[ ! -e "$override/harness-docs/private.md" ]]
+[[ -f "$override/harness-docs/WORKFLOW.md" && ! -e "$override/harness-docs/HARNESS.md" ]]
 grep -Fxq 'old scripts' "$override/scripts/private.sh"
 
 # Shim refresh keeps custom instructions, replaces the legacy guide, and backs
@@ -253,9 +253,9 @@ if HARNESS_CORE_BINARY="$harness_core_binary" \
   echo "installer unexpectedly accepted a bad CLI checksum" >&2
   exit 1
 fi
-[[ -f "$failed/AGENTS.md" && -f "$failed/docs/WORKFLOW.md" ]]
+[[ -f "$failed/AGENTS.md" && -f "$failed/harness-docs/WORKFLOW.md" ]]
 [[ -x "$failed/scripts/bin/harness" ]]
-[[ ! -e "$failed/docs/FEATURE_INTAKE.md" ]]
+[[ ! -e "$failed/harness-docs/FEATURE_INTAKE.md" ]]
 [[ ! -e "$failed/scripts/bootstrap-harness.sh" ]]
 [[ ! -e "$failed/scripts/bin/harness-cli" ]]
 grep -Fxq 'scripts/bin/harness' "$failed/.gitignore"

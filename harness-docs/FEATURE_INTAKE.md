@@ -1,5 +1,7 @@
 # Tiếp nhận Tính năng (Feature Intake)
 
+> **Tài liệu tương thích (Compatibility reference) — không thuộc luồng công việc mặc định.** Công việc mới sử dụng `harness-docs/WORKFLOW.md`: các thay đổi nhỏ không cần bản ghi intake, trong khi công việc phức tạp sử dụng một kế hoạch thực thi dạng Git-native. Chỉ sử dụng tài liệu này cho trạng thái lịch sử, bảo trì CLI hoặc một runner điều phối bên ngoài yêu cầu rõ ràng các làn intake.
+
 Cổng tiếp nhận (intake gate) này áp dụng cho các yêu cầu thay đổi (change), xây dựng (build) và sửa lỗi (fix) trước khi có bất kỳ thay đổi mã nguồn hoặc trạng thái bền vững (durable state) của Harness. Một đặc tả dự án mới (project spec) cũng đi qua cổng này trước khi trở thành tài liệu sản phẩm, các story hoặc công việc triển khai thực tế.
 
 Các yêu cầu trả lời, giải thích, đánh giá, chẩn đoán, lập kế hoạch và báo cáo trạng thái được giữ ở chế độ chỉ đọc (read-only). Chúng không bootstrap hoặc khởi tạo Harness, không ghi nhận intake, không cập nhật story hoặc mục backlog, và không ghi trace. Nếu người dùng sau đó yêu cầu triển khai một thay đổi được đề xuất, yêu cầu thay đổi mới đó sẽ đi qua cổng này.

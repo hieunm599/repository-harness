@@ -28,6 +28,8 @@ the CLI uses `<repo-root>/harness.db`. `HARNESS_RUN_ID` enables semantic
 operation logging for mutations. `HARNESS_REQUEST_ID`, when set, is copied into
 the response after trimming and limiting it to 128 Unicode scalar values.
 
+Phase 4 freezes human lifecycle writes to the Harness source repository's default database unless a maintainer explicitly supplies the global `--compatibility-write` flag. This does not apply to the protocol-v1 `--json` surface described below, installed consumers, explicit `HARNESS_DB_PATH` databases, or initialization, migration, replay, snapshot, and read operations. Protocol consumers do not add the human-maintenance flag.
+
 Arguments are platform-native paths. JSON strings are UTF-8. If a path cannot
 be represented in a JSON result, the command fails before mutation with
 `PATH_NOT_UTF8`; a consumer must not reinterpret lossy path text. Spaces are

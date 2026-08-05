@@ -4,7 +4,7 @@ Date: 2026-08-05
 
 ## Status
 
-Active
+Completed
 
 ## Outcome
 
@@ -61,8 +61,8 @@ the exact proven commit, then dispatch and observe the release workflow.
   references left by the `docs/` to `harness-docs/` relocation.
 - [x] Repair the related installer, classifier, documentation, workflow, and
   release-test expectations exposed by the clean-checkout repository contract.
-- [ ] Push the proven candidate and publish the GitHub release.
-- [ ] Verify the release asset and remote installer.
+- [x] Push the proven candidate and publish the GitHub release.
+- [x] Verify the release asset and remote installer.
 
 ## Decisions
 
@@ -73,11 +73,19 @@ the exact proven commit, then dispatch and observe the release workflow.
 
 ## Validation
 
-- Focused proof: release identity tests and installer contract tests.
-- Integration or end-to-end proof: download `harness-linux-x64`, verify its
-  checksum and version, then run the remote installer against a temporary repo.
-- Repository-required checks: `scripts/validate-premerge.sh`.
+- Focused proof: core Rust tests, installer modes, release identity, exact asset
+  inventory, workflow contract, and recovery contract passed.
+- Integration or end-to-end proof: GitHub Actions run `31009517039` passed all
+  five native builds and published ten assets; the Linux x64 asset passed its
+  published checksum, reported `harness 0.1.9`, and the remote installer
+  installed it into `/tmp/tmp.JWOz3i4V3V` with status `current`.
+- Repository-required checks: the clean-checkout `scripts/validate-premerge.sh`
+  contract passed in GitHub Actions.
 
 ## Result
 
-Pending.
+Published immutable release `harness-v0.1.9` from commit
+`8bbc1b895349a3d6e2ec0339a608f487ae6c6a11`. The branch-`vi` remote installer
+now downloads and installs the checksum-verified platform binary without the
+0.1.8 HTTP 404 failure. The empty manually created 0.1.8 release remains
+unchanged as historical evidence.

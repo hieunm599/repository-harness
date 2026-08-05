@@ -21,8 +21,8 @@ expected_version=${BASH_REMATCH[1]}
 
 head_sha=$(git rev-parse HEAD)
 [[ "$head_sha" == "$source_sha" ]] || { echo "release identity rejected: HEAD differs from source" >&2; exit 1; }
-git show-ref --verify --quiet refs/remotes/origin/main || { echo "release identity rejected: origin/main is unavailable" >&2; exit 1; }
-git merge-base --is-ancestor "$source_sha" refs/remotes/origin/main || { echo "release identity rejected: source is not on origin/main" >&2; exit 1; }
+git show-ref --verify --quiet refs/remotes/origin/vi || { echo "release identity rejected: origin/vi is unavailable" >&2; exit 1; }
+git merge-base --is-ancestor "$source_sha" refs/remotes/origin/vi || { echo "release identity rejected: source is not on origin/vi" >&2; exit 1; }
 
 crate_version=$(awk -F'"' '/^version = / {print $2; exit}' crates/harness/Cargo.toml)
 lock_version=$(awk '/^name = "harness"$/ { package = 1; next } package && /^version = / { gsub(/"/, "", $3); print $3; exit }' Cargo.lock)

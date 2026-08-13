@@ -26,7 +26,7 @@ printf '%s\n' \
   .github/workflows/post-merge-maintenance.yml \
   Cargo.toml Cargo.lock | "$classifier"
 
-for unrelated in crates/harness-cli/src/main.rs harness-docs/HARNESS.md README.md; do
+for unrelated in harness-docs/HARNESS.md README.md harness-docs/research/application-legibility.md; do
   if printf '%s\n' "$unrelated" | "$classifier"; then
     echo "unrelated path triggered Harness core publication: $unrelated" >&2
     exit 1

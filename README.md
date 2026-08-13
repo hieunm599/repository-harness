@@ -1,198 +1,148 @@
 # repository-harness
 
-Biến bất kỳ repo phần mềm nào thành một không gian làm việc dễ đọc và sẵn sàng cho agent (agent-ready workspace).
+Biến một kho lưu trữ phần mềm (software repository) thành một không gian làm việc rõ ràng, sẵn sàng cho Agent.
 
-`repository-harness` cung cấp cho các coding agent một điểm vào nhỏ (small entrypoint), tri thức repository có cấu trúc, các kế hoạch thực thi lâu dài khi công việc thực sự cần đến chúng, và cơ chế xác thực tự động. Repository — chứ không phải một database workflow ẩn — là hệ thống lưu trữ nguồn mặc định (default system of record).
+`repository-harness` cài đặt một giao thức repository nhỏ gọn và một trình nâng cấp an toàn.
+Repository tiếp tục là hệ thống lưu trữ nguồn (system of record): tài liệu sản phẩm, quyết định, kế hoạch, mã nguồn, kiểm thử, CI và bằng chứng thời gian chạy (runtime evidence) sẽ định hình công việc.
 
-Ứng dụng (app) là thứ người dùng tương tác. Harness là thứ giúp ứng dụng và các quy tắc của nó trở nên dễ hiểu đối với các agent và con người.
+Đây không phải là cơ sở dữ liệu nhiệm vụ (task database), công cụ theo dõi story, trình điều phối agent (agent orchestrator), hay môi trường chạy ứng dụng.
 
-## Tại sao điều này tồn tại
+## Những gì nó giải quyết (What It Solves)
 
-Các coding agent thường thất bại vì những lý do kỹ thuật thông thường:
+Các AI coding agent thường thất bại vì những lý do kỹ thuật thông thường:
 
-- Các ràng buộc quan trọng chỉ nằm trong lịch sử chat hoặc trong đầu của ai đó;
-- Repository không nêu rõ tài liệu nào là chính thức (authoritative);
-- Các thay đổi nhỏ bị bao bọc trong quy trình phức tạp làm che khuất công việc thực sự;
-- Các thay đổi lớn làm thất lạc các quyết định và tiến độ giữa các phiên làm việc;
-- Mức độ xác thực mơ hồ, muộn màng hoặc bị tách rời khỏi hành vi mà người dùng nhìn thấy.
+- Ý định quan trọng chỉ tồn tại trong cuộc trò chuyện (chat);
+- Repository không xác định được tài liệu mang tính thẩm quyền;
+- Những thay đổi nhỏ phải gánh chịu quy trình không cần thiết;
+- Những thay đổi dài hạn làm thất lạc các quyết định và bối cảnh phục hồi;
+- Tuyên bố hoàn thành mà không có bằng chứng ở cấp độ hành vi; và
+- Agent tự tạo ra chính sách sản phẩm khi yêu cầu để ngỏ một lựa chọn quan trọng.
 
-Câu trả lời không phải là một quy trình bắt buộc dài hơn. Đó là một repository hiển thị đúng ngữ cảnh vào đúng thời điểm và thực thi các bất biến quan trọng bằng các bài kiểm thử và script.
+Harness cung cấp một điểm đầu vào gọn nhẹ, bản đồ repository dễ định hướng, các kế hoạch bền vững chỉ khi công việc thực sự cần, các ranh giới đánh giá rõ ràng và xác thực cơ học.
 
-Hướng đi này được định hình dựa trên bài viết [Harness engineering](https://openai.com/index/harness-engineering/) của OpenAI: giữ điểm vào của agent nhỏ gọn, làm cho tri thức repository dễ điều hướng, lưu trữ các kế hoạch thực thi phức tạp một cách lâu dài, làm cho hành vi ứng dụng có thể kiểm tra trực tiếp và thực thi các quy tắc kiến trúc một cách tự động.
-
-## Luồng công việc Mặc định (The Default Workflow)
-
-Bắt đầu với [`AGENTS.md`](AGENTS.md), sau đó làm theo bản đồ trong [`harness-docs/WORKFLOW.md`](harness-docs/WORKFLOW.md). Kích thước của yêu cầu sẽ quyết định mức độ của quy trình:
+## Luồng công việc Mặc định (Default Workflow)
 
 ```text
-câu hỏi chỉ đọc (read-only)
-  -> kiểm tra bề mặt tài liệu chính thức nhỏ nhất
-  -> trả lời kèm theo bằng chứng
+yêu cầu chỉ đọc (read-only)
+  -> kiểm tra bề mặt có thẩm quyền nhỏ nhất
+  -> trả lời kèm bằng chứng
 
-thay đổi có giới hạn (bounded change)
-  -> kiểm tra cục bộ
-  -> thay đổi code hoặc tài liệu
-  -> chạy kiểm thử/bằng chứng liên quan
-  -> báo cáo kết quả
+thay đổi có phạm vi giới hạn (bounded change)
+  -> kiểm tra thẩm quyền và hành vi bị ảnh hưởng
+  -> triển khai thay đổi nhất quán nhỏ nhất
+  -> chạy bằng chứng liên quan
 
-thay đổi qua nhiều phiên hoặc cần nhiều sự phối hợp
-  -> tạo harness-docs/plans/active/<plan>.md
-  -> ghi lại tiến độ, quyết định và xác thực trong Git
-  -> di chuyển kế hoạch hoàn thành sang harness-docs/plans/completed/
+thay đổi trải dài qua nhiều phiên hoặc cần phối hợp (multi-session / coordinated)
+  -> tạo file harness-docs/plans/active/<plan>.md
+  -> cập nhật liên tục các quyết định, tiến độ, phục hồi và xác thực
+  -> di chuyển kế hoạch đã xác thực sang harness-docs/plans/completed/
 
-khi sự mơ hồ có hệ quả quan trọng
-  -> tạm dừng trước khi chỉnh sửa
-  -> trình bày lựa chọn cụ thể và tác động của nó
-  -> tiếp tục sau khi quyền thẩm quyền (authority) đã rõ ràng
+mục đích sản phẩm mơ hồ (material product ambiguity)
+  -> dừng lại trước khi chỉnh sửa (mutation)
+  -> trình bày lựa chọn cụ thể và các hệ quả
 ```
 
-Một sửa lỗi chính tả không cần intake, story row hay trace. Một đợt chuyển đổi (migration) kéo dài qua nhiều phiên làm việc thì cần một kế hoạch lâu dài. Một yêu cầu "đơn giản hóa quyền truy cập" mà không nói rõ các quyền hiện tại có bị thu hồi hay không thì cần sự quyết định của con người trước khi sửa code. Đó là các quyết định độc lập, không phải các mức độ rủi ro trên một thang quy trình đơn lẻ.
+Một lỗi chính tả không cần lập kế hoạch. Một đợt chuyển đổi (migration) kéo dài qua nhiều phiên thì cần. Một yêu cầu “thêm giới hạn tần suất (rate limit)” mà thiếu định ngạch, khóa định danh, đơn vị thực thi, cấu trúc trạng thái dùng chung hay hợp đồng phản hồi thì phải dừng lại trước khi triển khai.
 
-## Tri thức Repository (Repository Knowledge)
+Bắt đầu với [`AGENTS.md`](AGENTS.md), sau đó là [`harness-docs/WORKFLOW.md`](harness-docs/WORKFLOW.md).
 
-- [`AGENTS.md`](AGENTS.md) — điểm vào nhỏ gọn, ổn định cho agent.
-- [`harness-docs/WORKFLOW.md`](harness-docs/WORKFLOW.md) — luồng thực thi và yêu cầu chuẩn mực.
-- [`harness-docs/HARNESS.md`](harness-docs/HARNESS.md) — các nguyên tắc thiết kế và mô hình hệ thống.
-- [`harness-docs/ARCHITECTURE.md`](harness-docs/ARCHITECTURE.md) — ranh giới và hướng phụ thuộc.
-- [`harness-docs/product/`](harness-docs/product/) — hành vi sản phẩm hiện tại và các ràng buộc.
-- [`harness-docs/plans/`](harness-docs/plans/) — các kế hoạch thực thi lâu dài đang hoạt động và đã hoàn thành.
-- [`harness-docs/decisions/`](harness-docs/decisions/) — các quyết định kiến trúc lâu dài.
-- [`harness-docs/templates/exec-plan.md`](harness-docs/templates/exec-plan.md) — template cho kế hoạch.
-- [`harness-docs/README.md`](harness-docs/README.md) — bản đồ tài liệu đầy đủ, bao gồm các bề mặt tương thích tùy chọn.
-- [`tests/README.md`](tests/README.md) — quyền sở hữu hành vi, điểm vào xác thực và ranh giới xóa bỏ đối với các bộ kiểm thử.
+## Những gì được Cài đặt (What Gets Installed)
 
-Đường dẫn mặc định không yêu cầu database cục bộ. Tài liệu sản phẩm, mã nguồn, bài kiểm thử, kế hoạch, quyết định và lịch sử Git tạo thành một nguồn sự thật (source of truth) có thể kiểm tra được.
+Tập hợp lõi mặc định bao gồm:
 
-## Cài đặt Harness vào một Dự án
+- File điểm vào `AGENTS.md` gọn nhẹ;
+- Luồng công việc repository và bản đồ tài liệu;
+- Cấu trúc sản phẩm, quyết định và kế hoạch thực thi;
+- Các mẫu tùy chọn cho kế hoạch bền vững, quyết định, ứng dụng runbook và cải tiến Harness dựa trên bằng chứng; và
+- Các skill onboard và kiểm tra đề xuất (proposal-audit) chỉ kích hoạt khi được yêu cầu rõ ràng.
 
-Từ thư mục của dự án mục tiêu, chạy lệnh Bash:
+Nó không cài đặt kiến trúc ứng dụng, chính sách sản phẩm, lệnh xác thực, thông tin xác thực, cơ sở dữ liệu, schema, hệ thống điều phối hay các tiến trình chạy ngầm.
+
+Danh sách chi tiết được khai báo trong [`scripts/harness-install-files.txt`](scripts/harness-install-files.txt).
+
+## Cài đặt (Install)
+
+Chạy từ kho lưu trữ mục tiêu:
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --yes
+curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" |
+  bash -s -- --yes
 ```
 
-Trên Windows PowerShell, chạy:
+Trên PowerShell:
 
 ```powershell
 & ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.ps1"))) -Yes
 ```
 
-Sử dụng `--merge` / `-Merge` để thêm các file Harness còn thiếu mà không thay thế các file dự án hiện tại. Chỉ sử dụng `--override` / `-Override` khi việc thay thế là cố ý. Sử dụng `--dry-run` / `-DryRun` để xem trước các thay đổi.
+Sử dụng `--merge` / `-Merge` để giữ nguyên các file hiện có và chỉ thêm các đường dẫn Harness còn thiếu. Sử dụng `--override` / `-Override` chỉ khi việc ghi đè là cố ý. Sử dụng `--dry-run` / `-DryRun` để xem trước.
 
-Bản cài đặt mặc định tải xuống binary Rust đã được kiểm tra mã checksum có tên `harness`, sau đó dùng nó để cài đặt phần core nhỏ tập trung vào repository. Nó không cài đặt CLI tương thích SQLite tùy chọn, không phát hiện schema, không cài đặt script bootstrap database, và không thêm các quy tắc gitignore cho database. Core bao gồm các skill `$onboard-repository` và `$audit-onboarding-proposal` (chỉ chạy khi được gọi rõ ràng).
+Quá trình bootstrap sẽ tải về binary `harness` có đánh số phiên bản cùng checksum, xác minh danh tính bản phát hành và giao việc cài đặt cho binary đó.
 
-Để ánh xạ một repository hiện có (brownfield) sau khi cài đặt, hãy yêu cầu agent chạy:
+## Bảo trì Bản cài đặt (Maintain An Installation)
+
+```bash
+scripts/bin/harness status
+scripts/bin/harness doctor
+scripts/bin/harness update --dry-run
+scripts/bin/harness update
+```
+
+Trình cập nhật lưu giữ chính xác gốc upstream dưới `.harness-core/`, thực hiện hợp nhất 3 chiều (three-way merge), sao lưu các file đã thay đổi và kích hoạt kết quả theo cách giao dịch (transactionally).
+
+Nếu chỉnh sửa cục bộ và upstream chồng chéo nhau, không có file hoặc file thực thi được quản lý nào bị thay đổi. Harness sẽ giữ lại các bản sao BASE, LOCAL, UPSTREAM và RESOLVED cùng với tập hợp đầu vào được quản lý đóng băng. Sau khi con người giải quyết lựa chọn ngữ nghĩa:
+
+```bash
+scripts/bin/harness update --continue --dry-run
+scripts/bin/harness update --continue
+```
+
+Sử dụng `scripts/bin/harness update --abort` để hủy bỏ phương án xử lý đã chuẩn bị.
+
+## Skill Tùy chọn (Optional Skills)
+
+Onboard repository là skill rõ ràng và chế độ chỉ đọc trước tiên:
 
 ```text
 $onboard-repository
 ```
 
-Lượt chạy đầu tiên là chỉ đọc (read-only) và trả về các đề xuất dựa trên bằng chứng. Cần có sự đồng ý chính xác của người dùng trước khi lượt chạy sau áp dụng các hướng dẫn đã chọn.
-
-## Gói Tri thức Kỹ thuật Tùy chọn (Optional Engineering Wisdom)
-
-Cài đặt mặc định trung lập không đi kèm triết lý kỹ thuật. Để thêm gói tư vấn `engineering-wisdom` (chỉ chạy khi gọi rõ ràng) vào một dự án mới:
-
-```bash
-curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --with-engineering-wisdom --yes /path/to/project
-```
-
-```powershell
-& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.ps1"))) -WithEngineeringWisdom -Yes -Directory C:\path\to\project
-```
-
-Đối với dự án đã có Harness, thêm `--merge` / `-Merge`:
-
-```bash
-curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --merge --with-engineering-wisdom --yes
-```
-
-Việc cài đặt không chạy hoặc kích hoạt skill. Gọi nó một cách rõ ràng khi cần:
+Cải tiến Harness cũng rõ ràng và yêu cầu bằng chứng so sánh trước và sau khi chạy:
 
 ```text
-$engineering-wisdom đánh giá thay đổi thanh toán này
+$improve-harness
 ```
 
-Sau khi cài đặt, xem trước và áp dụng các bản nâng cấp core trong tương lai với:
+Lời khuyên kỹ thuật (Engineering wisdom) là một gói tùy chọn riêng biệt:
 
 ```bash
-scripts/bin/harness update --dry-run
-scripts/bin/harness update
-scripts/bin/harness update --continue
-scripts/bin/harness status
-scripts/bin/harness doctor
+scripts/install-harness.sh --with-engineering-wisdom --yes /path/to/project
 ```
 
-Trên Windows, sử dụng `scripts\bin\harness.exe`.
+Không có skill nào tự động chạy trong quá trình cài đặt hoặc công việc thông thường.
 
-Nếu bạn sử dụng Claude Code, hãy thêm `--claude` (PowerShell: `-Claude`). Cờ này tạo hoặc cập nhật một khối được đánh dấu trong `CLAUDE.md` giúp import `AGENTS.md`.
+## Những gì chúng ta chứng minh (What We Prove)
 
-## Trải nghiệm Luồng công việc (Try The Flow)
+Harness sở hữu ba ranh giới bằng chứng phát hành (release-evidence boundaries):
 
-[`harness-docs/demo/README.md`](harness-docs/demo/README.md) cung cấp các ví dụ cụ thể qua bốn trường hợp luồng công việc:
+1. **Cài đặt mới:** phần lõi được khai báo được cài đặt mà không tự tạo sự thật ứng dụng giả mạo hay trạng thái vòng đời ẩn.
+2. **Định hướng kho lưu trữ:** agent tuân theo thẩm quyền của repository, tránh các chính sách sản phẩm suy đoán, và có thể dừng lại tại ranh giới quyết định thực sự.
+3. **Bảo trì an toàn:** các đợt cập nhật xác minh danh tính và checksum, bảo vệ các chỉnh sửa cục bộ, chuẩn bị xung đột, từ chối sự trôi dạt (drift) và phục hồi các giao dịch bị gián đoạn.
 
-- điểm vào nhỏ → ít tải lại hướng dẫn và ít bị lệch hướng;
-- bản đồ repository chính thức → agent chỉ truy xuất ngữ cảnh liên quan;
-- kế hoạch chỉ cho công việc thực sự lâu dài → các thay đổi nhỏ giữ chi phí thấp trong khi công việc dài hạn tồn tại qua các phiên;
-- bài kiểm thử nguyên bản trong repo → sự hoàn thành được chứng minh bằng hành vi chứ không phải bằng ghi chép quy trình;
-- điều kiện tạm dừng rõ ràng → các lựa chọn sản phẩm có hệ quả vẫn do con người làm chủ.
+Việc vận hành ứng dụng end-to-end của người dùng vẫn thuộc về nghiên cứu của người dùng. Harness không tuyên bố rằng chỉ riêng việc cài đặt sẽ cung cấp các runtime, fixture, thông tin đăng nhập, log hay tự động hóa giao diện.
 
-## Tầng Điều khiển Tương thích Tùy chọn (Optional Compatibility Control Plane)
+## Ngừng hỗ trợ Giao thức V1 (Protocol V1 End Of Life)
 
-Rust CLI, schema SQLite, tiếp nhận tính năng (feature intake), story matrix, trace scoring, đề xuất cải tiến và contract điều phối tiếp tục được hỗ trợ cho các runner bên ngoài hoặc đội ngũ lựa chọn chúng.
+Hệ thống SQLite `harness-cli` cũ và giao thức máy (machine protocol) v1 đã kết thúc hỗ trợ vào ngày 2026-08-10. Bản phát hành tương thích cuối cùng được xuất bản là `harness-cli-v0.1.22`. Người dùng hiện tại có thể ghim bản phát hành bất biến đó, nhưng kho lưu trữ hiện tại không còn xây dựng, cài đặt, thử nghiệm hay xuất bản nó nữa.
 
-Cài đặt gói tương thích đầy đủ này một cách rõ ràng:
+Harness không tự động xóa các binary, cơ sở dữ liệu, schema hoặc trạng thái cũ khỏi repository người dùng.
+
+Xem [`quyết định 0027`](harness-docs/decisions/0027-end-protocol-v1-and-focus-repository-protocol.md) (hoặc 0027 upstream).
+
+## Phát triển (Development)
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.sh?$(date +%s)" | bash -s -- --with-cli --yes /path/to/project
+scripts/validate-premerge.sh
 ```
 
-```powershell
-& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hieunm599/repository-harness/vi/scripts/install-harness.ps1"))) -WithCli -Yes -Directory C:\path\to\project
-```
-
-Sau đó bootstrap database cục bộ:
-
-```bash
-scripts/bootstrap-harness.sh
-```
-
-```powershell
-.\scripts\bootstrap-harness.ps1
-```
-
-Một consumer độc lập là [Symphony](https://github.com/hoangnb24/symphony); nó không được cài đặt như một phần của repository này. Symphony owns work selection, agent runs, worktrees.
-
-## Cấu trúc Kho lưu trữ (Repository Structure)
-
-```text
-project/
-  .agents/
-    skills/
-      onboard-repository/
-      audit-onboarding-proposal/
-  AGENTS.md
-  README.md
-  harness-docs/
-    WORKFLOW.md
-    HARNESS.md
-    ARCHITECTURE.md
-    product/
-    plans/
-      active/
-      completed/
-    decisions/
-    templates/
-  scripts/
-  tests/
-```
-
-## Đóng góp (Contributing)
-
-Xem [hướng dẫn đóng góp](https://github.com/hieunm599/repository-harness/blob/vi/CONTRIBUTING.md). Các đóng góp đặc biệt hữu ích bao gồm các trường hợp lỗi thực tế của agent, ví dụ về tính dễ đọc của ứng dụng (application legibility), kiểm tra kiến trúc tự động, hướng dẫn mặc định nhỏ hơn và xác thực chứng minh hành vi người dùng nhìn thấy.
-
-## Chia sẻ (Share)
-
-Mô tả ngắn:
-
-> Một harness kỹ thuật tập trung vào repository dành cho các coding agent: hướng dẫn nhỏ gọn, ngữ cảnh dễ điều hướng, kế hoạch lâu dài khi cần, các quyết định và cơ chế xác thực thực thi được.
+Hợp đồng này chạy định dạng Rust, tests, Clippy, kiểm tra installer và workflow, kiểm tra phát hành, kiểm tra tài liệu, cú pháp shell và `git diff --check`.

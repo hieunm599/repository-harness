@@ -1,81 +1,53 @@
-# Đóng góp cho repository-harness
+# Đóng góp (Contributing)
 
-Cảm ơn bạn đã giúp cải thiện harness.
+Những đóng góp tốt nhất giúp cho các kho lưu trữ trở nên dễ hiểu hơn đối với agent và con người mà không cần thêm một tầng điều khiển song song (parallel control plane).
 
-Kho lưu trữ (repository) này đang ở giai đoạn đầu. Những đóng góp có giá trị nhất là các mẫu thiết kế (pattern) thực tế giúp các coding agent hoạt động an toàn hơn, rõ ràng hơn và dễ điều hướng hơn trong các dự án thực tế.
+## Đóng góp Hữu ích (Useful Contributions)
 
-## Các hình thức đóng góp tốt (Good Contribution Types)
+- Thất bại thực tế của agent do thiếu thẩm quyền kho lưu trữ (repository authority).
+- Một quy tắc kho lưu trữ nhỏ gọn hoặc rõ ràng hơn giúp ngăn chặn lỗi đã được chứng minh.
+- Củng cố tính an toàn cho installer, updater, merge, checksum, rollback hoặc recovery.
+- Một ví dụ người dùng thực tế đo lường sự can thiệp thủ công không được ghi chép.
+- Cải tiến tài liệu hoặc xác thực được hỗ trợ bởi một nhiệm vụ cụ thể.
 
-### 1. Các ví dụ sử dụng harness trong thực tế
+## Trước khi Chỉnh sửa (Before Editing)
 
-Chỉ ra cách bạn đã cài đặt hoặc điều chỉnh harness trong một dự án thực tế:
+1. Đọc `AGENTS.md` và `harness-docs/WORKFLOW.md`.
+2. Xác định thẩm quyền kho lưu trữ cho các hành vi có thể quan sát từ bên ngoài.
+3. Chỉ sử dụng kế hoạch bền vững (durable plan) khi công việc kéo dài qua nhiều phiên, phối hợp nhiều người, có phụ thuộc quan trọng hoặc cần bộ nhớ phục hồi.
+4. Giữ thay đổi ở phạm vi một chủ sở hữu sản phẩm (product owner).
+5. Chọn bằng chứng quan sát được hành vi đã thay đổi.
 
-- Dự án đó thuộc loại nào?
-- Bạn đã sử dụng agent/công cụ nào? Claude Code, Codex, Cursor hay công cụ nào khác?
-- Harness đã giúp ích gì cho bạn?
-- Có điều gì còn thiếu hoặc gây khó hiểu không?
+## Pull Request
 
-### 2. Các trường hợp lỗi của agent (Agent failure cases)
-
-Chia sẻ các trường hợp mà một agent thực hiện thay đổi không tốt do kho lưu trữ thiếu ngữ cảnh (context):
-
-- Bạn đã yêu cầu agent làm gì?
-- Nó đã hiểu sai điều gì?
-- Artifact nào của harness có thể ngăn chặn được vấn đề đó?
-- Bài học rút ra có thể trở thành một template, rule hoặc kỳ vọng xác thực (validation expectation) hay không?
-
-### 3. Cải tiến các template
-
-Cải thiện các file trong thư mục `harness-docs/templates/` khi bạn tìm thấy một mẫu thiết kế có thể tái sử dụng cho:
-
-- đặc tả sản phẩm (product specs)
-- các story packet
-- bản ghi quyết định kỹ thuật (decision records)
-- kế hoạch xác thực (validation plans)
-- quy tắc vận hành của agent (agent operating rules)
-- đánh giá thay đổi rủi ro cao (high-risk change reviews)
-
-### 4. Các mẫu xác thực (Validation patterns)
-
-Thêm hoặc tinh chỉnh các kỳ vọng trong file `harness-docs/TEST_MATRIX.md` cho các stack công nghệ và loại công việc phổ biến. Mục tiêu không chỉ dừng lại ở việc "vượt qua các bài kiểm thử" (tests pass). Mục tiêu là bằng chứng rõ ràng chứng minh công việc phù hợp với đặc tả sản phẩm (product contract).
-
-### 5. Sự rõ ràng của tài liệu
-
-Nếu một khái niệm khó hiểu, hãy cải thiện phần giải thích đó. Những thay đổi nhỏ đối với tài liệu luôn được chào đón.
-
-## Trước khi mở một Pull Request
-
-1. Đọc kỹ file `AGENTS.md`.
-2. Phân loại công việc bằng cách sử dụng file `harness-docs/FEATURE_INTAKE.md`.
-3. Giữ cho các thay đổi tập trung và dễ đánh giá (reviewable).
-4. Cập nhật các tài liệu liên quan nếu bạn thay đổi một quy tắc harness (harness rule) hoặc một template.
-5. Giải thích bằng chứng nào chứng minh thay đổi này là hữu ích.
-
-## Danh sách kiểm tra Pull Request (Pull Request Checklist)
-
-Bao gồm nội dung này trong mô tả PR của bạn:
+Mô tả:
 
 ```markdown
-## Summary
--
+## Outcome
 
-## Type of contribution
-- [ ] Real-world harness example
-- [ ] Agent failure case
-- [ ] Template improvement
-- [ ] Validation pattern
-- [ ] Documentation clarity
-- [ ] Other
+## Important changes
 
-## Proof / validation
--
+## Validation
 
-## Follow-up questions
--
+## Compatibility, recovery, and remaining risks
 ```
 
-## Những thứ chưa nên thêm vào (What Not To Add Yet)
+Chạy:
 
-Tránh thêm các đặc tả sản phẩm (product specs) cụ thể của dự án vào harness này trừ khi chúng là một phần của bản demo hoặc ví dụ được đánh dấu rõ ràng. Repo này cần được giữ nguyên để có thể tái sử dụng trên nhiều dự án khác nhau.
+```bash
+scripts/validate-premerge.sh
+```
 
-Tránh thêm các quy tắc cụ thể cho một công cụ (tool-specific rules) chỉ hoạt động cho một coding agent duy nhất trừ khi sự đánh đổi được giải thích rõ ràng và hành vi harness tổng quát vẫn rõ ràng.
+## Ranh giới Sản phẩm (Product Boundary)
+
+Kho lưu trữ này sở hữu:
+
+- giao thức repository và hướng dẫn được cài đặt;
+- trình cài đặt/cập nhật `harness` bằng Rust;
+- bằng chứng cài đặt, cập nhật, xung đột, phục hồi và phát hành.
+
+Repository của người dùng sở hữu hành vi sản phẩm, runtime ứng dụng, fixture, thông tin xác thực, khả năng quan sát (observability), tự động hóa giao diện và xác thực end-to-end của chính họ.
+
+Không thêm cơ sở dữ liệu nhiệm vụ (task database), vòng đời story, điểm số trace, trình điều phối chung (generic orchestrator), stack ứng dụng hay chính sách sản phẩm cụ thể trừ khi có một quyết định sản phẩm mới được chấp thuận.
+
+Giao thức v1 và `harness-cli` đã kết thúc hỗ trợ. Các bản sửa lỗi lịch sử thuộc về nhánh hoặc fork lịch sử được ghim, không thuộc về sản phẩm hiện tại.

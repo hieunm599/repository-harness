@@ -11,5 +11,5 @@ Bắt đầu với kết quả được yêu cầu, sau đó sử dụng reposit
 - Đồng thời tạm dừng khi mục đích sản phẩm vẫn mơ hồ, việc phục hồi khó khăn, xác thực bị suy yếu hoặc quyền thẩm quyền không đủ.
 - Chỉ tuyên bố hoàn thành khi có bằng chứng thực thi hoặc quan sát được liên quan. Báo cáo kết quả, các thay đổi quan trọng, xác thực và các rủi ro chưa giải quyết.
 
-Các lệnh SQLite intake, story, trace, scoring, audit và proposal là các tính năng tương thích tùy chọn. Chỉ sử dụng chúng khi được yêu cầu rõ ràng hoặc bắt buộc bởi runner điều phối bên ngoài.
+Harness không có cơ sở dữ liệu nhiệm vụ hoặc vòng đời điều phối. Sử dụng các kế hoạch và bằng chứng ở cấp độ hành vi thuộc sở hữu của repository; không tạo trạng thái tầng điều khiển song song.
 <!-- HARNESS:END -->

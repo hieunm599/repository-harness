@@ -15,8 +15,8 @@ labels: example, needs-triage
 
 - [ ] `AGENTS.md`
 - [ ] `harness-docs/HARNESS.md`
-- [ ] `harness-docs/FEATURE_INTAKE.md`
-- [ ] `harness-docs/TEST_MATRIX.md`
+- [ ] `harness-docs/WORKFLOW.md`
+- [ ] `harness-docs/ARCHITECTURE.md`
 - [ ] `harness-docs/templates/`
 - [ ] Other:
 
@@ -31,5 +31,4 @@ labels: example, needs-triage
 
 
 ## What should the harness improve?
-
 

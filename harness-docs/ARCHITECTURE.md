@@ -5,7 +5,7 @@
 ## Ranh giới Sản phẩm (Product Boundary)
 
 ```text
-cơ sở dữ liệu đích (consumer repository truth)
+nguồn sự thật của repository đích (consumer repository truth)
   <- giao thức repository đã cài đặt
   <- được bảo trì an toàn bởi harness
 ```

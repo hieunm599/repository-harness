@@ -113,83 +113,384 @@ read_tty() {
   printf '%s\n' "$reply"
 }
 
+read_remote_text() {
+  local url="$1"
+  case "$url" in
+    file://*)
+      local path="${url#file://}"
+      [ -f "$path" ] || fail "Could not read local URL: $url"
+      cat "$path"
+      ;;
+    *)
+      curl -fsSL "$url" || fail "Could not download $url"
+      ;;
+  esac
+}
+
 read_source_text() {
   local relative_path="$1"
   if [ "$SOURCE_MODE" = "local" ]; then
     [ -f "$SOURCE_ROOT/$relative_path" ] || fail "Missing local source file: $SOURCE_ROOT/$relative_path"
     cat "$SOURCE_ROOT/$relative_path"
   else
-    curl -fsSL "$SOURCE_BASE_URL/$relative_path" || fail "Could not download $SOURCE_BASE_URL/$relative_path"
+    read_remote_text "$SOURCE_BASE_URL/$relative_path"
   fi
 }
 
-copy_manifest_files() {
-  local manifest_rel="$1"
-  local manifest_tmp=""
+write_source_file() {
+  local relative="$1" target="$2"
 
-  if [ "$SOURCE_MODE" = "local" ]; then
-    [ -f "$SOURCE_ROOT/$manifest_rel" ] || fail "Missing local payload manifest: $SOURCE_ROOT/$manifest_rel"
-    manifest_tmp="$SOURCE_ROOT/$manifest_rel"
-  else
-    manifest_tmp="$(mktemp)"
-    curl -fsSL "$SOURCE_BASE_URL/$manifest_rel" -o "$manifest_tmp" || fail "Could not download manifest: $SOURCE_BASE_URL/$manifest_rel"
+  if [ "$relative" = "AGENTS.md" ]; then
+    local block
+    block="$(agent_shim_block | sed -e :a -e '/^\n*$/{$d;N;ba}')"
+    {
+      printf '# Agent Instructions\n\n'
+      printf 'Add project-specific agent instructions here.\n\n'
+      printf '%s\n' "$block"
+    } > "$target"
+    return 0
   fi
 
-  local line
-  while IFS= read -r line || [ -n "$line" ]; do
-    case "$line" in
+  if [ "$SOURCE_MODE" = "local" ]; then
+    local source="$SOURCE_ROOT/$relative"
+    [ -f "$source" ] || fail "Source file missing: $source"
+    cp -p "$source" "$target"
+    return 0
+  fi
+
+  local url="$SOURCE_BASE_URL/$relative"
+  case "$url" in
+    file://*)
+      cp -p "${url#file://}" "$target"
+      ;;
+    *)
+      download_file "$url" "$target"
+      ;;
+  esac
+}
+
+read_payload_manifest() {
+  local manifest_rel="$1"
+
+  if [ "$SOURCE_MODE" = "local" ]; then
+    [ -f "$SOURCE_ROOT/$manifest_rel" ] || fail "Payload manifest missing: $SOURCE_ROOT/$manifest_rel"
+    cat "$SOURCE_ROOT/$manifest_rel"
+  else
+    read_remote_text "$SOURCE_BASE_URL/$manifest_rel"
+  fi
+}
+
+copy_file() {
+  local relative="$1"
+  local dest="$TARGET_DIR/$relative"
+
+  if [ -e "$dest" ]; then
+    if [ "$CONFLICT_ACTION" = "merge" ]; then
+      log "skip     $relative (merge keeps existing file)"
+      SKIPPED=$((SKIPPED + 1))
+    elif [ "$FORCE" -eq 1 ]; then
+      if [ "$DRY_RUN" -eq 1 ]; then
+        log "overwrite $relative (backup first)"
+      else
+        mkdir -p "$BACKUP_DIR/$(dirname "$relative")"
+        cp -p "$dest" "$BACKUP_DIR/$relative"
+        write_source_file "$relative" "$dest"
+        log "updated  $relative (backup: ${BACKUP_DIR#$TARGET_DIR/}/$relative)"
+      fi
+      UPDATED=$((UPDATED + 1))
+    else
+      log "skip     $relative (already exists)"
+      SKIPPED=$((SKIPPED + 1))
+    fi
+    return 0
+  fi
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    log "create   $relative"
+  else
+    mkdir -p "$(dirname "$dest")"
+    write_source_file "$relative" "$dest"
+    log "created  $relative"
+  fi
+  CREATED=$((CREATED + 1))
+}
+
+copy_manifest_files() {
+  local payload_manifest="$1"
+  local manifest
+  local relative
+
+  manifest="$(read_payload_manifest "$payload_manifest")"
+  while IFS= read -r relative || [ -n "$relative" ]; do
+    relative="${relative%$'\r'}"
+    case "$relative" in
       ""|\#*)
         continue
         ;;
     esac
+    copy_file "$relative"
+  done <<EOF
+$manifest
+EOF
+}
 
-    local rel_path="$line"
-    local dest_file="$TARGET_DIR/$rel_path"
-    local dest_dir
-    dest_dir="$(dirname "$dest_file")"
+agent_shim_block() {
+  read_source_text "scripts/agent-harness-block.md"
+}
 
-    if [ "$CONFLICT_ACTION" = "merge" ] && [ -e "$dest_file" ]; then
-      SKIPPED=$((SKIPPED + 1))
-      continue
+claude_shim_block() {
+  read_source_text "scripts/claude-harness-block.md"
+}
+
+is_old_harness_agent_file() {
+  local target="$1"
+
+  grep -Fxq "# Agent Operating Guide" "$target" &&
+    grep -Fxq "This repository is in Harness v0. There is no product implementation yet." "$target" &&
+    grep -Fxq "## Source Of Truth" "$target" &&
+    grep -Fxq "## Task Loop" "$target" &&
+    grep -Fxq "## Done Definition" "$target"
+}
+
+backup_agent_file() {
+  local target="$TARGET_DIR/AGENTS.md"
+
+  [ -e "$target" ] || return 0
+  mkdir -p "$BACKUP_DIR"
+  [ -e "$BACKUP_DIR/AGENTS.md" ] && return 0
+  cp -p "$target" "$BACKUP_DIR/AGENTS.md"
+}
+
+extract_obvious_agent_custom_section() {
+  local target="$1"
+  local output="$2"
+
+  awk '
+    /^## (Project-specific|Project Specific|Local|Custom).*Instructions/ {
+      capture = 1
+      print
+      next
+    }
+    /^## / && capture {
+      capture = 0
+    }
+    capture {
+      print
+    }
+  ' "$target" > "$output"
+}
+
+insert_agent_custom_section() {
+  local target="$1"
+  local custom="$2"
+  local tmp
+
+  [ -s "$custom" ] || return 0
+  tmp="$(mktemp)"
+  awk '
+    $0 == "Add project-specific agent instructions here." {
+      while ((getline line < custom_file) > 0) {
+        print line
+      }
+      inserted = 1
+      next
+    }
+    { print }
+    END {
+      if (!inserted) {
+        print ""
+        while ((getline line < custom_file) > 0) {
+          print line
+        }
+      }
+    }
+  ' custom_file="$custom" "$target" > "$tmp"
+  mv "$tmp" "$target"
+}
+
+append_or_replace_agent_harness_block() {
+  local target="$TARGET_DIR/AGENTS.md"
+  local block_tmp tmp
+
+  block_tmp="$(mktemp)"
+  agent_shim_block >"$block_tmp"
+  [ -s "$block_tmp" ] || fail "canonical AGENTS.md Harness block is empty"
+  tmp="$(mktemp)"
+  if grep -Fq "<!-- HARNESS:BEGIN -->" "$target" &&
+     grep -Fq "<!-- HARNESS:END -->" "$target"; then
+    awk '
+      /<!-- HARNESS:BEGIN -->/ {
+        while ((getline line < block_file) > 0) {
+          print line
+        }
+        in_block = 1
+        next
+      }
+      /<!-- HARNESS:END -->/ && in_block {
+        in_block = 0
+        next
+      }
+      !in_block { print }
+    ' block_file="$block_tmp" "$target" > "$tmp"
+  else
+    {
+      cat "$target"
+      printf '\n'
+      agent_shim_block
+    } > "$tmp"
+  fi
+  mv "$tmp" "$target"
+  rm -f "$block_tmp"
+}
+
+validate_harness_markers() {
+  local target="$1" label="$2"
+  local begin_count end_count begin_line end_line
+  begin_count=$(grep -Fc '<!-- HARNESS:BEGIN -->' "$target" || true)
+  end_count=$(grep -Fc '<!-- HARNESS:END -->' "$target" || true)
+  if [ "$begin_count" -eq 0 ] && [ "$end_count" -eq 0 ]; then
+    return 0
+  fi
+  if [ "$begin_count" -ne 1 ] || [ "$end_count" -ne 1 ]; then
+    fail "$label must contain exactly one complete Harness marker pair"
+  fi
+  begin_line=$(grep -Fn '<!-- HARNESS:BEGIN -->' "$target" | cut -d: -f1)
+  end_line=$(grep -Fn '<!-- HARNESS:END -->' "$target" | cut -d: -f1)
+  [ "$begin_line" -lt "$end_line" ] || fail "$label Harness markers are out of order"
+}
+
+refresh_agent_shim() {
+  [ "$REFRESH_AGENT_SHIM" -eq 1 ] || return 0
+
+  local target="$TARGET_DIR/AGENTS.md"
+  [ -e "$target" ] || return 0
+
+  if [ "$SOURCE_MODE" = "local" ] && [ "$SOURCE_ROOT/AGENTS.md" -ef "$target" ]; then
+    log "skip     AGENTS.md (source file)"
+    return 0
+  fi
+
+  validate_harness_markers "$target" "AGENTS.md"
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    if is_old_harness_agent_file "$target"; then
+      log "refresh  AGENTS.md (old Harness guide -> shim, backup first)"
+    else
+      log "refresh  AGENTS.md (append or replace marked Harness block, backup first)"
     fi
+    UPDATED=$((UPDATED + 1))
+    return 0
+  fi
 
-    if [ "$DRY_RUN" -eq 1 ]; then
-      if [ -e "$dest_file" ]; then
-        log "update   $rel_path"
-        UPDATED=$((UPDATED + 1))
-      else
-        log "create   $rel_path"
-        CREATED=$((CREATED + 1))
-      fi
-      continue
-    fi
+  backup_agent_file
+  if is_old_harness_agent_file "$target"; then
+    local custom_tmp
+    custom_tmp="$(mktemp)"
+    extract_obvious_agent_custom_section "$target" "$custom_tmp"
+    write_source_file "AGENTS.md" "$target"
+    insert_agent_custom_section "$target" "$custom_tmp"
+    rm -f "$custom_tmp"
+    log "updated  AGENTS.md (old Harness guide -> shim; backup: ${BACKUP_DIR#$TARGET_DIR/}/AGENTS.md)"
+  else
+    append_or_replace_agent_harness_block
+    log "updated  AGENTS.md (refreshed Harness block; backup: ${BACKUP_DIR#$TARGET_DIR/}/AGENTS.md)"
+  fi
+  UPDATED=$((UPDATED + 1))
+}
 
-    mkdir -p "$dest_dir"
+backup_claude_file() {
+  local target="$TARGET_DIR/CLAUDE.md"
 
-    if [ -e "$dest_file" ]; then
-      mkdir -p "$BACKUP_DIR/$(dirname "$rel_path")"
-      cp -p "$dest_file" "$BACKUP_DIR/$rel_path"
+  [ -e "$target" ] || return 0
+  mkdir -p "$BACKUP_DIR"
+  [ -e "$BACKUP_DIR/CLAUDE.md" ] && return 0
+  cp -p "$target" "$BACKUP_DIR/CLAUDE.md"
+}
+
+write_claude_shim() {
+  [ "$INSTALL_CLAUDE_SHIM" -eq 1 ] || return 0
+
+  local target="$TARGET_DIR/CLAUDE.md"
+  local block_tmp tmp
+
+  if [ "$SOURCE_MODE" = "local" ] && [ -e "$target" ] &&
+     [ "$SOURCE_ROOT/CLAUDE.md" -ef "$target" ]; then
+    log "skip     CLAUDE.md (source file)"
+    SKIPPED=$((SKIPPED + 1))
+    return 0
+  fi
+
+  if [ -e "$target" ]; then
+    validate_harness_markers "$target" "CLAUDE.md"
+  fi
+
+  block_tmp="$(mktemp)"
+  tmp="$(mktemp)"
+  claude_shim_block > "$block_tmp"
+
+  if [ -e "$target" ] &&
+     grep -Fq "<!-- HARNESS:BEGIN -->" "$target" &&
+     grep -Fq "<!-- HARNESS:END -->" "$target"; then
+    local current_tmp
+    current_tmp="$(mktemp)"
+    awk '
+      /<!-- HARNESS:BEGIN -->/ { in_block = 1 }
+      !in_block { print }
+      /<!-- HARNESS:END -->/ { in_block = 0 }
+    ' "$target" > "$current_tmp"
+    {
+      cat "$current_tmp"
+      claude_shim_block
+    } > "$tmp"
+    rm -f "$current_tmp"
+  elif [ -e "$target" ]; then
+    {
+      cat "$target"
+      printf '\n'
+      claude_shim_block
+    } > "$tmp"
+  else
+    {
+      printf '# Project Rules\n\n'
+      claude_shim_block
+    } > "$tmp"
+  fi
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    if [ -e "$target" ]; then
+      log "update   CLAUDE.md (shim refreshed)"
       UPDATED=$((UPDATED + 1))
     else
+      log "create   CLAUDE.md"
       CREATED=$((CREATED + 1))
     fi
-
-    if [ "$SOURCE_MODE" = "local" ]; then
-      cp -p "$SOURCE_ROOT/$rel_path" "$dest_file"
-    else
-      download_file "$SOURCE_BASE_URL/$rel_path" "$dest_file"
-    fi
-  done < "$manifest_tmp"
-
-  if [ "$SOURCE_MODE" != "local" ]; then
-    rm -f "$manifest_tmp"
+    rm -f "$block_tmp" "$tmp"
+    return 0
   fi
+
+  backup_claude_file
+  if [ -e "$target" ]; then
+    UPDATED=$((UPDATED + 1))
+    log "updated  CLAUDE.md (shim refreshed)"
+  else
+    CREATED=$((CREATED + 1))
+    log "created  CLAUDE.md"
+  fi
+  mkdir -p "$(dirname "$target")"
+  mv "$tmp" "$target"
+  rm -f "$block_tmp"
 }
 
 download_file() {
-  local url="$1"
-  local target="$2"
-  curl -fsSL "$url" -o "$target" || fail "Could not download $url"
+  local url="$1" target="$2"
+  case "$url" in
+    file://*)
+      cp -p "${url#file://}" "$target"
+      ;;
+    *)
+      curl -fsSL "$url" -o "$target" || fail "Could not download $url"
+      ;;
+  esac
 }
 
 read_harness_release_tag() {
@@ -217,9 +518,24 @@ read_harness_release_tag() {
   printf '%s\n' "$tag"
 }
 
-detect_core_platform() {
+sha256_file() {
+  local target="$1"
+  if command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$target" | awk '{ print $1; exit }'
+  elif command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$target" | awk '{ print $1; exit }'
+  else
+    fail "shasum or sha256sum is required for checksum verification"
+  fi
+}
+
+detect_cli_platform() {
   if [ -n "${HARNESS_CORE_PLATFORM:-}" ]; then
     printf '%s\n' "$HARNESS_CORE_PLATFORM"
+    return
+  fi
+  if [ -n "${HARNESS_CORE_CLI_PLATFORM:-}" ]; then
+    printf '%s\n' "$HARNESS_CORE_CLI_PLATFORM"
     return
   fi
 
@@ -249,26 +565,24 @@ detect_core_platform() {
   esac
 }
 
-install_harness_core() {
-  CORE_PLATFORM="$(detect_core_platform)"
-  CORE_BINARY_NAME="harness-$CORE_PLATFORM"
+stage_harness_core_cli() {
   CORE_STAGE_ROOT="$(mktemp -d)"
-  CORE_STAGED_BINARY="$CORE_STAGE_ROOT/$CORE_BINARY_NAME"
-
+  CORE_STAGED_BINARY="$CORE_STAGE_ROOT/harness"
+  CORE_PLATFORM="$(detect_cli_platform)"
+  CORE_BINARY_NAME="harness-$CORE_PLATFORM"
   if [ -n "${HARNESS_CORE_BINARY:-}" ]; then
     [ -x "$HARNESS_CORE_BINARY" ] || fail "HARNESS_CORE_BINARY is not executable: $HARNESS_CORE_BINARY"
     cp "$HARNESS_CORE_BINARY" "$CORE_STAGED_BINARY"
-    chmod 755 "$CORE_STAGED_BINARY"
+  elif [ "$SOURCE_MODE" = "local" ]; then
+    command -v cargo >/dev/null 2>&1 || fail "cargo is required for a local Harness source install"
+    cargo build --quiet --manifest-path "$SOURCE_ROOT/Cargo.toml" -p harness --locked
+    cp "$SOURCE_ROOT/target/debug/harness" "$CORE_STAGED_BINARY"
   else
-    local release_tag
-    release_tag="$(read_harness_release_tag)"
-    if [ "$release_tag" = "latest" ]; then
-      local tag_tmp
-      tag_tmp="$(mktemp)"
-      if curl -fsSL "$CORE_SOURCE_BASE_URL/scripts/harness-release-tag" -o "$tag_tmp" 2>/dev/null; then
-        release_tag="$(awk 'NF && $1 !~ /^#/ { print $1; exit }' "$tag_tmp")"
-      fi
-      rm -f "$tag_tmp"
+    local release_tag base_url binary_url checksum_url checksum_tmp expected actual
+    if [ -n "${CORE_PENDING_VERSION:-}" ]; then
+      release_tag="harness-v$CORE_PENDING_VERSION"
+    else
+      release_tag="$(read_harness_release_tag)"
     fi
     [[ "$release_tag" =~ ^harness-v[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9]+)*$ ]] ||
       fail "invalid Harness core release tag: $release_tag"
@@ -276,202 +590,45 @@ install_harness_core() {
     binary_url="${base_url%/}/$CORE_BINARY_NAME"
     checksum_url="$binary_url.sha256"
     checksum_tmp="$CORE_STAGE_ROOT/$CORE_BINARY_NAME.sha256"
-
-    download_file "$checksum_url" "$checksum_tmp"
     download_file "$binary_url" "$CORE_STAGED_BINARY"
+    download_file "$checksum_url" "$checksum_tmp"
+    expected="$(awk '{ print $1; exit }' "$checksum_tmp")"
+    actual="$(sha256_file "$CORE_STAGED_BINARY")"
+    [ -n "$expected" ] && [ "$expected" = "$actual" ] ||
+      fail "Checksum mismatch for $CORE_BINARY_NAME: expected $expected, got $actual"
     chmod 755 "$CORE_STAGED_BINARY"
-
-    local expected_hash actual_hash
-    expected_hash="$(awk '{print $1}' "$checksum_tmp")"
-    if command -v shasum >/dev/null 2>&1; then
-      actual_hash="$(shasum -a 256 "$CORE_STAGED_BINARY" | awk '{print $1}')"
-    elif command -v sha256sum >/dev/null 2>&1; then
-      actual_hash="$(sha256sum "$CORE_STAGED_BINARY" | awk '{print $1}')"
-    else
-      fail "shasum or sha256sum is required to verify the Harness maintenance binary"
-    fi
-
-    [ "$expected_hash" = "$actual_hash" ] ||
-      fail "checksum verification failed for $CORE_BINARY_NAME (expected $expected_hash, got $actual_hash)"
+    local reported_version
+    reported_version="$("$CORE_STAGED_BINARY" --version | awk '{ print $NF; exit }')"
+    [ "$reported_version" = "${release_tag#harness-v}" ] ||
+      fail "Harness core release identity mismatch for $CORE_BINARY_NAME: tag $release_tag reported version $reported_version"
   fi
-
-  dispatch_core_lifecycle "install"
+  chmod 755 "$CORE_STAGED_BINARY"
 }
 
-merge_core_gitignore() {
-  local gitignore="$1"
-  local entries=("scripts/bin/harness" "scripts/bin/harness.exe")
-  local entry
-
-  if [ "$DRY_RUN" -eq 1 ]; then
-    return 0
+install_harness_core() {
+  local command="install"
+  [ -f "$TARGET_DIR/.harness-core/manifest.json" ] && command="update"
+  CORE_PENDING_VERSION=""
+  if [ "$command" = "update" ] && [ -f "$TARGET_DIR/.harness-core/update/session.json" ]; then
+    CORE_PENDING_VERSION="$(sed -n 's/.*"to_version":[[:space:]]*"\([^"]*\)".*/\1/p' "$TARGET_DIR/.harness-core/update/session.json" | head -n 1)"
+    [ -n "$CORE_PENDING_VERSION" ] || fail "could not read pending Harness update version"
   fi
 
-  if [ ! -f "$gitignore" ]; then
-    mkdir -p "$(dirname "$gitignore")"
-    {
-      printf '# Downloaded Harness binaries for installed project instances.\n'
-      for entry in "${entries[@]}"; do
-        printf '%s\n' "$entry"
-      done
-    } > "$gitignore"
-    return 0
-  fi
+  stage_harness_core_cli
 
-  for entry in "${entries[@]}"; do
-    if ! grep -Fxq "$entry" "$gitignore"; then
-      printf '%s\n' "$entry" >> "$gitignore"
-    fi
-  done
-}
-
-refresh_agent_shim() {
-  local dest="$TARGET_DIR/AGENTS.md"
-  local block_file
-  block_file="$(mktemp)"
-  read_source_text "scripts/agent-harness-block.md" > "$block_file"
-  local new_block
-  new_block="$(cat "$block_file")"
-  rm -f "$block_file"
-
-  if [ ! -f "$dest" ]; then
-    if [ "$DRY_RUN" -eq 1 ]; then
-      log "create   AGENTS.md"
-      CREATED=$((CREATED + 1))
-      return 0
-    fi
-    mkdir -p "$(dirname "$dest")"
-    {
-      printf '# Agent Instructions\n\n'
-      printf 'Add project-specific agent instructions here.\n\n'
-      printf '%s\n' "$new_block"
-    } > "$dest"
-    CREATED=$((CREATED + 1))
-    log "created  AGENTS.md"
-    return 0
-  fi
-
-  local current_content
-  current_content="$(cat "$dest")"
-
-  if ! printf '%s\n' "$current_content" | grep -Fq '<!-- HARNESS:BEGIN -->'; then
-    if [ "$REFRESH_AGENT_SHIM" -eq 0 ] && [ "$CONFLICT_ACTION" = "merge" ]; then
-      SKIPPED=$((SKIPPED + 1))
-      return 0
-    fi
-  fi
-
-  local refreshed_content
-  if printf '%s\n' "$current_content" | grep -Fq '<!-- HARNESS:BEGIN -->'; then
-    refreshed_content="$(printf '%s\n' "$current_content" | awk -v block="$new_block" '
-      /<!-- HARNESS:BEGIN -->/ { print block; in_block=1; next }
-      /<!-- HARNESS:END -->/ { in_block=0; next }
-      !in_block { print }
-    ')"
-  else
-    refreshed_content="$(printf '%s\n\n%s\n' "$current_content" "$new_block")"
-  fi
-
-  if [ "$current_content" = "$refreshed_content" ]; then
-    SKIPPED=$((SKIPPED + 1))
-    return 0
-  fi
-
-  if [ "$DRY_RUN" -eq 1 ]; then
-    log "update   AGENTS.md (shim refreshed)"
-    UPDATED=$((UPDATED + 1))
-    return 0
-  fi
-
-  mkdir -p "$BACKUP_DIR"
-  cp -p "$dest" "$BACKUP_DIR/AGENTS.md"
-  printf '%s\n' "$refreshed_content" > "$dest"
-  UPDATED=$((UPDATED + 1))
-  log "updated  AGENTS.md (shim refreshed)"
-}
-
-write_claude_shim() {
-  [ "$INSTALL_CLAUDE_SHIM" -eq 1 ] || return 0
-
-  local dest="$TARGET_DIR/CLAUDE.md"
-  local block_file
-  block_file="$(mktemp)"
-  read_source_text "scripts/claude-harness-block.md" > "$block_file"
-  local new_block
-  new_block="$(cat "$block_file")"
-  rm -f "$block_file"
-
-  if [ ! -f "$dest" ]; then
-    if [ "$DRY_RUN" -eq 1 ]; then
-      log "create   CLAUDE.md"
-      CREATED=$((CREATED + 1))
-      return 0
-    fi
-    mkdir -p "$(dirname "$dest")"
-    {
-      printf '# Project Rules\n\n'
-      printf '%s\n' "$new_block"
-    } > "$dest"
-    CREATED=$((CREATED + 1))
-    log "created  CLAUDE.md"
-    return 0
-  fi
-
-  local current_content
-  current_content="$(cat "$dest")"
-  local refreshed_content
-
-  if printf '%s\n' "$current_content" | grep -Fq '<!-- HARNESS:BEGIN -->'; then
-    refreshed_content="$(printf '%s\n' "$current_content" | awk -v block="$new_block" '
-      /<!-- HARNESS:BEGIN -->/ { print block; in_block=1; next }
-      /<!-- HARNESS:END -->/ { in_block=0; next }
-      !in_block { print }
-    ')"
-  else
-    refreshed_content="$(printf '%s\n\n%s\n' "$current_content" "$new_block")"
-  fi
-
-  if [ "$current_content" = "$refreshed_content" ]; then
-    SKIPPED=$((SKIPPED + 1))
-    return 0
-  fi
-
-  if [ "$DRY_RUN" -eq 1 ]; then
-    log "update   CLAUDE.md (shim refreshed)"
-    UPDATED=$((UPDATED + 1))
-    return 0
-  fi
-
-  mkdir -p "$BACKUP_DIR"
-  cp -p "$dest" "$BACKUP_DIR/CLAUDE.md"
-  printf '%s\n' "$refreshed_content" > "$dest"
-  UPDATED=$((UPDATED + 1))
-  log "updated  CLAUDE.md (shim refreshed)"
-}
-
-dispatch_core_lifecycle() {
-  local command="$1"
-  local binary_target="$TARGET_DIR/scripts/bin/harness"
-  local binary_temp=""
+  local args=("$command" --directory "$TARGET_DIR")
+  [ "$command" = "update" ] && args+=(--candidate)
+  [ -n "$CORE_PENDING_VERSION" ] && args+=(--continue)
+  [ "$DRY_RUN" -eq 1 ] && args+=(--dry-run)
   local runner="$CORE_STAGED_BINARY"
-  local args=("$command" "--directory" "$TARGET_DIR")
-
-  if [ "$DRY_RUN" -eq 1 ]; then
-    args+=("--dry-run")
-  fi
-  if [ "$FORCE" -eq 1 ]; then
-    args+=("--force")
-  fi
-  if [ "$CONFLICT_ACTION" = "merge" ]; then
-    args+=("--merge")
-  fi
-  if [ "$CONFLICT_ACTION" = "override" ]; then
-    args+=("--override")
-  fi
-
+  local binary_target="" binary_temp=""
   if [ "$DRY_RUN" -eq 0 ]; then
-    mkdir -p "$TARGET_DIR/scripts/bin"
-    binary_temp="$(mktemp "$TARGET_DIR/scripts/bin/harness.tmp.XXXXXX")"
+    binary_target="$TARGET_DIR/scripts/bin/harness"
+    binary_temp="$TARGET_DIR/scripts/bin/.harness.$$.tmp"
+    [ ! -L "$TARGET_DIR/scripts" ] || fail "refusing symlink for repository scripts directory"
+    [ ! -L "$TARGET_DIR/scripts/bin" ] || fail "refusing symlink for repository scripts/bin directory"
+    [ ! -L "$binary_target" ] || fail "refusing symlink for repository Harness executable"
+    mkdir -p "$(dirname "$binary_target")"
     cp "$CORE_STAGED_BINARY" "$binary_temp"
     chmod 755 "$binary_temp"
     if [ -e "$binary_target" ]; then
@@ -506,6 +663,33 @@ dispatch_core_lifecycle() {
     fail "Harness core update needs resolution; edit .harness-core/update/resolved/, then rerun this installer or harness update --continue"
   fi
   [ "$command_status" -eq 0 ] || fail "harness $command failed with exit code $command_status"
+}
+
+merge_core_gitignore() {
+  local gitignore="$1"
+  local entries=("scripts/bin/harness" "scripts/bin/harness.exe")
+  local entry
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    return 0
+  fi
+
+  if [ ! -f "$gitignore" ]; then
+    mkdir -p "$(dirname "$gitignore")"
+    {
+      printf '# Downloaded Harness binaries for installed project instances.\n'
+      for entry in "${entries[@]}"; do
+        printf '%s\n' "$entry"
+      done
+    } > "$gitignore"
+    return 0
+  fi
+
+  for entry in "${entries[@]}"; do
+    if ! grep -Fxq "$entry" "$gitignore"; then
+      printf '%s\n' "$entry" >> "$gitignore"
+    fi
+  done
 }
 
 check_protected_target_paths() {

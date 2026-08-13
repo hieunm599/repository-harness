@@ -1,124 +1,58 @@
 # Kiến trúc (Architecture)
 
-Sản phẩm Harness upstream được triển khai dưới dạng một Rust workspace với CLI và tầng bền vững SQLite (SQLite durable layer). Mã nguồn chính nằm tại `crates/harness-cli/`, được tổ chức thành các module domain, application, infrastructure và interface. Các migration schema nằm trong `scripts/schema/`, trong khi các trình cài đặt (installers) và script xác thực (validation scripts) tạo thành ranh giới phân phối (distribution boundary).
+`repository-harness` chứa một file thực thi (binary) Rust duy nhất, `harness`, cùng các script khởi tạo mỏng bằng Bash và PowerShell.
 
-Template tái sử dụng không lựa chọn ngăn xếp ứng dụng (application stack) cho dự án consumer. Hướng dẫn khám phá bên dưới dành cho ứng dụng consumer đó sau khi đã có đặc tả do người dùng cung cấp và quyết định về stack công nghệ; nó không mô tả Harness CLI upstream là chưa được triển khai.
-
-## Khám phá trước khi Định hình (Discovery Before Shape)
-
-Trước khi đề xuất hình thái triển khai (implementation shape), hãy xác định:
-
-- Các bề mặt sản phẩm (Product surfaces): trình duyệt (browser), ứng dụng di động (mobile), máy tính (desktop), CLI, API, worker hoặc dịch vụ (service).
-- Ngăn xếp runtime (Runtime stack): ngôn ngữ, framework, cơ sở dữ liệu, hàng đợi (queues), nhà cung cấp (providers) và hosting.
-- Các miền lõi (Core domains): các khái niệm sản phẩm xứng đáng có tên gọi và giao ước ổn định.
-- Các đầu vào ranh giới (Boundary inputs): đầu vào của người dùng, các yêu cầu API (API requests), webhooks, tác vụ (jobs), file, thông tin xác thực (credentials), dữ liệu phản hồi từ nhà cung cấp (provider payloads) và cấu hình môi trường.
-- Nấc thang xác thực (Validation ladder): các bước kiểm tra nhỏ nhất có thể chứng minh stack công nghệ được chọn hoạt động chính xác.
-
-Ghi lại các lựa chọn stack công nghệ trong thư mục `harness-docs/decisions/` khi chúng giới hạn một cách có ý nghĩa các công việc trong tương lai.
-
-## Phân lớp Mặc định (Default Layering)
+## Ranh giới Sản phẩm (Product Boundary)
 
 ```text
-domain (miền lõi)
-  <- application (ứng dụng)
-      <- infrastructure (hạ tầng)
-          <- interface (giao diện)
-              <- app surfaces (bề mặt ứng dụng)
+cơ sở dữ liệu đích (consumer repository truth)
+  <- giao thức repository đã cài đặt
+  <- được bảo trì an toàn bởi harness
 ```
 
-## Cấu trúc Ứng viên Consumer (Consumer Candidate Structure)
+Harness cài đặt khả năng điều hướng, cấu trúc bộ nhớ làm việc và ranh giới quyết định. Harness không sở hữu sản phẩm, môi trường thực thi, luồng điều phối, chứng thư, log, fixture hoặc các lệnh xác thực của repository đích.
+
+## Hướng Phụ thuộc trong Rust (Rust Dependency Direction)
 
 ```text
-app/
-  domain/
-    entities/
-    value-objects/
-    repositories/
-    services/
+domain <- application <- infrastructure
+                    <- interface
 
-  application/
-    commands/
-    queries/
-    handlers/
-
-  infrastructure/
-    database/
-    logging/
-    notifications/
-
-  interface/
-    controllers/
-    dto/
-    presenters/
-    routes/
-    middlewares/
-
-surfaces/
-  browser/
-  mobile/
-  desktop/
-  cli/
+main.rs kết nối interface và infrastructure
 ```
 
-Đây là một khuôn mẫu tư duy (thinking template), không phải là cấu trúc thư mục được tạo sẵn. Chỉ tạo các thư mục thực tế khi một story bắt đầu triển khai và stack công nghệ được chọn yêu cầu chúng.
+- Các kiểu dữ liệu **Domain** đại diện cho đường dẫn, mã băm, nguồn gốc (provenance), kết quả hợp nhất và các báo cáo mà không phụ thuộc vào hệ thống file, tiến trình, tuần tự hóa hoặc CLI.
+- Các trường hợp sử dụng **Application** phụ thuộc vào cổng (ports) và sở hữu chính sách cài đặt, cập nhật, trạng thái (status), chẩn đoán (doctor), tự cập nhật (self-update), phiên bản, xung đột và phục hồi.
+- **Infrastructure** triển khai nội dung phát hành nhúng, tính toán mã băm, khóa tiến trình, giao dịch file system, hợp nhất 3 chiều với Git, tải file ứng viên, kiểm tra mã băm và thay thế file thực thi.
+- **Interface** phân tích cú pháp các lệnh và hiển thị báo cáo.
+- `main.rs` là gốc cấu hình và kết nối (composition root).
 
-## Quy tắc Phụ thuộc (Dependency Rule)
+Các bài kiểm tra kiến trúc sẽ từ chối các phụ thuộc hướng ra ngoài từ các lớp bên trong.
 
-Các lớp bên trong không được phụ thuộc vào các lớp bên ngoài.
-
-| Phân lớp (Layer) | Có thể phụ thuộc vào | Không được phép phụ thuộc vào |
-| --- | --- | --- |
-| domain | không có gì ngoài các thư viện tiện ích thuần túy (pure utilities) siêu nhỏ | framework, cơ sở dữ liệu, UI, provider, tiến trình/biến môi trường |
-| application | domain | framework, UI, provider, các client cơ sở dữ liệu cụ thể |
-| infrastructure | domain, application | các controller của interface hoặc UI |
-| interface | tất cả các lớp backend bên dưới | trạng thái UI hoặc các giả định về shell nền tảng |
-| app surfaces | các contract API và client hướng ứng dụng | trực tiếp vào phần nội bộ của domain (domain internals) |
-
-## Quy tắc Ranh giới Ưu tiên Phân tích (Parse-First Boundary Rule)
-
-Dữ liệu chưa xác định phải được phân tích (parse) tại các ranh giới trước khi đi vào mã nguồn bên trong.
-
-Các ranh giới bao gồm:
-
-- Body, tham số (params) và query string của HTTP request.
-- Dữ liệu session và các khai báo định danh (identity claims).
-- Các biến môi trường.
-- Các dòng cơ sở dữ liệu trả về từ các client bên ngoài.
-- Dữ liệu từ shell nền tảng (platform shell).
-- Các deep link, token và signed URL.
-- Webhook, sự kiện (events) và dữ liệu bất đồng bộ từ nhà cung cấp (provider payloads).
-
-Luồng xử lý mục tiêu:
+## Trạng thái Cài đặt (Installation State)
 
 ```text
-đầu vào chưa xác định (unknown input)
-  -> bộ phân tích (parser)
-  -> DTO đã định kiểu hoặc command (typed DTO/command)
-  -> ca sử dụng ứng dụng (application use case)
-  -> thực thể domain / value object (domain object/value object)
+.harness-core/
+  manifest.json
+  baseline/
+  update/          (chỉ xuất hiện khi có xung đột cập nhật đang chờ xử lý)
+  update-candidate/(chỉ xuất hiện khi có bản cập nhật đang chờ xử lý)
 ```
 
-Các lớp bên trong nên làm việc với các kiểu dữ liệu sản phẩm có ý nghĩa như `UserId`, `AccountId`, `WorkspaceId`, `Role`, `DateRange` hoặc các ID đặc thù của domain, thay vì liên tục xác thực lại các chuỗi thô (raw strings).
+- `manifest.json` ghi lại phiên bản core được cài đặt, phiên bản schema và các file được quản lý.
+- `baseline/` lưu trữ bản sao của phiên bản core được cài đặt ban đầu để hỗ trợ hợp nhất 3 chiều với thay đổi của người dùng.
+- `update/` lưu trữ thông tin phiên cập nhật đang chờ xử lý và các thay đổi đã được giải quyết khi xảy ra xung đột.
+- `update-candidate/` tạm thời lưu trữ file thực thi ứng viên cho các quy trình cập nhật hai bước.
 
-## Ranh giới Lệnh/Truy vấn (Command/Query Boundary)
+## Tự cập nhật File Thực thi (Executable Self-Update)
 
-Nếu sản phẩm có cả thao tác đọc và ghi, hãy giữ sự tách biệt lệnh/truy vấn (command/query separation) rõ ràng ở cấp độ code ngay cả khi lớp lưu trữ rất đơn giản:
+```text
+harness update
+  -> tải xuống bản phát hành mới nhất / ứng viên
+  -> xác minh chữ ký mã băm
+  -> chạy ứng viên với tham số --candidate
+  -> hợp nhất 3 chiều các thay đổi
+  -> thay thế file thực thi nếu cập nhật thành công
+```
 
-- Lệnh (Commands) thay đổi trạng thái và sở hữu các tác vụ ghi log kiểm toán (audit log).
-- Truy vấn (Queries) đọc trạng thái và định dạng cho bên tiêu thụ.
-- Các quy tắc domain dùng chung nằm ở lớp domain/application, không nằm ở các controller.
-
-## Ràng buộc về Khả năng Quan sát (Observability Contract)
-
-Máy chủ trong tương lai nên xuất ra một dòng log JSON chuẩn hóa cho mỗi request chứa:
-
-- timestamp (nhãn thời gian)
-- level (mức độ log)
-- request_id (ID của request)
-- user_id (ID người dùng khi đã xác định)
-- action (hành động)
-- duration_ms (thời gian xử lý tính bằng mili giây)
-- status_code (mã trạng thái HTTP)
-- message (thông điệp)
-
-Log kiểm toán (audit log) là bản ghi của sản phẩm. Log ứng dụng (application log) là bản ghi vận hành. Không sử dụng loại log này để thay thế cho loại log kia.
+File thực thi mới nhất luôn tự cập nhật bản thân và các file core một cách an toàn mà không làm mất các tùy chỉnh dự án của người dùng.

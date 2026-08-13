@@ -5,9 +5,9 @@ root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 temp=$(mktemp -d)
 trap 'rm -rf "$temp"' EXIT
 fixture="$temp/repository"
-mkdir -p "$fixture/docs/product" "$fixture/docs/plans/active" "$fixture/src"
+mkdir -p "$fixture/harness-docs/product" "$fixture/harness-docs/plans/active" "$fixture/src"
 
-printf 'A refund over USD 500 requires finance approval.\n' +  >"$fixture/docs/product/refunds.md"
+printf 'A refund over USD 500 requires finance approval.\n' +  >"$fixture/harness-docs/product/refunds.md"
 printf 'unchanged application\n' >"$fixture/src/app.txt"
 
 fingerprint() {
@@ -24,26 +24,26 @@ assert_no_hidden_control_plane() {
 
 # Read-only discovery changes nothing and needs no lifecycle record.
 before=$(fingerprint)
-grep -Fq 'requires finance approval' "$fixture/docs/product/refunds.md"
+grep -Fq 'requires finance approval' "$fixture/harness-docs/product/refunds.md"
 [[ "$before" == "$(fingerprint)" ]]
 assert_no_hidden_control_plane
 
 # A bounded, authorized repository change writes only its requested artifact.
-printf 'Refunds at or below USD 500 may be approved by support leads.\n' +  >>"$fixture/docs/product/refunds.md"
-grep -Fq 'support leads' "$fixture/docs/product/refunds.md"
-[[ -z "$(find "$fixture/docs/plans/active" -type f -print -quit)" ]]
+printf 'Refunds at or below USD 500 may be approved by support leads.\n' +  >>"$fixture/harness-docs/product/refunds.md"
+grep -Fq 'support leads' "$fixture/harness-docs/product/refunds.md"
+[[ -z "$(find "$fixture/harness-docs/plans/active" -type f -print -quit)" ]]
 assert_no_hidden_control_plane
 
 # A materially ambiguous request stops before application mutation.
 before_app=$(shasum -a 256 "$fixture/src/app.txt" | awk '{print $1}')
-grep -Fq 'materially different choices remain' "$root/docs/WORKFLOW.md"
-grep -Fq 'stop and request the smallest decision' "$root/docs/WORKFLOW.md"
+grep -Fq 'materially different choices remain' "$root/harness-docs/WORKFLOW.md"
+grep -Fq 'stop and request the smallest decision' "$root/harness-docs/WORKFLOW.md"
 after_app=$(shasum -a 256 "$fixture/src/app.txt" | awk '{print $1}')
 [[ "$before_app" == "$after_app" ]]
 assert_no_hidden_control_plane
 
 # Durable work uses one Git-native plan and no parallel task database.
-plan="$fixture/docs/plans/active/refund-provider-migration.md"
+plan="$fixture/harness-docs/plans/active/refund-provider-migration.md"
 printf '%s\n' +  '# Execution Plan: Refund Provider Migration' +  '## Status' 'Active' +  '## Outcome' 'Move refunds without losing accepted requests.' +  '## Context' 'Current provider contract.' +  '## Scope' 'Provider boundary only.' +  '## Approach' 'Freeze, migrate, verify.' +  '## Risks And Recovery' 'Retain the old provider until reconciliation passes.' +  '## Progress' '- [ ] Reconciliation proof.' +  '## Decisions' '- No task-local decision yet.' +  '## Validation' '- Focused proof pending.' +  '## Result' 'Pending.' >"$plan"
 [[ -f "$plan" ]]
 assert_no_hidden_control_plane

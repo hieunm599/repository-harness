@@ -12,5 +12,5 @@ Bắt đầu với kết quả được yêu cầu và sử dụng repository l�
 - Đồng thời tạm dừng khi mục đích sản phẩm vẫn mơ hồ, việc phục hồi khó khăn, xác thực bị suy yếu hoặc quyền thẩm quyền không đủ.
 - Chỉ tuyên bố hoàn thành khi có bằng chứng thực thi hoặc quan sát được. Báo cáo kết quả, các thay đổi, xác thực và các rủi ro chưa giải quyết.
 
-Harness không có cơ sở dữ liệu nhiệm vụ hoặc vòng đời điều phối. Sử dụng các kế hoạch và bằng chứng ở cấp độ hành vi thuộc sở hữu của repository; không tạo trạng thái tầng điều khiển song song.
+Harness không có cơ sở dữ liệu nhiệm vụ hoặc vòng đời điều phối. Sử dụng kế hoạch và bằng chứng ở cấp độ hành vi thuộc sở hữu của repository; không tạo trạng thái tầng điều khiển song song.
 <!-- HARNESS:END -->

@@ -16,7 +16,7 @@ Nếu không có lộ trình đó, các agent có thể để các quy tắc đ�
 
 1. Điểm vào agent gọn nhẹ định tuyến công việc bất biến đến một pattern đã cài đặt.
 2. Luồng công việc yêu cầu thẩm quyền đã chấp nhận trước, chủ sở hữu xác thực gốc của repository, kiểm tra cơ học nhỏ nhất, chẩn đoán có thể hành động, và cả bằng chứng thuận (positive proof) lẫn bằng chứng nghịch (negative proof).
-3. Lõi cài đặt `$encode-invariant`. Điều kiện kích hoạt bao gồm các yêu cầu thực thi ranh giới, ngăn chặn tái phát, thêm bảo vệ cấu trúc, hoặc chuyển đổi các quy tắc đã chấp nhận thành xác thực. Các yêu cầu phù hợp có thể gọi nó một cách ngầm định; nó không thể suy diễn chính sách từ quy ước, mẫu mã nguồn, kiểm thử, giá trị mặc định hoặc các tùy chọn chưa được tài liệu hóa.
+3. Lõi cài đặt `$encode-invariant`. Điều kiện kích hoạt bao gồm các yêu cầu thực thi ranh giới, ngăn chặn tái phát, thêm bảo vệ cấu trúc, hoặc chuyển đổi các quy tắc đã chấp nhận thành xác thực. Matching requests may invoke it implicitly; nó không thể suy diễn chính sách từ quy ước, mẫu mã nguồn, kiểm thử, giá trị mặc định hoặc các tùy chọn chưa được tài liệu hóa.
 4. `$onboard-repository` so sánh các bất biến đã chấp nhận với các kiểm tra thực thi được trong phiên đề xuất chỉ đọc. Nó báo cáo các quy tắc chưa được thực thi và các kiểm tra thiếu thẩm quyền mà không chỉnh sửa, thực thi, kích hoạt hoặc loại bỏ các bảo vệ.
 5. Báo cáo phân biệt xác thực cục bộ, hook tùy chọn, lệnh gọi CI đã check-in, kết quả CI đã quan sát và bảo vệ nhánh bên ngoài. Không cấp độ nào chứng minh cấp độ khác.
 6. Hướng dẫn duy trì tính trung lập về triển khai. Nó không quy định kiến trúc ứng dụng, ngôn ngữ, linter, hook, nhà cung cấp CI, chính sách merge hoặc bảo vệ nhánh và không thay đổi các cài đặt bên ngoài.

@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - vi
   workflow_dispatch:
 
 permissions:

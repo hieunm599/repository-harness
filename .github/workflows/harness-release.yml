@@ -10,7 +10,7 @@ on:
       checkout_ref:
         description: "Exact main commit or ref to prove"
         required: true
-        default: main
+        default: vi
         type: string
   workflow_call:
     inputs:

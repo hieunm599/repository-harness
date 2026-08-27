@@ -42,7 +42,7 @@ mục đích sản phẩm mơ hồ (material product ambiguity)
   -> trình bày lựa chọn cụ thể và các hệ quả
 ```
 
-Một lỗi chính tả không cần lập kế hoạch. Một đợt chuyển đổi (migration) kéo dài qua nhiều phiên thì cần. Một yêu cầu “thêm giới hạn tần suất (rate limit)” mà thiếu định ngạch, khóa định danh, đơn vị thực thi, cấu trúc trạng thái dùng chung hay hợp đồng phản hồi thì phải dừng lại trước khi triển khai.
+Một lỗi chính tả không cần lập kế hoạch. Một đợt chuyển đổi (migration) kéo dài qua nhiều phiên thì cần. Một yêu cầu "thêm giới hạn tần suất (rate limit)" mà thiếu định ngạch, khóa định danh, đơn vị thực thi, cấu trúc trạng thái dùng chung hay hợp đồng phản hồi thì phải dừng lại trước khi triển khai.
 
 Bắt đầu với [`AGENTS.md`](AGENTS.md), sau đó là [`harness-docs/WORKFLOW.md`](harness-docs/WORKFLOW.md).
 
@@ -54,7 +54,7 @@ Tập hợp lõi mặc định bao gồm:
 - Luồng công việc repository và bản đồ tài liệu;
 - Cấu trúc sản phẩm, quyết định và kế hoạch thực thi;
 - Các mẫu tùy chọn cho kế hoạch bền vững, quyết định, ứng dụng runbook và cải tiến Harness dựa trên bằng chứng; và
-- Các skill onboard và kiểm tra đề xuất (proposal-audit) chỉ kích hoạt khi được yêu cầu rõ ràng.
+- Một pattern mã hóa bất biến (invariant-encoding) cùng skill, cộng thêm các skill onboard và kiểm tra đề xuất (proposal-audit) chỉ kích hoạt khi được yêu cầu rõ ràng.
 
 Nó không cài đặt kiến trúc ứng dụng, chính sách sản phẩm, lệnh xác thực, thông tin xác thực, cơ sở dữ liệu, schema, hệ thống điều phối hay các tiến trình chạy ngầm.
 
@@ -101,6 +101,12 @@ Sử dụng `scripts/bin/harness update --abort` để hủy bỏ phương án x
 
 ## Skill Tùy chọn (Optional Skills)
 
+Thực thi bất biến (invariant enforcement) định tuyến các quy tắc đã chấp nhận thông qua xác thực gốc của repository:
+
+```text
+$encode-invariant
+```
+
 Onboard repository là skill rõ ràng và chế độ chỉ đọc trước tiên:
 
 ```text
@@ -119,7 +125,7 @@ Lời khuyên kỹ thuật (Engineering wisdom) là một gói tùy chọn riên
 scripts/install-harness.sh --with-engineering-wisdom --yes /path/to/project
 ```
 
-Không có skill nào tự động chạy trong quá trình cài đặt hoặc công việc thông thường.
+Không có skill nào tự động chạy trong quá trình cài đặt. Onboard và cải tiến Harness vẫn chỉ kích hoạt khi yêu cầu rõ ràng; mã hóa bất biến chỉ phản hồi với các yêu cầu công việc phù hợp.
 
 ## Những gì chúng ta chứng minh (What We Prove)
 

@@ -21,6 +21,7 @@ current_files=(
   harness-docs/ARCHITECTURE.md
   harness-docs/HARNESS.md
   harness-docs/README.md
+  harness-docs/patterns/encoding-invariants.md
   harness-docs/product/README.md
   harness-docs/product/installation-profiles.md
   harness-docs/plans/README.md
@@ -37,6 +38,7 @@ current_files=(
   harness-docs/decisions/0025-latest-release-self-update-and-human-directed-conflicts.md
   harness-docs/decisions/0026-explicit-onboarding-skills-in-default-core.md
   harness-docs/decisions/0027-end-protocol-v1-and-focus-repository-protocol.md
+  harness-docs/decisions/0028-authoritative-invariant-encoding.md
   harness-docs/research/application-legibility.md
   .github/ISSUE_TEMPLATE/real-world-example.md
 )
@@ -50,6 +52,20 @@ require harness-docs/WORKFLOW.md '### Bounded Change'
 require harness-docs/WORKFLOW.md '### Durable Planned Change'
 require harness-docs/WORKFLOW.md '### Operate The Application'
 require harness-docs/WORKFLOW.md '### Improve The Harness'
+require harness-docs/WORKFLOW.md '### Does The Work Encode An Invariant?'
+require harness-docs/patterns/encoding-invariants.md '## 1. Establish Authority'
+require harness-docs/patterns/encoding-invariants.md '## 4. Prove Both Directions'
+require harness-docs/patterns/encoding-invariants.md '## 5. Discover And Report Enforcement'
+require harness-docs/patterns/encoding-invariants.md '| Scope | Files, modules, configuration, or runtime objects covered |'
+require harness-docs/patterns/encoding-invariants.md 'Find the repository'
+require harness-docs/patterns/encoding-invariants.md '| Diagnostic | Violating item, broken rule, authority pointer, and next action |'
+require harness-docs/patterns/encoding-invariants.md '**Positive proof:**'
+require harness-docs/patterns/encoding-invariants.md '**Negative proof:**'
+require harness-docs/patterns/encoding-invariants.md '| Local validation |'
+require harness-docs/patterns/encoding-invariants.md '| Optional hook |'
+require harness-docs/patterns/encoding-invariants.md '| CI |'
+require harness-docs/patterns/encoding-invariants.md '| Branch protection |'
+require harness-docs/decisions/0028-authoritative-invariant-encoding.md 'Matching requests may invoke it implicitly'
 require harness-docs/ARCHITECTURE.md 'binary'
 require README.md '## Những gì chúng ta chứng minh'
 require README.md '## Ngừng hỗ trợ Giao thức V1'

@@ -142,11 +142,11 @@ assert_no_control_plane_state
 # Invariant work routes through accepted authority and requires bidirectional
 # proof without claiming that checked-in CI implies merge enforcement.
 grep -Fq 'Conventions, code patterns, tests, defaults, and undocumented preferences do' \
-  "$root/docs/WORKFLOW.md"
-grep -Fq 'positive proof' "$root/docs/WORKFLOW.md"
-grep -Fq 'negative proof' "$root/docs/WORKFLOW.md"
-grep -Fq 'presence alone does not prove merge blocking' "$root/docs/WORKFLOW.md"
-grep -Fq 'Do not install hooks' "$root/docs/WORKFLOW.md"
+  "$root/harness-docs/WORKFLOW.md"
+grep -Fq 'positive proof' "$root/harness-docs/WORKFLOW.md"
+grep -Fq 'negative proof' "$root/harness-docs/WORKFLOW.md"
+grep -Fq 'presence alone does not prove merge blocking' "$root/harness-docs/WORKFLOW.md"
+grep -Fq 'Do not install hooks' "$root/harness-docs/WORKFLOW.md"
 
 # Fixed acceptance comparison. The former mandatory entry path was AGENTS.md,
 # feature intake, and context rules (2,413 words at the Phase 1 baseline). The

@@ -16,6 +16,7 @@ Thư mục này chứa harness của dự án và bất kỳ đặc tả sản p
 - `product/`: nguồn sự thật hiện tại của sản phẩm (product truth), thư mục này trống cho đến khi tài liệu spec được rút trích.
 - `stories/`: các gói tính năng (feature packet) và backlog.
 - `decisions/`: các quyết định lâu dài (durable decisions) và sự đánh đổi (tradeoffs).
+- `patterns/`: các mẫu hướng dẫn kỹ thuật, bao gồm [`encoding-invariants.md`](patterns/encoding-invariants.md) để chuyển đổi các quy tắc kiến trúc, độ tin cậy, bảo mật và chất lượng đã chấp nhận thành xác thực cơ học gốc.
 - `demo/`: các tài liệu hướng dẫn (walkthrough) thực tế chỉ ra cách harness chuyển đổi đầu vào thành công việc sẵn sàng cho agent (agent-ready work).
 - `templates/`: các định dạng có thể tái sử dụng cho tiếp nhận đặc tả (spec-intake), story, kế hoạch (plan), quyết định kỹ thuật (decision) và xác thực (validation).
 

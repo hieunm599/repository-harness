@@ -6,22 +6,22 @@ runtime signals are the system of record.
 ## Repository Map
 
 - `AGENTS.md`: entry map and authority boundary.
-- `README.md`, `docs/product/`, architecture, and decisions: current intent and
+- `README.md`, `harness-docs/product/`, architecture, and decisions: current intent and
   constraints.
-- `docs/plans/`: durable work; `docs/templates/`: optional structures.
+- `harness-docs/plans/`: durable work; `harness-docs/templates/`: optional structures.
 - Code, tests, CI, and runtime signals: executable and observable truth.
 
-Use `docs/README.md` for the complete map.
+Use `harness-docs/README.md` for the complete map.
 
 ## Select The Work Shape
 
 ### Does The Work Need Durable Memory?
 
 Use an ephemeral plan for bounded work. Create one plan in
-`docs/plans/active/` when work spans sessions, coordinates contributors, has
+`harness-docs/plans/active/` when work spans sessions, coordinates contributors, has
 meaningful dependencies, needs recovery, or cannot safely resume from its diff.
 
-Use `docs/templates/exec-plan.md`. Keep progress and task-local decisions in the
+Use `harness-docs/templates/exec-plan.md`. Keep progress and task-local decisions in the
 same file; avoid parallel task records without an independent audience.
 
 ### Does The Work Need Human Judgment?
@@ -88,7 +88,7 @@ No parallel lifecycle record is required.
 Create or resume one active plan. Keep outcome, context, approach, risk,
 recovery, progress, decisions, and validation current. Implement in verifiable
 groups, promote lasting decisions, run focused and repository proof, then record
-the result and move the plan to `docs/plans/completed/`.
+the result and move the plan to `harness-docs/plans/completed/`.
 
 ### Operate The Application
 
@@ -108,7 +108,7 @@ proposal structure, not proof that the application is operable.
 
 During ordinary work, report reusable agent friction without changing the
 Harness for that new purpose. When the user explicitly invokes
-`$improve-harness`, use `docs/templates/harness-improvement.md` to:
+`$improve-harness`, use `harness-docs/templates/harness-improvement.md` to:
 
 1. preserve the observed baseline and human intervention;
 2. locate the earliest missing context, capability, owner, authority, proof, or

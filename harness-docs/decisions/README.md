@@ -20,6 +20,8 @@ Các quyết định trong kho lưu trữ nguồn này giải thích chính Harn
 | [0024](https://github.com/hieunm599/repository-harness/blob/vi/harness-docs/decisions/0024-rust-harness-core-maintenance-cli.md) | Accepted target | Rust Harness Core Maintenance CLI |
 | [0025](https://github.com/hieunm599/repository-harness/blob/vi/harness-docs/decisions/0025-latest-release-self-update-and-human-directed-conflicts.md) | Active | Latest-Release Self-Update And Human-Directed Conflicts |
 | [0026](https://github.com/hieunm599/repository-harness/blob/vi/harness-docs/decisions/0026-explicit-onboarding-skills-in-default-core.md) | Active | Explicit Onboarding Skills In Default Core |
+| [0027](https://github.com/hieunm599/repository-harness/blob/vi/harness-docs/decisions/0027-end-protocol-v1-and-focus-repository-protocol.md) | Active | End Protocol V1 And Focus The Repository Protocol |
+| [0028](https://github.com/hieunm599/repository-harness/blob/vi/harness-docs/decisions/0028-authoritative-invariant-encoding.md) | Active | Authoritative Invariant Encoding |
 
 ## Quyết định Tương thích
 

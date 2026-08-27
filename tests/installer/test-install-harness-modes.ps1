@@ -36,12 +36,12 @@ try {
     Invoke-Install $Fresh
     if (!(Test-Path (Join-Path $Fresh "scripts/bin/harness.exe"))) { throw "core maintenance CLI missing" }
     if (!(Test-Path (Join-Path $Fresh ".harness-core/manifest.json"))) { throw "core provenance missing" }
-    if (!(Test-Path (Join-Path $Fresh "docs/WORKFLOW.md"))) { throw "core workflow missing" }
-    if (!(Test-Path (Join-Path $Fresh "docs/patterns/encoding-invariants.md"))) { throw "invariant pattern missing" }
+    if (!(Test-Path (Join-Path $Fresh "harness-docs/WORKFLOW.md"))) { throw "core workflow missing" }
+    if (!(Test-Path (Join-Path $Fresh "harness-docs/patterns/encoding-invariants.md"))) { throw "invariant pattern missing" }
     if (!(Test-Path (Join-Path $Fresh ".agents/skills/encode-invariant/SKILL.md"))) { throw "encode-invariant skill missing" }
     $FreshAgents = Get-Content -Raw (Join-Path $Fresh "AGENTS.md")
-    if (!$FreshAgents.Contains("docs/patterns/encoding-invariants.md")) { throw "invariant routing missing" }
-    $FreshWorkflow = Get-Content -Raw (Join-Path $Fresh "docs/WORKFLOW.md")
+    if (!$FreshAgents.Contains("harness-docs/patterns/encoding-invariants.md")) { throw "invariant routing missing" }
+    $FreshWorkflow = Get-Content -Raw (Join-Path $Fresh "harness-docs/WORKFLOW.md")
     if (!$FreshWorkflow.Contains("Does The Work Encode An Invariant?")) { throw "invariant workflow missing" }
     $FreshInvariantSkill = Get-Content -Raw (Join-Path $Fresh ".agents/skills/encode-invariant/SKILL.md")
     if (!$FreshInvariantSkill.Contains("prevent a documented violation from recurring")) { throw "invariant skill trigger missing" }
@@ -68,7 +68,7 @@ try {
         "scripts/bootstrap-harness.sh",
         "scripts/bootstrap-harness.ps1",
         "scripts/schema",
-        "docs/contracts/harness-orchestration-v1.md",
+        "harness-docs/contracts/harness-orchestration-v1.md",
         "harness.db"
     )) {
         if (Test-Path (Join-Path $Fresh $Legacy)) { throw "core install created legacy artifact $Legacy" }
@@ -96,22 +96,22 @@ try {
     # Merge fills core gaps while retaining every legacy artifact unchanged.
     $Merge = Join-Path $Temp "merge"
     New-Item -ItemType Directory -Force -Path @(
-        (Join-Path $Merge "docs/contracts"),
+        (Join-Path $Merge "harness-docs/contracts"),
         (Join-Path $Merge "scripts/schema"),
         (Join-Path $Merge "scripts/bin")
     ) | Out-Null
     "project agents" | Set-Content (Join-Path $Merge "AGENTS.md")
-    "project harness" | Set-Content (Join-Path $Merge "docs/HARNESS.md")
-    "legacy contract" | Set-Content (Join-Path $Merge "docs/contracts/harness-orchestration-v1.md")
+    "project harness" | Set-Content (Join-Path $Merge "harness-docs/HARNESS.md")
+    "legacy contract" | Set-Content (Join-Path $Merge "harness-docs/contracts/harness-orchestration-v1.md")
     "legacy bootstrap" | Set-Content (Join-Path $Merge "scripts/bootstrap-harness.ps1")
     "legacy schema" | Set-Content (Join-Path $Merge "scripts/schema/001.sql")
     "legacy cli" | Set-Content (Join-Path $Merge "scripts/bin/harness-cli.exe")
     "legacy database" | Set-Content (Join-Path $Merge "harness.db")
     Invoke-Install $Merge @("Merge")
     if ((Get-Content -Raw (Join-Path $Merge "AGENTS.md")).Trim() -ne "project agents") { throw "merge replaced AGENTS.md" }
-    if (!(Test-Path (Join-Path $Merge "docs/WORKFLOW.md"))) { throw "merge did not fill core payload" }
+    if (!(Test-Path (Join-Path $Merge "harness-docs/WORKFLOW.md"))) { throw "merge did not fill core payload" }
     foreach ($LegacyFile in @(
-        [pscustomobject]@{ Path = "docs/contracts/harness-orchestration-v1.md"; Content = "legacy contract" },
+        [pscustomobject]@{ Path = "harness-docs/contracts/harness-orchestration-v1.md"; Content = "legacy contract" },
         [pscustomobject]@{ Path = "scripts/bootstrap-harness.ps1"; Content = "legacy bootstrap" },
         [pscustomobject]@{ Path = "scripts/schema/001.sql"; Content = "legacy schema" },
         [pscustomobject]@{ Path = "scripts/bin/harness-cli.exe"; Content = "legacy cli" },
@@ -125,13 +125,13 @@ try {
     $Override = Join-Path $Temp "override"
     New-Item -ItemType Directory -Force (Join-Path $Override "docs"), (Join-Path $Override "scripts") | Out-Null
     "old agents" | Set-Content (Join-Path $Override "AGENTS.md")
-    "old docs" | Set-Content (Join-Path $Override "docs/private.md")
+    "old docs" | Set-Content (Join-Path $Override "harness-docs/private.md")
     "old scripts" | Set-Content (Join-Path $Override "scripts/private.ps1")
     Invoke-Install $Override @("Override")
     $OverrideBackup = Get-ChildItem (Join-Path $Override ".harness-backup") -Directory | Select-Object -First 1
     if (!(Test-Path (Join-Path $OverrideBackup.FullName "AGENTS.md"))) { throw "override AGENTS backup missing" }
-    if (!(Test-Path (Join-Path $OverrideBackup.FullName "docs/private.md"))) { throw "override docs backup missing" }
-    if (Test-Path (Join-Path $Override "docs/private.md")) { throw "override retained replaced docs" }
+    if (!(Test-Path (Join-Path $OverrideBackup.FullName "harness-docs/private.md"))) { throw "override docs backup missing" }
+    if (Test-Path (Join-Path $Override "harness-docs/private.md")) { throw "override retained replaced docs" }
     if ((Get-Content -Raw (Join-Path $Override "scripts/private.ps1")).Trim() -ne "old scripts") { throw "override changed scripts" }
 
     # Agent refresh preserves local text and replaces only the marked block.
